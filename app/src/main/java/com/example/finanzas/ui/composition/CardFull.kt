@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
@@ -34,27 +33,28 @@ fun CardFull(){
                 .background(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            Color(0xFF0078D4),     // Azul Windows 11
-                            Color(0xFFCCE5FF),     // Azul muy claro
-                            Color.White            // Blanco puro al final
+                            Color(0xFF0078D4), // Azul Windows 11
+                            Color(0xFF99CCFF), // Azul pastel intermedio
+                            Color(0xFFE6F2FF)  // Azul muy claro, casi blanco pero aún azul
                         )
+
                     )
                 )
                 .padding(16.dp)
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
                     text = "Total Gastos",
                     color = Color.White, // solo el texto es blanco
-                    fontSize = 8.sp
+                    fontSize = 16.sp
                 )
                 Text(
-                    text = "USD 1,200.00",
+                    text = "USD 1.240.00",
                     color = Color.White, // solo el texto es blanco
-                    fontSize = 20.sp
+                    fontSize = 36.sp
                 )
             }
         }
