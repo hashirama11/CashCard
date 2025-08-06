@@ -20,5 +20,9 @@ class GastoRepositoryImpl @Inject constructor(
     override suspend fun crearGasto(gasto: GastoEntity) {
         gastoDao.crearGasto(gasto)
     }
+    override fun obtenerTotalGastos(): Flow<Double?> {
+        return gastoDao.obtenerTotalGastos()
+    }
+
 
 }

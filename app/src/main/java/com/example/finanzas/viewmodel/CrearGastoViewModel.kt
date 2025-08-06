@@ -28,14 +28,16 @@ class CrearGastoViewModel @Inject constructor(
 
     fun crearGasto() {
         val montoDouble = monto.toDoubleOrNull()
-        if (descripcion.isBlank() || categoria.isBlank() || montoDouble == null) {
+
+        // Validación actualizada
+        if (descripcion.isBlank() || montoDouble == null || categoriaSeleccionada == Categorias.OTROS) {
             mensajeConfirmacion = "❌ Todos los campos son obligatorios"
             return
         }
 
         val gasto = GastoEntity().apply {
             this.descripcion = descripcion
-            this.categoria = categoriaSeleccionada.name
+            this.categoria = categoriaSeleccionada.name // Enum → String
             this.monto = montoDouble
             this.fecha = fecha
         }

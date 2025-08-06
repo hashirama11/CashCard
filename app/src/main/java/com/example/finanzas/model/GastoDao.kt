@@ -19,4 +19,8 @@ interface GastoDao {
     @Insert
     suspend fun crearGasto(gasto: GastoEntity)
 
+    // Sumar todos los montos
+    @Query("SELECT SUM(monto) FROM gastos")
+    fun obtenerTotalGastos(): Flow<Double?>
+
 }
