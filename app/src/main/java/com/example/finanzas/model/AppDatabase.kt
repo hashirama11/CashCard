@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(entities = [GastoEntity::class], version = 1)
-@TypeConverters(LocalDateConverter::class)
+@TypeConverters(LocalDateConverter::class, CategoriaConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun gastoDao(): GastoDao
 

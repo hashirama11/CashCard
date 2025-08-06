@@ -11,7 +11,7 @@ import javax.inject.Inject
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-
+import com.example.finanzas.model.Categorias
 
 
 @HiltViewModel
@@ -20,7 +20,7 @@ class CrearGastoViewModel @Inject constructor(
 ) : ViewModel() {
 
     var descripcion by mutableStateOf("")
-    var categoria by mutableStateOf("")
+    var categoriaSeleccionada by mutableStateOf(Categorias.OTROS)
     var monto by mutableStateOf("")
     var fecha by mutableStateOf(LocalDate.now())
 
@@ -35,7 +35,7 @@ class CrearGastoViewModel @Inject constructor(
 
         val gasto = GastoEntity().apply {
             this.descripcion = descripcion
-            this.categoria = categoria
+            this.categoria = categoriaSeleccionada.name
             this.monto = montoDouble
             this.fecha = fecha
         }
@@ -50,7 +50,7 @@ class CrearGastoViewModel @Inject constructor(
 
     private fun limpiarCampos() {
         descripcion = ""
-        categoria = ""
+        categoriaSeleccionada = Categorias.OTROS
         monto = ""
         fecha = LocalDate.now()
     }
