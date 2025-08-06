@@ -20,16 +20,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.finanzas.viewmodel.CrearGastoViewModel
 
 
 @Composable
-fun CreateGasto(){
-
+fun CreateGasto(viewModel: CrearGastoViewModel) {
     val gradientBrush = Brush.horizontalGradient(
         colors = listOf(
-            Color(0xFF0078D4), // Azul Windows 11
-            Color(0xFF99CCFF), // Azul pastel
-            Color(0xFFE6F2FF)  // Azul muy claro
+            Color(0xFF0078D4),
+            Color(0xFF99CCFF),
+            Color(0xFFE6F2FF)
         )
     )
 
@@ -46,7 +46,7 @@ fun CreateGasto(){
                 .clip(RoundedCornerShape(12.dp))
         ) {
             OutlinedButton(
-                onClick = { /* TODO */ },
+                onClick = { viewModel.crearGasto() },
                 shape = RoundedCornerShape(12.dp),
                 border = null,
                 colors = ButtonDefaults.outlinedButtonColors(
@@ -68,5 +68,5 @@ fun CreateGasto(){
 @Composable
 @Preview
 fun CreateGastoPreview(){
-    CreateGasto()
+
 }

@@ -3,6 +3,7 @@ package com.example.finanzas
 import android.content.Context
 import androidx.room.Room
 import com.example.finanzas.model.AppDatabase
+import com.example.finanzas.model.GastoDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,4 +23,10 @@ object DatabaseModule {
             "app_database"
         ).build()
     }
+
+    @Provides
+    fun provideGastoDao(db: AppDatabase) : GastoDao {
+        return db.gastoDao()
+    }
+
 }

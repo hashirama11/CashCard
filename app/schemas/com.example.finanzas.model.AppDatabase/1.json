@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "14967fef523c63c02ebca955bad92ee4",
+    "identityHash": "7da493ce442b0adad7ced2bf1a135060",
     "entities": [
       {
-        "tableName": "Gasto",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `Descripcion` TEXT, `Categoria` TEXT, `Monto` REAL, `Fecha` TEXT NOT NULL, `Moneda` TEXT)",
+        "tableName": "gastos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `descripcion` TEXT, `categoria` TEXT, `monto` REAL, `fecha` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -16,33 +16,27 @@
           },
           {
             "fieldPath": "descripcion",
-            "columnName": "Descripcion",
+            "columnName": "descripcion",
             "affinity": "TEXT",
             "notNull": false
           },
           {
             "fieldPath": "categoria",
-            "columnName": "Categoria",
+            "columnName": "categoria",
             "affinity": "TEXT",
             "notNull": false
           },
           {
             "fieldPath": "monto",
-            "columnName": "Monto",
+            "columnName": "monto",
             "affinity": "REAL",
             "notNull": false
           },
           {
             "fieldPath": "fecha",
-            "columnName": "Fecha",
+            "columnName": "fecha",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "moneda",
-            "columnName": "Moneda",
-            "affinity": "TEXT",
-            "notNull": false
           }
         ],
         "primaryKey": {
@@ -58,7 +52,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '14967fef523c63c02ebca955bad92ee4')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7da493ce442b0adad7ced2bf1a135060')"
     ]
   }
 }
