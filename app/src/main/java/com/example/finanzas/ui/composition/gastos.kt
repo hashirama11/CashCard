@@ -33,7 +33,7 @@ fun GastoCard(){
                 .background(Color.White)
         ){
             Icon(
-                painter = painterResource(id = R.drawable.shopping_cart_24dp_1f1f1f_fill0_wght400_grad0_opsz24),
+                painter = painterResource(id = R.drawable.shopping),
                 contentDescription = "Settings",
                 modifier = Modifier
                     .size(28.dp)
