@@ -14,8 +14,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.finanzas.ui.composition.CardFull
 import com.example.finanzas.ui.composition.CategoryGasto
-import com.example.finanzas.ui.composition.CreateGasto
-import com.example.finanzas.ui.composition.FormApp
+import com.example.finanzas.ui.composition.GastoCreate.CreateGasto
+import com.example.finanzas.ui.composition.GastoCreate.FormApp
 import com.example.finanzas.ui.composition.GastoCard
 import com.example.finanzas.ui.composition.TitleApp
 

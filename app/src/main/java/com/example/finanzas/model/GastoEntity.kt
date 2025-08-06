@@ -11,6 +11,6 @@ class GastoEntity {
     var id: Int = 0
     var descripcion: String? = null
     var categoria: String? = null
-    var monto: Double = 0.0
+    var monto: Double? = 0.0
     var fecha : LocalDate = LocalDate.now()
 }
