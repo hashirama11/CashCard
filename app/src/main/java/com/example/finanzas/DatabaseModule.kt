@@ -3,7 +3,7 @@ package com.example.finanzas
 import android.content.Context
 import androidx.room.Room
 import com.example.finanzas.model.AppDatabase
-import com.example.finanzas.model.GastoDao
+import com.example.finanzas.model.gasto.GastoDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

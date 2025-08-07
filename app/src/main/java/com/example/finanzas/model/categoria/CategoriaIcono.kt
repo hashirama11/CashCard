@@ -1,4 +1,4 @@
-package com.example.finanzas.model
+package com.example.finanzas.model.categoria
 
 import androidx.annotation.DrawableRes
 import com.example.finanzas.R

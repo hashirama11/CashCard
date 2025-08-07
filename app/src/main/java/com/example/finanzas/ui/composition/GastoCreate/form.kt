@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.finanzas.model.Categorias
+import com.example.finanzas.model.categoria.Categorias
 import com.example.finanzas.viewmodel.CrearGastoViewModel
 import androidx.compose.material3.ExperimentalMaterial3Api
 

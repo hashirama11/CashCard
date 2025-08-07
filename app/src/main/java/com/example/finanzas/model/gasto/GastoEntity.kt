@@ -1,9 +1,8 @@
-package com.example.finanzas.model
+package com.example.finanzas.model.gasto
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.LocalDate
-import java.util.Date
 
 @Entity(tableName = "gastos")
 class GastoEntity {

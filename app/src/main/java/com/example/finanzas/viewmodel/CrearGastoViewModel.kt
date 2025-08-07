@@ -4,14 +4,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.example.finanzas.model.GastoEntity
+import com.example.finanzas.model.gasto.GastoEntity
 import com.example.finanzas.repository.GastoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import com.example.finanzas.model.Categorias
+import com.example.finanzas.model.categoria.Categorias
 
 
 @HiltViewModel

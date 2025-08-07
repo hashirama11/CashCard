@@ -1,6 +1,6 @@
 package com.example.finanzas.repository
 
-import com.example.finanzas.model.GastoDao
+import com.example.finanzas.model.gasto.GastoDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

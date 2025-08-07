@@ -1,6 +1,6 @@
 package com.example.finanzas.repository
 
-import com.example.finanzas.model.GastoEntity
+import com.example.finanzas.model.gasto.GastoEntity
 import kotlinx.coroutines.flow.Flow
 
 interface GastoRepository {
@@ -9,5 +9,6 @@ interface GastoRepository {
     fun obtenerGastosPorCategoria(categoria: String): Flow<List<GastoEntity>>
     suspend fun crearGasto(gasto: GastoEntity)
     fun obtenerTotalGastos(): Flow<Double?>
+    suspend fun eliminarTodosLosGastos()
 
 }

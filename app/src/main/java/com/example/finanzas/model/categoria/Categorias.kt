@@ -1,4 +1,4 @@
-package com.example.finanzas.model
+package com.example.finanzas.model.categoria
 
 enum class Categorias {
 

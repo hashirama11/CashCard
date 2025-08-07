@@ -1,7 +1,7 @@
 package com.example.finanzas.repository
 
-import com.example.finanzas.model.GastoDao
-import com.example.finanzas.model.GastoEntity
+import com.example.finanzas.model.gasto.GastoDao
+import com.example.finanzas.model.gasto.GastoEntity
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -22,6 +22,10 @@ class GastoRepositoryImpl @Inject constructor(
     }
     override fun obtenerTotalGastos(): Flow<Double?> {
         return gastoDao.obtenerTotalGastos()
+    }
+
+    override suspend fun eliminarTodosLosGastos() {
+        gastoDao.eliminarTodosLosGastos()
     }
 
 

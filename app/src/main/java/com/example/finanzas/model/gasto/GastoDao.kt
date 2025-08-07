@@ -1,4 +1,4 @@
-package com.example.finanzas.model
+package com.example.finanzas.model.gasto
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -22,5 +22,9 @@ interface GastoDao {
     // Sumar todos los montos
     @Query("SELECT SUM(monto) FROM gastos")
     fun obtenerTotalGastos(): Flow<Double?>
+
+    // Eliminar todos los gastos de la tabla
+    @Query("DELETE FROM gastos")
+    suspend fun eliminarTodosLosGastos()
 
 }

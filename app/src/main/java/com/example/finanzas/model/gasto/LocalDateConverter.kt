@@ -1,4 +1,4 @@
-package com.example.finanzas.model
+package com.example.finanzas.model.gasto
 
 import androidx.room.TypeConverter
 import java.time.LocalDate
