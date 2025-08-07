@@ -1,13 +1,17 @@
 package com.example.finanzas.ui.composition
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
@@ -20,68 +24,108 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.finanzas.model.categoria.Categorias
+
+
 
 
 @Composable
-fun ListCategory(){
-
-}
-
-
-@Composable
-fun CategoryGasto(){
-
-
-    val gradientBrush = Brush.horizontalGradient(
-        colors = listOf(
-            Color(0xFF0078D4), // Azul Windows 11
-            Color(0xFF99CCFF), // Azul pastel
-            Color(0xFFE6F2FF)  // Azul muy claro
-        )
-    )
-
-    Row(
+fun CategoryRail(
+    selected: Categorias?, // Puedes usar esto para marcar la categoría activa
+    onCategorySelected: (Categorias?) -> Unit
+) {
+    LazyRow(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp),
-        horizontalArrangement = Arrangement.Start
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(horizontal = 4.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .height(48.dp)
-                .background(brush = gradientBrush, shape = RoundedCornerShape(12.dp))
-                .clip(RoundedCornerShape(12.dp))
-        ) {
-            OutlinedButton(
-                onClick = { /* TODO */ },
-                shape = RoundedCornerShape(12.dp),
-                border = null,
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = Color.White
-                ),
-                contentPadding = PaddingValues()
-            ) {
-                Text(
-                    text = "Todos",
-                    fontSize = 10.sp,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-            }
+        item {
+            CategoryButton(
+                text = "TODOS",
+                onClick = { onCategorySelected(null) }
+            )
+        }
+
+        items(Categorias.values()) { categoria ->
+            val isSelected = categoria == selected
+            CategoryButton(
+                text = categoria.name,
+                onClick = { onCategorySelected(categoria) },
+                selected = isSelected
+            )
         }
     }
-
 }
 
 @Composable
-@Preview
-fun ListCategoryPreview(){
-    ListCategory()
+fun CategoryButton(
+    text: String,
+    onClick: () -> Unit,
+    selected: Boolean = false
+) {
+    val gradientBrush = Brush.horizontalGradient(
+        colors = if (selected) {
+            listOf(Color(0xFF005A9E), Color(0xFF0078D4), Color(0xFF99CCFF))
+        } else {
+            listOf(Color(0xFF0078D4), Color(0xFF99CCFF), Color(0xFFE6F2FF))
+        }
+    )
+
+    Box(
+        modifier = Modifier
+            .height(48.dp)
+            .background(brush = gradientBrush, shape = RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp))
+    ) {
+        OutlinedButton(
+            onClick = onClick,
+            shape = RoundedCornerShape(12.dp),
+            border = if (selected) BorderStroke(1.dp, Color.White) else null,
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = Color.Transparent,
+                contentColor = Color.White
+            ),
+            contentPadding = PaddingValues()
+        ) {
+            Text(
+                text = text,
+                fontSize = 10.sp,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+        }
+    }
 }
 
 
 @Composable
+fun CategoryGasto() {
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(horizontal = 4.dp)
+    ) {
+        item {
+            CategoryButton(
+                text = "TODOS",
+                onClick = { /* Acción para TODOS */ }
+            )
+        }
+
+        items(Categorias.values()) { categoria ->
+            CategoryButton(
+                text = categoria.name,
+                onClick = { /* Acción para esta categoría */ }
+            )
+        }
+    }
+}
+
 @Preview
-fun CategoryGastoPreview(){
+@Composable
+fun CategoryGastoPreview() {
     CategoryGasto()
 }

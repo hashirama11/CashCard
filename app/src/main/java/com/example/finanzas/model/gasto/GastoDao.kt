@@ -12,6 +12,7 @@ interface GastoDao {
     @Query("SELECT * FROM gastos")
     fun obtenerGastos(): Flow<List<GastoEntity>>
 
+    // Obtener gastos por categoría
     @Query("SELECT * FROM gastos WHERE categoria = :categoria")
     fun obtenerGastosPorCategoria(categoria: String): Flow<List<GastoEntity>>
 
