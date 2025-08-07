@@ -24,14 +24,18 @@ import com.example.finanzas.viewmodel.CrearGastoViewModel
 import androidx.compose.material3.ExperimentalMaterial3Api
 
 @Composable
-fun FormApp(viewModel: CrearGastoViewModel) {
-
-    var categoriaSeleccionada by mutableStateOf(Categorias.OTROS)
-
+fun FormAppContent(
+    descripcion: String,
+    onDescripcionChange: (String) -> Unit,
+    categoriaSeleccionada: Categorias,
+    onCategoriaSeleccionada: (Categorias) -> Unit,
+    monto: String,
+    onMontoChange: (String) -> Unit
+) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         TextField(
-            value = viewModel.descripcion,
-            onValueChange = { viewModel.descripcion = it },
+            value = descripcion,
+            onValueChange = onDescripcionChange,
             label = { Text("Descripción") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
@@ -44,13 +48,13 @@ fun FormApp(viewModel: CrearGastoViewModel) {
         )
 
         SelectorCategoria(
-            categoria = viewModel.categoriaSeleccionada,
-            onCategoriaSeleccionada = { viewModel.categoriaSeleccionada = it }
+            categoria = categoriaSeleccionada,
+            onCategoriaSeleccionada = onCategoriaSeleccionada
         )
 
         TextField(
-            value = viewModel.monto,
-            onValueChange = { viewModel.monto = it },
+            value = monto,
+            onValueChange = onMontoChange,
             label = { Text("Monto") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
@@ -112,7 +116,26 @@ fun SelectorCategoria(
 }
 
 @Composable
-@Preview
-fun FormAppPreview(){
+fun FormApp(viewModel: CrearGastoViewModel) {
+    FormAppContent(
+        descripcion = viewModel.descripcion,
+        onDescripcionChange = { viewModel.descripcion = it },
+        categoriaSeleccionada = viewModel.categoriaSeleccionada,
+        onCategoriaSeleccionada = { viewModel.categoriaSeleccionada = it },
+        monto = viewModel.monto,
+        onMontoChange = { viewModel.monto = it }
+    )
+}
 
+@Preview(showBackground = true)
+@Composable
+fun FormAppPreview() {
+    FormAppContent(
+        descripcion = "Cena en restaurante",
+        onDescripcionChange = {},
+        categoriaSeleccionada = Categorias.ALIMENTACION,
+        onCategoriaSeleccionada = {},
+        monto = "25.00",
+        onMontoChange = {}
+    )
 }

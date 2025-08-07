@@ -23,8 +23,9 @@ import androidx.compose.ui.unit.sp
 import com.example.finanzas.viewmodel.CrearGastoViewModel
 
 
+
 @Composable
-fun CreateGasto(viewModel: CrearGastoViewModel) {
+fun CreateGastoContent(onClick: () -> Unit) {
     val gradientBrush = Brush.horizontalGradient(
         colors = listOf(
             Color(0xFF0078D4),
@@ -46,7 +47,7 @@ fun CreateGasto(viewModel: CrearGastoViewModel) {
                 .clip(RoundedCornerShape(12.dp))
         ) {
             OutlinedButton(
-                onClick = { viewModel.crearGasto() },
+                onClick = onClick,
                 shape = RoundedCornerShape(12.dp),
                 border = null,
                 colors = ButtonDefaults.outlinedButtonColors(
@@ -66,7 +67,13 @@ fun CreateGasto(viewModel: CrearGastoViewModel) {
 }
 
 @Composable
-@Preview
-fun CreateGastoPreview(){
+fun CreateGasto(viewModel: CrearGastoViewModel) {
+    CreateGastoContent(onClick = { viewModel.crearGasto() })
+}
 
+
+@Preview(showBackground = true)
+@Composable
+fun CreateGastoPreview() {
+    CreateGastoContent(onClick = {})
 }
