@@ -1,4 +1,4 @@
-package com.example.finanzas.ui.composition.Card
+package com.example.finanzas.ui.features.Card
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState

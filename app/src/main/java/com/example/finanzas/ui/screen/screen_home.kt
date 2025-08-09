@@ -12,11 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.finanzas.ui.composition.Card.CardRoute
-import com.example.finanzas.ui.composition.CategoryGasto
-import com.example.finanzas.ui.composition.GastoCard
-import com.example.finanzas.ui.composition.GastoCreate.CrearGastoScreen
-import com.example.finanzas.ui.composition.Title.TitleScreen
+import com.example.finanzas.ui.features.Card.CardRoute
+import com.example.finanzas.ui.features.CategoryGasto
+import com.example.finanzas.ui.features.GastoCard
+import com.example.finanzas.ui.features.CreateGasto.CrearGastoScreen
+import com.example.finanzas.ui.features.Title.TitleScreen
 
 @Composable
 fun ScreenHome(){

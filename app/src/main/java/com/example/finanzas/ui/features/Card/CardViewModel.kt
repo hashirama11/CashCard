@@ -1,4 +1,4 @@
-package com.example.finanzas.ui.composition.Card
+package com.example.finanzas.ui.features.Card
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

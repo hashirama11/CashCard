@@ -1,18 +1,17 @@
-package com.example.finanzas.viewmodel
+package com.example.finanzas.ui.features.CreateGasto
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.finanzas.model.categoria.Categorias
 import com.example.finanzas.model.gasto.GastoEntity
 import com.example.finanzas.repository.GastoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import com.example.finanzas.model.categoria.Categorias
-
+import javax.inject.Inject
 
 @HiltViewModel
 class CrearGastoViewModel @Inject constructor(

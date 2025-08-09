@@ -1,4 +1,4 @@
-package com.example.finanzas.ui.composition.GastoCreate
+package com.example.finanzas.ui.features.CreateGasto
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +20,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.finanzas.model.categoria.Categorias
-import com.example.finanzas.viewmodel.CrearGastoViewModel
 import androidx.compose.material3.ExperimentalMaterial3Api
 
 @Composable

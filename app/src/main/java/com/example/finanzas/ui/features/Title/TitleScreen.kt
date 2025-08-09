@@ -1,4 +1,4 @@
-package com.example.finanzas.ui.composition.Title
+package com.example.finanzas.ui.features.Title
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -61,6 +61,6 @@ fun TitleScreen(){
 
 @Composable
 @Preview
-fun TitleAppPreview(){
+fun TitleScreenPreview(){
     TitleScreen()
 }
