@@ -1,4 +1,4 @@
-package com.example.finanzas.ui.features.ListCategory
+package com.example.finanzas.ui.features.ListOperation.components
 
 import com.example.finanzas.model.categoria.Categorias
 

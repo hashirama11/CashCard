@@ -24,6 +24,10 @@ interface GastoDao {
     @Query("SELECT SUM(monto) FROM gastos")
     fun obtenerTotalGastos(): Flow<Double?>
 
+    // Sumar todos los montos por categoría
+    @Query("SELECT SUM(monto) FROM gastos WHERE categoria = :categoria")
+    fun obtenerTotalGastosPorCategoria(categoria: String): Flow<Double?>
+
     // Eliminar todos los gastos de la tabla
     @Query("DELETE FROM gastos")
     suspend fun eliminarTodosLosGastos()

@@ -11,4 +11,6 @@ interface GastoRepository {
     fun obtenerTotalGastos(): Flow<Double?>
     suspend fun eliminarTodosLosGastos()
 
+    fun obtenerTotalGastosPorCategoria(categoria: String): Flow<Double?>
+
 }

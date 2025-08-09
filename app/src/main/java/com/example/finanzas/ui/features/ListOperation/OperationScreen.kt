@@ -1,5 +1,6 @@
 package com.example.finanzas.ui.features.ListOperation
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,9 +19,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.finanzas.R
+import com.example.finanzas.model.gasto.GastoEntity
+
 
 @Composable
-fun OperacionScreen(){
+fun OperacionScreen(
+    gasto : GastoEntity,
+    @DrawableRes icon: Int
+){
 
     Row(
         modifier = Modifier
@@ -33,7 +39,7 @@ fun OperacionScreen(){
                 .background(Color.White)
         ){
             Icon(
-                painter = painterResource(id = R.drawable.shopping),
+                painter = painterResource(icon),
                 contentDescription = "Settings",
                 modifier = Modifier
                     .size(28.dp)
@@ -49,12 +55,12 @@ fun OperacionScreen(){
                 modifier = Modifier
             ) {
                 Text(
-                    text = "Supermercado",
+                    text = gasto.categoria.toString(),
                     color = Color.Black,
                     fontSize = 16.sp
                 )
                 Text(
-                    text = "Comida",
+                    text = gasto.descripcion.toString(),
                     color = Color.Black,
                     fontSize = 8.sp
                 )
@@ -69,12 +75,12 @@ fun OperacionScreen(){
                 modifier = Modifier
             ) {
                 Text(
-                    text = "USD 50.00",
+                    text = gasto.monto.toString(),
                     color = Color.Black,
                     fontSize = 16.sp
                 )
                 Text(
-                    text = "23 abrr",
+                    text = gasto.fecha.toString(),
                     color = Color.Black,
                     fontSize = 8.sp
                 )
@@ -88,5 +94,5 @@ fun OperacionScreen(){
 @Composable
 @Preview
 fun OperacionScreenPreview(){
-    OperacionScreen()
+    // OperacionScreen()
 }

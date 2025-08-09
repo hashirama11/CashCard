@@ -28,5 +28,9 @@ class GastoRepositoryImpl @Inject constructor(
         gastoDao.eliminarTodosLosGastos()
     }
 
+    override fun obtenerTotalGastosPorCategoria(categoria: String): Flow<Double?> {
+        return gastoDao.obtenerTotalGastosPorCategoria(categoria)
+    }
+
 
 }
