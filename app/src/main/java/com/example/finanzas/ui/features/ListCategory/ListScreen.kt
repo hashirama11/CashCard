@@ -1,4 +1,4 @@
-package com.example.finanzas.ui.features
+package com.example.finanzas.ui.features.ListCategory
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

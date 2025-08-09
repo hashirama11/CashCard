@@ -1,4 +1,4 @@
-package com.example.finanzas.ui.features
+package com.example.finanzas.ui.features.ListOperation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.example.finanzas.R
 
 @Composable
-fun GastoCard(){
+fun OperacionScreen(){
 
     Row(
         modifier = Modifier
@@ -87,6 +87,6 @@ fun GastoCard(){
 
 @Composable
 @Preview
-fun GastoCardPreview(){
-    GastoCard()
+fun OperacionScreenPreview(){
+    OperacionScreen()
 }

@@ -1,4 +1,4 @@
-package com.example.finanzas.ui.features
+package com.example.finanzas.ui.features.Fondo
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
