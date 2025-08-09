@@ -22,15 +22,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.finanzas.model.categoria.Categorias
+import com.example.finanzas.model.categoria.Categoria
 
 
 
 
 @Composable
 fun CategoryRail(
-    selected: Categorias?, // Puedes usar esto para marcar la categoría activa
-    onCategorySelected: (Categorias?) -> Unit
+    selected: Categoria?, // null = "TODOS"
+    onCategorySelected: (Categoria?) -> Unit
 ) {
     LazyRow(
         modifier = Modifier
@@ -39,14 +39,17 @@ fun CategoryRail(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(horizontal = 4.dp)
     ) {
+        // Botón para TODOS
         item {
             CategoryButton(
                 text = "TODOS",
-                onClick = { onCategorySelected(null) }
+                onClick = { onCategorySelected(null) },
+                selected = selected == null
             )
         }
 
-        items(Categorias.values()) { categoria ->
+        // Botones para cada categoría del enum
+        items(Categoria.values()) { categoria ->
             val isSelected = categoria == selected
             CategoryButton(
                 text = categoria.name,
@@ -56,6 +59,7 @@ fun CategoryRail(
         }
     }
 }
+
 
 @Composable
 fun CategoryButton(
@@ -113,7 +117,7 @@ fun CategoryGasto() {
             )
         }
 
-        items(Categorias.values()) { categoria ->
+        items(Categoria.values()) { categoria ->
             CategoryButton(
                 text = categoria.name,
                 onClick = { /* Acción para esta categoría */ }

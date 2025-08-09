@@ -1,8 +1,8 @@
 package com.example.finanzas.ui.features.ListOperation.components
 
-import com.example.finanzas.model.categoria.Categorias
+import com.example.finanzas.model.categoria.Categoria
 
 data class ListUiState(
-    val categorias: List<Categorias> = emptyList(),
-    val selectedCategory: Categorias? = null
+    val categorias: List<Categoria> = emptyList(),
+    val selectedCategory: Categoria? = null
 )

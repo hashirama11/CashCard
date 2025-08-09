@@ -17,8 +17,15 @@ class OperationViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OperactionUiState())
-
     val uiState: StateFlow<OperactionUiState> = _uiState
+
+    fun obtenerGastos() {
+        viewModelScope.launch {
+            repository.obtenerGastos().collect { list ->
+                _uiState.value = _uiState.value.copy(gastos = list)
+            }
+        }
+    }
 
     fun obtenerGastosPorCategoria(categoria: String) {
         viewModelScope.launch {
@@ -28,5 +35,4 @@ class OperationViewModel @Inject constructor(
                 }
         }
     }
-
 }

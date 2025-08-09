@@ -1,24 +1,46 @@
 package com.example.finanzas.ui.features.ListOperation
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.finanzas.R
+import com.example.finanzas.model.categoria.Categoria
+import com.example.finanzas.ui.features.ListOperation.components.CategoryRail
 
 @Composable
 fun OperactionRoute(
-    viewModel: OperationViewModel = hiltViewModel(),
-){
-    val state = viewModel.uiState.collectAsState()
+    viewModel: OperationViewModel = hiltViewModel()
+) {
+    val state by viewModel.uiState.collectAsState()
+    var selectedCategory by remember { mutableStateOf<Categoria?>(null) }
 
-    Column() {
-        // 🔹 Lista de gastos
-        state.value.gastos.forEach { gasto ->
+    Column {
+        CategoryRail(
+            selected = selectedCategory,
+            onCategorySelected = { categoria ->
+                selectedCategory = categoria
+                if (categoria == null) {
+                    viewModel.obtenerGastos()
+                } else {
+                    viewModel.obtenerGastosPorCategoria(categoria.name)
+                }
+            }
+        )
+
+        // Mostrar lista de gastos con icono de su categoría
+        state.gastos.forEach { gasto ->
+            val categoriaEnum = gasto.categoria?.let { nombre ->
+                Categoria.values().find { it.name == nombre }
+            }
+
             OperacionScreen(
                 gasto = gasto,
-                icon = state.value.icon
+                icon = categoriaEnum?.icono ?: R.drawable.shopping
             )
         }
     }

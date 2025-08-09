@@ -24,69 +24,46 @@ import com.example.finanzas.model.gasto.GastoEntity
 
 @Composable
 fun OperacionScreen(
-    gasto : GastoEntity,
+    gasto: GastoEntity,
     @DrawableRes icon: Int
-){
-
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp),
+            .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.SpaceAround
     ) {
-        Box(
-            modifier = Modifier
-                .background(Color.White)
-        ){
-            Icon(
-                painter = painterResource(icon),
-                contentDescription = "Settings",
-                modifier = Modifier
-                    .size(28.dp)
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = null,
+            modifier = Modifier.size(28.dp)
+        )
+
+        Column {
+            Text(
+                text = gasto.categoria.orEmpty(),
+                color = Color.Black,
+                fontSize = 16.sp
+            )
+            Text(
+                text = gasto.descripcion.orEmpty(),
+                color = Color.Black,
+                fontSize = 8.sp
             )
         }
 
-        Box(
-
-            modifier = Modifier
-                .background(Color.White)
-        ){
-            Column(
-                modifier = Modifier
-            ) {
-                Text(
-                    text = gasto.categoria.toString(),
-                    color = Color.Black,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = gasto.descripcion.toString(),
-                    color = Color.Black,
-                    fontSize = 8.sp
-                )
-            }
+        Column {
+            Text(
+                text = gasto.monto?.toString().orEmpty(),
+                color = Color.Black,
+                fontSize = 16.sp
+            )
+            Text(
+                text = gasto.fecha.toString(),
+                color = Color.Black,
+                fontSize = 8.sp
+            )
         }
-
-        Box(
-            modifier = Modifier
-                .background(Color.White)
-        ){
-            Column(
-                modifier = Modifier
-            ) {
-                Text(
-                    text = gasto.monto.toString(),
-                    color = Color.Black,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = gasto.fecha.toString(),
-                    color = Color.Black,
-                    fontSize = 8.sp
-                )
-            }
-        }
-
     }
 }
 
