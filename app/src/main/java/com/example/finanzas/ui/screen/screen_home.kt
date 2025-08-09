@@ -12,11 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.finanzas.ui.composition.CardFull
+import com.example.finanzas.ui.composition.Card.CardRoute
 import com.example.finanzas.ui.composition.CategoryGasto
 import com.example.finanzas.ui.composition.GastoCard
 import com.example.finanzas.ui.composition.GastoCreate.CrearGastoScreen
-import com.example.finanzas.ui.composition.TitleApp
+import com.example.finanzas.ui.composition.Title.TitleScreen
 
 @Composable
 fun ScreenHome(){
@@ -27,14 +27,15 @@ fun ScreenHome(){
             .padding(16.dp),
         verticalArrangement = Arrangement.Top
     ){
-        TitleApp()
+        TitleScreen()
         Column(
             modifier = Modifier
                 .padding(4.dp),
         ) {
-            CardFull()
+            CardRoute()
         }
         CrearGastoScreen()
+        Spacer(modifier = Modifier.height(20.dp))
         CategoryGasto()
         Spacer(modifier = Modifier.height(20.dp))
         GastoCard()

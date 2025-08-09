@@ -1,4 +1,4 @@
-package com.example.finanzas.ui.composition
+package com.example.finanzas.ui.composition.Card
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -10,22 +10,17 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.finanzas.viewmodel.CrearGastoViewModel
-import com.example.finanzas.viewmodel.TotalGastoViewModel
 
 @Composable
-fun CardFull(viewModel: TotalGastoViewModel = hiltViewModel()) {
-    val total by viewModel.totalGastos.collectAsState()
-
+fun CardScreen(
+    state: CardUiState
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -57,7 +52,7 @@ fun CardFull(viewModel: TotalGastoViewModel = hiltViewModel()) {
                     fontSize = 16.sp
                 )
                 Text(
-                    text = "USD ${"%,.2f".format(total)}",
+                    text = "USD ${"%,.2f".format(state.totalGastos)}",
                     color = Color.White,
                     fontSize = 36.sp
                 )
@@ -66,8 +61,11 @@ fun CardFull(viewModel: TotalGastoViewModel = hiltViewModel()) {
     }
 }
 
+
 @Composable
 @Preview
-fun CardFullPreview(){
-    CardFull()
+fun CardScreenPreview() {
+    CardScreen(
+        state = CardUiState(totalGastos = 100.0)
+    )
 }

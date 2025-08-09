@@ -1,12 +1,8 @@
-package com.example.finanzas.viewmodel
+package com.example.finanzas.ui.composition.Card
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.example.finanzas.repository.GastoRepository
-import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
+import com.example.finanzas.repository.GastoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +12,7 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class TotalGastoViewModel @Inject constructor(
+class CardViewModel @Inject constructor(
     private val repository: GastoRepository
 ) : ViewModel() {
 
@@ -28,6 +24,4 @@ class TotalGastoViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = 0.0
         )
-
-
 }
