@@ -1,4 +1,4 @@
-package com.example.finanzas.ui.features.CreateGasto
+package com.example.finanzas.ui.features.Form.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,35 +17,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.finanzas.ui.features.CreateGasto.FormViewModel
 
 
 @Composable
-fun CreateGastoContent(onClick: () -> Unit) {
+fun ButtonCreateScreen(state : ButtonCreateUiState, onButtonClicked: () -> Unit) {
     val gradientBrush = Brush.horizontalGradient(
-        colors = listOf(
-            Color(0xFF0078D4),
-            Color(0xFF99CCFF),
-            Color(0xFFE6F2FF)
-        )
+        colors = listOf(Color(0xFF0078D4), Color(0xFF99CCFF), Color(0xFFE6F2FF))
     )
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(end = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(end = 16.dp),
         horizontalArrangement = Arrangement.End
     ) {
         Box(
-            modifier = Modifier
-                .height(48.dp)
+            modifier = Modifier.height(48.dp)
                 .background(brush = gradientBrush, shape = RoundedCornerShape(12.dp))
                 .clip(RoundedCornerShape(12.dp))
         ) {
             OutlinedButton(
-                onClick = onClick,
+                onClick = { onButtonClicked() },
+                enabled = state.enabled,
                 shape = RoundedCornerShape(12.dp),
                 border = null,
                 colors = ButtonDefaults.outlinedButtonColors(
@@ -55,23 +50,11 @@ fun CreateGastoContent(onClick: () -> Unit) {
                 contentPadding = PaddingValues()
             ) {
                 Text(
-                    text = "Agregar Gasto",
+                    text = state.text,
                     fontSize = 16.sp,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
         }
     }
-}
-
-@Composable
-fun CreateGasto(viewModel: CrearGastoViewModel) {
-    CreateGastoContent(onClick = { viewModel.crearGasto() })
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun CreateGastoPreview() {
-    CreateGastoContent(onClick = {})
 }

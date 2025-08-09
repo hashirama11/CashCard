@@ -21,19 +21,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.finanzas.model.categoria.Categorias
 import androidx.compose.material3.ExperimentalMaterial3Api
+import com.example.finanzas.ui.features.Form.FormUiState
 
 @Composable
-fun FormAppContent(
-    descripcion: String,
+fun FormScreen(
+    state : FormUiState,
     onDescripcionChange: (String) -> Unit,
-    categoriaSeleccionada: Categorias,
     onCategoriaSeleccionada: (Categorias) -> Unit,
-    monto: String,
     onMontoChange: (String) -> Unit
 ) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         TextField(
-            value = descripcion,
+            value = state.descripcion,
             onValueChange = onDescripcionChange,
             label = { Text("Descripción") },
             modifier = Modifier.fillMaxWidth(),
@@ -47,12 +46,12 @@ fun FormAppContent(
         )
 
         SelectorCategoria(
-            categoria = categoriaSeleccionada,
+            categoria = state.categoriaSeleccionada,
             onCategoriaSeleccionada = onCategoriaSeleccionada
         )
 
         TextField(
-            value = monto,
+            value = state.monto,
             onValueChange = onMontoChange,
             label = { Text("Monto") },
             modifier = Modifier.fillMaxWidth(),
@@ -114,27 +113,19 @@ fun SelectorCategoria(
     }
 }
 
-@Composable
-fun FormApp(viewModel: CrearGastoViewModel) {
-    FormAppContent(
-        descripcion = viewModel.descripcion,
-        onDescripcionChange = { viewModel.descripcion = it },
-        categoriaSeleccionada = viewModel.categoriaSeleccionada,
-        onCategoriaSeleccionada = { viewModel.categoriaSeleccionada = it },
-        monto = viewModel.monto,
-        onMontoChange = { viewModel.monto = it }
-    )
-}
+
 
 @Preview(showBackground = true)
 @Composable
-fun FormAppPreview() {
-    FormAppContent(
-        descripcion = "Cena en restaurante",
+fun FormScrenPreview() {
+    FormScreen(
+        state = FormUiState(
+            descripcion = "",
+            categoriaSeleccionada = Categorias.ALIMENTACION,
+            monto = ""
+        ),
         onDescripcionChange = {},
-        categoriaSeleccionada = Categorias.ALIMENTACION,
         onCategoriaSeleccionada = {},
-        monto = "25.00",
         onMontoChange = {}
     )
 }
