@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,28 +33,42 @@ fun OperacionScreen(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceAround
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        // Icono con ancho fijo
         Icon(
             painter = painterResource(id = icon),
             contentDescription = null,
-            modifier = Modifier.size(28.dp)
+            modifier = Modifier
+                .size(28.dp)
+                .padding(end = 8.dp)
         )
 
-        Column {
+        // Columna central ocupa todo el espacio disponible
+        Column(
+            modifier = Modifier
+                .weight(1f) // Se expande para ocupar lo que queda
+        ) {
             Text(
                 text = gasto.categoria.orEmpty(),
                 color = Color.Black,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = gasto.descripcion.orEmpty(),
                 color = Color.Black,
-                fontSize = 8.sp
+                fontSize = 8.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
 
-        Column {
+        // Columna de monto y fecha con ancho fijo
+        Column(
+            horizontalAlignment = Alignment.End
+        ) {
             Text(
                 text = gasto.monto?.toString().orEmpty(),
                 color = Color.Black,
@@ -65,6 +81,7 @@ fun OperacionScreen(
             )
         }
     }
+
 }
 
 

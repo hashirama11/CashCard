@@ -55,7 +55,7 @@ fun ScreenHome(
                 formViewModel.crearGasto()
             }
         )
-        Spacer(modifier = Modifier.padding(20.dp))
+        Spacer(modifier = Modifier.padding(16.dp))
 
         // Ahora OperactionRoute recibe el estado y el callback
         OperactionRoute(

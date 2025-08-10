@@ -27,7 +27,7 @@ fun OperactionRoute(
     val state by viewModel.uiState.collectAsState()
 
     Column {
-        Spacer(modifier = Modifier.padding(16.dp))
+        Spacer(modifier = Modifier.padding(6.dp))
         CategoryRail(
             selected = selectedCategory,
             onCategorySelected = { categoria ->
@@ -39,6 +39,7 @@ fun OperactionRoute(
                 }
             }
         )
+        Spacer(modifier = Modifier.padding(8.dp))
 
         // Mostrar lista de gastos con icono de su categoría
         LazyColumn(
