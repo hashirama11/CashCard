@@ -18,7 +18,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finanzas.model.categoria.Categoria
-import com.example.finanzas.model.gasto.GastoEntity
 import com.example.finanzas.ui.features.Card.CardRoute
 import com.example.finanzas.ui.features.CreateGasto.FormViewModel
 import com.example.finanzas.ui.features.Form.FormRoute
@@ -34,8 +33,6 @@ fun ScreenHome(
     operationViewModel: OperationViewModel = hiltViewModel(),
     formViewModel: FormViewModel = hiltViewModel(),
 ){
-    val state = operationViewModel.uiState.collectAsState()
-
     var categoriaSeleccionada by remember { mutableStateOf<Categoria?>(null) }
 
     Column(
@@ -45,11 +42,12 @@ fun ScreenHome(
             .padding(16.dp),
         verticalArrangement = Arrangement.Top
     ){
+        Spacer(modifier = Modifier.padding(20.dp))
         TitleScreen()
         Spacer(modifier = Modifier.padding(16.dp))
         CardRoute()
         Spacer(modifier = Modifier.padding(16.dp))
-        FormRoute( formViewModel)
+        FormRoute(formViewModel)
         Spacer(modifier = Modifier.padding(16.dp))
         ButtonCreateRoute(
             state = ButtonCreateUiState(text = "Crear gasto"),
@@ -57,23 +55,16 @@ fun ScreenHome(
                 formViewModel.crearGasto()
             }
         )
-        Spacer(modifier = Modifier.padding(16.dp))
+        Spacer(modifier = Modifier.padding(20.dp))
 
-        CategoryRail(
-            selected = categoriaSeleccionada,
-            onCategorySelected = { categoria ->
-                categoriaSeleccionada = categoria
-                if (categoria == null) {
-                    operationViewModel.obtenerGastos() // este método lo debes tener en OperationViewModel
-                } else {
-                    operationViewModel.obtenerGastosPorCategoria(categoria.name)
-                }
-            }
+        // Ahora OperactionRoute recibe el estado y el callback
+        OperactionRoute(
+            selectedCategory = categoriaSeleccionada,
+            onCategorySelected = { categoriaSeleccionada = it }
         )
-        Spacer(modifier = Modifier.padding(16.dp))
-        OperactionRoute()
     }
 }
+
 
 
 @Composable

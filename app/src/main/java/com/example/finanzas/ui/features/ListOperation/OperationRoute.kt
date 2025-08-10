@@ -14,16 +14,17 @@ import com.example.finanzas.ui.features.ListOperation.components.CategoryRail
 
 @Composable
 fun OperactionRoute(
+    selectedCategory: Categoria?,
+    onCategorySelected: (Categoria?) -> Unit,
     viewModel: OperationViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
-    var selectedCategory by remember { mutableStateOf<Categoria?>(null) }
 
     Column {
         CategoryRail(
             selected = selectedCategory,
             onCategorySelected = { categoria ->
-                selectedCategory = categoria
+                onCategorySelected(categoria)
                 if (categoria == null) {
                     viewModel.obtenerGastos()
                 } else {
@@ -45,3 +46,4 @@ fun OperactionRoute(
         }
     }
 }
+
