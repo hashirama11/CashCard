@@ -1,10 +1,8 @@
 package com.example.finanzas.ui.features.ListOperation
 
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.finanzas.repository.GastoRepository
+import com.example.finanzas.repository.gasto.GastoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

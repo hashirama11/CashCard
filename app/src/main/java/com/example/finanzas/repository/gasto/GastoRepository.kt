@@ -1,4 +1,4 @@
-package com.example.finanzas.repository
+package com.example.finanzas.repository.gasto
 
 import com.example.finanzas.model.gasto.GastoEntity
 import kotlinx.coroutines.flow.Flow

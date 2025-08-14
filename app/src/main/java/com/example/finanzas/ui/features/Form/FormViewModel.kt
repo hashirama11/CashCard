@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finanzas.model.categoria.CategoriaEntity
 import com.example.finanzas.model.gasto.GastoEntity
-import com.example.finanzas.repository.GastoRepository
+import com.example.finanzas.repository.gasto.GastoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate

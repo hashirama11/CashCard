@@ -1,4 +1,4 @@
-package com.example.finanzas.repository
+package com.example.finanzas.repository.categoria
 
 import com.example.finanzas.model.categoria.CategoriaDao
 import com.example.finanzas.model.categoria.CategoriaEntity

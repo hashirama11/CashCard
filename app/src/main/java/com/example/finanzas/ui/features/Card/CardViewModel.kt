@@ -2,7 +2,7 @@ package com.example.finanzas.ui.features.Card
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.finanzas.repository.GastoRepository
+import com.example.finanzas.repository.gasto.GastoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.example.finanzas.model.AppDatabase
 import com.example.finanzas.model.categoria.CategoriaDao
 import com.example.finanzas.model.gasto.GastoDao
+import com.example.finanzas.model.user.UserDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,7 +23,9 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "app_database"
-        ).build()
+        )
+            .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
+            .build()
     }
 
     @Provides
@@ -34,5 +37,11 @@ object DatabaseModule {
     fun provideCategoriaDao(db: AppDatabase) : CategoriaDao {
         return db.categoriaDao()
     }
+
+    @Provides
+    fun provideUserDao(db : AppDatabase) : UserDao {
+        return db.userDao()
+    }
+
 
 }
