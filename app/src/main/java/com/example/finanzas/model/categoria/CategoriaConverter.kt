@@ -5,8 +5,8 @@ import androidx.room.TypeConverter
 
 class CategoriaConverter {
     @TypeConverter
-    fun fromCategoria(categoria: Categoria): String = categoria.name
+    fun fromCategoria(categoria: CategoriaEntity): String = categoria.name
 
     @TypeConverter
-    fun toCategoria(nombre: String): Categoria = Categoria.valueOf(nombre)
+    fun toCategoria(nombre: String): CategoriaEntity = CategoriaEntity.valueOf(nombre)
 }

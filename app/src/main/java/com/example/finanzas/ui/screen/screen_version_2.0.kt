@@ -58,7 +58,7 @@ fun TopSectionGreen() {
     ) {
         Column {
             Text("Versión 2.0", fontSize = 16.sp, color = Color.Gray)
-            Text("Hola Arianna", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1B5E20))
+            Text("Hola Ariadne Gasta pues", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1B5E20))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             CircleButtonGreen(painterResource(id = R.drawable.search))

@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.finanzas.model.categoria.Categoria
+import com.example.finanzas.model.categoria.CategoriaEntity
 import com.example.finanzas.model.gasto.GastoEntity
 import com.example.finanzas.repository.GastoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +19,7 @@ class FormViewModel @Inject constructor(
 ) : ViewModel() {
 
     var descripcion by mutableStateOf("")
-    var categoriaSeleccionada by mutableStateOf(Categoria.OTROS)
+    var categoriaSeleccionada by mutableStateOf(CategoriaEntity.OTROS)
     var monto by mutableStateOf("")
     var fecha by mutableStateOf(LocalDate.now())
 
@@ -28,7 +28,7 @@ class FormViewModel @Inject constructor(
     fun crearGasto() {
         val montoDouble = monto.toDoubleOrNull()
 
-        if (descripcion.isBlank() || montoDouble == null || categoriaSeleccionada == Categoria.OTROS) {
+        if (descripcion.isBlank() || montoDouble == null || categoriaSeleccionada == CategoriaEntity.OTROS) {
             mensajeConfirmacion = "❌ Todos los campos son obligatorios"
             return
         }
@@ -50,7 +50,7 @@ class FormViewModel @Inject constructor(
 
     private fun limpiarCampos() {
         descripcion = ""
-        categoriaSeleccionada = Categoria.OTROS
+        categoriaSeleccionada = CategoriaEntity.OTROS
         monto = ""
         fecha = LocalDate.now()
     }

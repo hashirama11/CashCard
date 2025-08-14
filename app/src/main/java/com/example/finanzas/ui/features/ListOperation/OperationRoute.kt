@@ -15,13 +15,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finanzas.R
-import com.example.finanzas.model.categoria.Categoria
+import com.example.finanzas.model.categoria.CategoriaEntity
 import com.example.finanzas.ui.features.ListOperation.components.CategoryRail
 
 @Composable
 fun OperactionRoute(
-    selectedCategory: Categoria?,
-    onCategorySelected: (Categoria?) -> Unit,
+    selectedCategory: CategoriaEntity?,
+    onCategorySelected: (CategoriaEntity?) -> Unit,
     viewModel: OperationViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -49,7 +49,7 @@ fun OperactionRoute(
         ) {
             items(state.gastos) { gasto ->
                 val categoriaEnum = gasto.categoria?.let { nombre ->
-                    Categoria.values().find { it.name == nombre }
+                    CategoriaEntity.values().find { it.name == nombre }
                 }
 
                 OperacionScreen(

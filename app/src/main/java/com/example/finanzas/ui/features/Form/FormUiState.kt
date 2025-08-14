@@ -1,9 +1,9 @@
 package com.example.finanzas.ui.features.Form
 
-import com.example.finanzas.model.categoria.Categoria
+import com.example.finanzas.model.categoria.CategoriaEntity
 
 data class FormUiState(
     val descripcion : String = "",
-    val categoriaSeleccionada: Categoria = Categoria.ALIMENTACION,
+    val categoriaSeleccionada: CategoriaEntity = CategoriaEntity.ALIMENTACION,
     val monto: String = "",
 )

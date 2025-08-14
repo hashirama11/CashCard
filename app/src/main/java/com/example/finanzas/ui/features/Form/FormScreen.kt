@@ -20,14 +20,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.ExperimentalMaterial3Api
-import com.example.finanzas.model.categoria.Categoria
+import com.example.finanzas.model.categoria.CategoriaEntity
 import com.example.finanzas.ui.features.Form.FormUiState
 
 @Composable
 fun FormScreen(
     state : FormUiState,
     onDescripcionChange: (String) -> Unit,
-    onCategoriaSeleccionada: (Categoria) -> Unit,
+    onCategoriaSeleccionada: (CategoriaEntity) -> Unit,
     onMontoChange: (String) -> Unit
 ) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -70,8 +70,8 @@ fun FormScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectorCategoria(
-    categoria: Categoria,
-    onCategoriaSeleccionada: (Categoria) -> Unit
+    categoria: CategoriaEntity,
+    onCategoriaSeleccionada: (CategoriaEntity) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -100,7 +100,7 @@ fun SelectorCategoria(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            Categoria.values().forEach { categoriaEnum ->
+            CategoriaEntity.values().forEach { categoriaEnum ->
                 DropdownMenuItem(
                     text = { Text(categoriaEnum.name.lowercase().replaceFirstChar { it.uppercase() }) },
                     onClick = {
@@ -121,7 +121,7 @@ fun FormScrenPreview() {
     FormScreen(
         state = FormUiState(
             descripcion = "",
-            categoriaSeleccionada = Categoria.ALIMENTACION,
+            categoriaSeleccionada = CategoriaEntity.ALIMENTACION,
             monto = ""
         ),
         onDescripcionChange = {},

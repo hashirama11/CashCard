@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.finanzas.model.categoria.Categoria
+import com.example.finanzas.model.categoria.CategoriaEntity
 import com.example.finanzas.ui.features.Card.CardRoute
 import com.example.finanzas.ui.features.CreateGasto.FormViewModel
 import com.example.finanzas.ui.features.Form.FormRoute
@@ -25,7 +24,6 @@ import com.example.finanzas.ui.features.Form.components.ButtonCreateRoute
 import com.example.finanzas.ui.features.Form.components.ButtonCreateUiState
 import com.example.finanzas.ui.features.ListOperation.OperactionRoute
 import com.example.finanzas.ui.features.ListOperation.OperationViewModel
-import com.example.finanzas.ui.features.ListOperation.components.CategoryRail
 import com.example.finanzas.ui.features.Title.TitleScreen
 
 @Composable
@@ -33,7 +31,7 @@ fun ScreenHome(
     operationViewModel: OperationViewModel = hiltViewModel(),
     formViewModel: FormViewModel = hiltViewModel(),
 ){
-    var categoriaSeleccionada by remember { mutableStateOf<Categoria?>(null) }
+    var categoriaSeleccionada by remember { mutableStateOf<CategoriaEntity?>(null) }
 
     Column(
         modifier = Modifier

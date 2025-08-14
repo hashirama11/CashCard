@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
@@ -22,15 +21,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.finanzas.model.categoria.Categoria
+import com.example.finanzas.model.categoria.CategoriaEntity
 
 
 
 
 @Composable
 fun CategoryRail(
-    selected: Categoria?, // null = "TODOS"
-    onCategorySelected: (Categoria?) -> Unit
+    selected: CategoriaEntity?, // null = "TODOS"
+    onCategorySelected: (CategoriaEntity?) -> Unit
 ) {
     LazyRow(
         modifier = Modifier
@@ -49,7 +48,7 @@ fun CategoryRail(
         }
 
         // Botones para cada categoría del enum
-        items(Categoria.values()) { categoria ->
+        items(CategoriaEntity.values()) { categoria ->
             val isSelected = categoria == selected
             CategoryButton(
                 text = categoria.name,
@@ -117,7 +116,7 @@ fun CategoryGasto() {
             )
         }
 
-        items(Categoria.values()) { categoria ->
+        items(CategoriaEntity.values()) { categoria ->
             CategoryButton(
                 text = categoria.name,
                 onClick = { /* Acción para esta categoría */ }
