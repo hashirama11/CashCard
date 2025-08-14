@@ -5,7 +5,6 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.finanzas.model.categoria.CategoriaConverter
 import com.example.finanzas.model.categoria.CategoriaDao
 import com.example.finanzas.model.gasto.GastoDao
 import com.example.finanzas.model.gasto.GastoEntity
@@ -15,7 +14,7 @@ import com.example.finanzas.model.categoria.CategoriaEntity
 @Database(entities = [GastoEntity::class,
                      CategoriaEntity::class],
     version = 2)
-@TypeConverters(LocalDateConverter::class, CategoriaConverter::class)
+@TypeConverters(LocalDateConverter::class)
 abstract class AppDatabase : RoomDatabase() {
 
     // Declaracion de los DAO
