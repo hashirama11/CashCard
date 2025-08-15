@@ -16,6 +16,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
@@ -24,24 +25,16 @@ object DatabaseModule {
             AppDatabase::class.java,
             "app_database"
         )
-            .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
+            .fallbackToDestructiveMigration()
             .build()
     }
 
     @Provides
-    fun provideGastoDao(db: AppDatabase) : GastoDao {
-        return db.gastoDao()
-    }
+    fun provideGastoDao(db: AppDatabase): GastoDao = db.gastoDao()
 
     @Provides
-    fun provideCategoriaDao(db: AppDatabase) : CategoriaDao {
-        return db.categoriaDao()
-    }
+    fun provideCategoriaDao(db: AppDatabase): CategoriaDao = db.categoriaDao()
 
     @Provides
-    fun provideUserDao(db : AppDatabase) : UserDao {
-        return db.userDao()
-    }
-
-
+    fun provideUserDao(db: AppDatabase): UserDao = db.userDao()
 }

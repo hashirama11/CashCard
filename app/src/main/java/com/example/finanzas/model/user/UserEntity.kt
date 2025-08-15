@@ -6,8 +6,8 @@ import java.time.LocalDate
 
 @Entity(tableName = "user")
 class UserEntity {
-    @PrimaryKey(autoGenerate = true)
-    var id: Int = 0
+    @PrimaryKey
+    var id: Int = 1
     var name: String = ""
     var email: String = ""
     var password: String = ""
