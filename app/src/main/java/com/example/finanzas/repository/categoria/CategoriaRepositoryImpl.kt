@@ -2,6 +2,7 @@ package com.example.finanzas.repository.categoria
 
 import com.example.finanzas.model.categoria.CategoriaDao
 import com.example.finanzas.model.categoria.CategoriaEntity
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class CategoriaRepositoryImpl @Inject constructor(
@@ -16,6 +17,10 @@ class CategoriaRepositoryImpl @Inject constructor(
         return categoriaDao.obtenerTodasLasCategorias()
     }
 
+    override fun obtenerTodasLasCategoriasFlow(): Flow<List<CategoriaEntity>> {
+        return categoriaDao.obtenerTodasLasCategoriasFlow()
+    }
+
     override suspend fun obtenerCategoriaPorId(id: Int): CategoriaEntity? {
         return categoriaDao.obtenerCategoriaPorId(id)
     }
@@ -27,6 +32,4 @@ class CategoriaRepositoryImpl @Inject constructor(
     override suspend fun eliminarCategoria(categoria: CategoriaEntity) {
         categoriaDao.eliminarCategoria(categoria)
     }
-
-
 }

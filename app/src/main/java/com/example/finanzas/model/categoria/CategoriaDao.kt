@@ -9,24 +9,27 @@ import androidx.room.Update
 @Dao
 interface CategoriaDao {
 
-    // Crear una categoria
+    // Crear una categoría
     @Insert
-    fun crearCategoria(categoria: CategoriaEntity)
+    suspend fun crearCategoria(categoria: CategoriaEntity)
 
-    // Leer todas las categorias
+    // Leer todas las categorías (una sola vez)
     @Query("SELECT * FROM categorias")
-    fun obtenerTodasLasCategorias(): List<CategoriaEntity>
+    suspend fun obtenerTodasLasCategorias(): List<CategoriaEntity>
 
-    // Leer una categoria por su ID
+    // Leer todas las categorías de forma reactiva
+    @Query("SELECT * FROM categorias")
+    fun obtenerTodasLasCategoriasFlow(): Flow<List<CategoriaEntity>>
+
+    // Leer una categoría por su ID
     @Query("SELECT * FROM categorias WHERE id = :id")
-    fun obtenerCategoriaPorId(id: Int): CategoriaEntity?
+    suspend fun obtenerCategoriaPorId(id: Int): CategoriaEntity?
 
-    // Actualizar una categoria
+    // Actualizar una categoría
     @Update
-    fun actualizarCategoria(categoria: CategoriaEntity)
+    suspend fun actualizarCategoria(categoria: CategoriaEntity)
 
-    // Eliminar una categoria
+    // Eliminar una categoría
     @Delete
-    fun eliminarCategoria(categoria: CategoriaEntity)
-
+    suspend fun eliminarCategoria(categoria: CategoriaEntity)
 }
