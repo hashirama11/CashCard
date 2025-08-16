@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -158,13 +160,18 @@ fun PieChartWithPercentages(
 fun LegendList(
     categorias: List<CategoriaConGasto>,
     colors: List<Color>,
-    total: Double
+    total: Double,
+    modifier: Modifier = Modifier
 ) {
-    Column(
+    LazyColumn( // 👈 reemplazamos Column por LazyColumn
+        modifier = modifier
+            .heightIn(max = 200.dp), // 👈 límite de altura (ej: 200dp)
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        categorias.forEachIndexed { index, categoria ->
+        items(categorias.size) { index ->
+            val categoria = categorias[index]
             val porcentaje = if (total > 0) (categoria.total / total * 100) else 0.0
+
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -183,6 +190,7 @@ fun LegendList(
         }
     }
 }
+
 
 
 
