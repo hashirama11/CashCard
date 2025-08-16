@@ -39,6 +39,9 @@ import com.example.finanzas.ui.features.welcome_user.WelcomeUiState
 @Composable
 fun HomeRoute(
     onAgregarGasto: () -> Unit,
+    onUsersClick: () -> Unit,
+    onStatsClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     viewModelWelcome: WelcomeViewModel = hiltViewModel(),
     viewModelDashboard: DashboardViewModel = hiltViewModel(),
     viewModelStatistics: StatisticsViewModel = hiltViewModel()
@@ -47,7 +50,6 @@ fun HomeRoute(
     val uiStateDashboard by viewModelDashboard.state.collectAsState()
     val uiStateStatistics by viewModelStatistics.state.collectAsState()
 
-    // Cargar datos iniciales
     LaunchedEffect(Unit) {
         viewModelWelcome.getUser()
         viewModelDashboard.obtenerSaldoActual()
@@ -70,10 +72,10 @@ fun HomeRoute(
         floatingActionButtonPosition = FabPosition.Center,
         bottomBar = {
             AppNavigationBar(
-                onHomeClick = { /* Aquí luego iría navegación al home */ },
-                onStatsClick = { /* Navegar a estadísticas */ },
-                onUsersClick = { /* Navegar a usuarios */ },
-                onSettingsClick = { /* Navegar a ajustes */ }
+                onHomeClick = { /* ya estamos aquí */ },
+                onStatsClick = onStatsClick,
+                onUsersClick = onUsersClick,
+                onSettingsClick = onSettingsClick
             )
         }
     ) { padding ->
@@ -92,6 +94,7 @@ fun HomeRoute(
     }
 }
 
+
 @Composable
 fun AppNavigationBar(
     onHomeClick: () -> Unit,
@@ -105,7 +108,7 @@ fun AppNavigationBar(
     ) {
         NavigationBarItem(
             icon = { Icon(painterResource(id = R.drawable.home), contentDescription = "Home") },
-            selected = true,
+            selected = false,
             onClick = onHomeClick
         )
         NavigationBarItem(
@@ -128,7 +131,7 @@ fun AppNavigationBar(
 
 
 @Composable
-@Preview
+@Preview(showBackground = true)
 fun HomeScreenPreview() {
     HomeScreen(
         welcomeState = WelcomeUiState(
@@ -145,16 +148,25 @@ fun HomeScreenPreview() {
                 CategoriaConGasto("Otros", 100.0)
             )
         ),
-        onAgregarGasto = {}
+        onAgregarGasto = { /* no-op en preview */ },
+        onHomeClick = { /* no-op */ },
+        onStatsClick = { /* no-op */ },
+        onUsersClick = { /* no-op */ },
+        onSettingsClick = { /* no-op */ }
     )
 }
+
 
 @Composable
 fun HomeScreen(
     welcomeState: WelcomeUiState,
     dashboardState: DashboardUiState,
     statisticsState: StatisticsUiState,
-    onAgregarGasto: () -> Unit
+    onAgregarGasto: () -> Unit,
+    onHomeClick: () -> Unit,
+    onStatsClick: () -> Unit,
+    onUsersClick: () -> Unit,
+    onSettingsClick: () -> Unit
 ) {
     Scaffold(
         floatingActionButton = {
@@ -173,10 +185,10 @@ fun HomeScreen(
         floatingActionButtonPosition = FabPosition.Center,
         bottomBar = {
             AppNavigationBar(
-                onHomeClick = {},
-                onStatsClick = {},
-                onUsersClick = {},
-                onSettingsClick = {}
+                onHomeClick = onHomeClick,
+                onStatsClick = onStatsClick,
+                onUsersClick = onUsersClick,
+                onSettingsClick = onSettingsClick
             )
         }
     ) { padding ->

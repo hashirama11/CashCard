@@ -1,4 +1,5 @@
-package com.example.finanzas.ui.features.centerButton
+package com.example.finanzas.ui.features.profile.category.update
+
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -7,20 +8,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.finanzas.ui.features.profile.category.create.CategoriaCreateViewModel
-import com.example.finanzas.ui.features.profile.category.create.CategoryCreateScreen
+import com.example.finanzas.model.categoria.CategoriaEntity
 import com.example.finanzas.ui.screen.AppNavigationBar
 
 @Composable
-fun CategoryCreateRoute(
+fun CategoryUpdateRoute(
     onHomeClick: () -> Unit,
     onStatsClick: () -> Unit,
     onUsersClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    viewModel: CategoriaCreateViewModel = hiltViewModel()
+    viewModel: CategoriaUpdateViewModel = hiltViewModel()
 ) {
+    val categorias by viewModel.categorias.collectAsState()
     val nombre by viewModel.nombre.collectAsState()
-    val icono by viewModel.icono.collectAsState()
+    val categoriaSeleccionada by viewModel.categoriaSeleccionada.collectAsState()
 
     Scaffold(
         bottomBar = {
@@ -32,12 +33,15 @@ fun CategoryCreateRoute(
             )
         }
     ) { padding ->
-        CategoryCreateScreen(
-            modifier = Modifier.padding(padding),
+        CategoryUpdateScreen(
+            categorias = categorias,
+            categoriaSeleccionada = categoriaSeleccionada,
+            onCategoriaClick = { viewModel.onCategoriaSeleccionada(it) },
             nombre = nombre,
-            onNombreChanged = viewModel::onNombreChanged,
-            icono = icono,
-            onGuardarClick = viewModel::guardarCategoria
+            onNombreChanged = { viewModel.onNombreChanged(it) },
+            onActualizarClick = { viewModel.actualizarCategoria() },
+            modifier = Modifier.padding(padding)
         )
     }
 }
+

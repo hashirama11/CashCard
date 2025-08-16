@@ -1,27 +1,27 @@
-package com.example.finanzas.ui.features.centerButton
+package com.example.finanzas.ui.features.profile
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.finanzas.ui.features.profile.category.create.CategoriaCreateViewModel
-import com.example.finanzas.ui.features.profile.category.create.CategoryCreateScreen
 import com.example.finanzas.ui.screen.AppNavigationBar
 
 @Composable
-fun CategoryCreateRoute(
+fun UserProfileRoute(
     onHomeClick: () -> Unit,
     onStatsClick: () -> Unit,
     onUsersClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    viewModel: CategoriaCreateViewModel = hiltViewModel()
+    onAddCategoryClick: () -> Unit,
+    onUpdateCategoryClick: () -> Unit,
+    onDeleteCategoryClick: () -> Unit,
+    onResetDatabaseClick: () -> Unit
 ) {
-    val nombre by viewModel.nombre.collectAsState()
-    val icono by viewModel.icono.collectAsState()
-
     Scaffold(
         bottomBar = {
             AppNavigationBar(
@@ -32,12 +32,11 @@ fun CategoryCreateRoute(
             )
         }
     ) { padding ->
-        CategoryCreateScreen(
+        UserProfileScreen(
             modifier = Modifier.padding(padding),
-            nombre = nombre,
-            onNombreChanged = viewModel::onNombreChanged,
-            icono = icono,
-            onGuardarClick = viewModel::guardarCategoria
+            onAddCategoryClick = onAddCategoryClick,
+            onDeleteCategoryClick = onDeleteCategoryClick,
+            onResetDatabaseClick = onResetDatabaseClick
         )
     }
 }

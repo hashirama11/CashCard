@@ -1,4 +1,4 @@
-package com.example.finanzas.ui.features.centerButton
+package com.example.finanzas.ui.features.profile.category.create
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -7,8 +7,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.finanzas.ui.features.profile.category.create.CategoriaCreateViewModel
-import com.example.finanzas.ui.features.profile.category.create.CategoryCreateScreen
 import com.example.finanzas.ui.screen.AppNavigationBar
 
 @Composable
@@ -41,3 +39,4 @@ fun CategoryCreateRoute(
         )
     }
 }
+
