@@ -143,7 +143,7 @@ fun UserProfileScreen(
         ) {
             Icon(Icons.Default.Refresh, contentDescription = "Restablecer base de datos", tint = Color.White)
             Spacer(Modifier.width(8.dp))
-            Text("Restablecer base de datos de gastos", color = Color.White)
+            Text("Restablecer los Gastos", color = Color.White)
         }
     }
 

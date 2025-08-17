@@ -23,20 +23,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.finanzas.ui.screen.PieChartSampleGreen
 
 // Clase para representar el estado de la pantalla de estadísticas
 @Composable
 fun StatisticsScreen(
     state: StatisticsUiState
 ) {
+    /*
+    * Este compose unifica el compose lista y compose torata. Para crear el compose dashboard principal
+    */
+
     val totalGastos = state.categoriasConGastos.sumOf { it.total }
     val proportions = if (totalGastos > 0) {
         state.categoriasConGastos.map { (it.total / totalGastos).toFloat() }
@@ -90,7 +92,7 @@ fun StatisticsScreen(
                 if (proportions.isNotEmpty()) {
                     Row(
                         modifier = Modifier.fillMaxSize(),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        horizontalArrangement = Arrangement.spacedBy(32.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         PieChartWithPercentages(
@@ -119,6 +121,9 @@ fun PieChartWithPercentages(
     proportions: List<Float>,
     modifier: Modifier = Modifier
 ) {
+    /*
+    * Este compose es la torta estadistica que representa una distribucion porcentual de gastos ordenados por categorias
+    */
     Canvas(modifier = modifier.size(150.dp)) {
         var startAngle = -90f
         proportions.forEachIndexed { index, proportion ->
@@ -158,14 +163,17 @@ fun PieChartWithPercentages(
 
 @Composable
 fun LegendList(
+    /*
+    * Este compose es una lista dinamica de catgorias de Gastos
+    */
     categorias: List<CategoriaConGasto>,
     colors: List<Color>,
     total: Double,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn( // 👈 reemplazamos Column por LazyColumn
+    LazyColumn(
         modifier = modifier
-            .heightIn(max = 200.dp), // 👈 límite de altura (ej: 200dp)
+            .heightIn(max = 200.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         items(categorias.size) { index ->

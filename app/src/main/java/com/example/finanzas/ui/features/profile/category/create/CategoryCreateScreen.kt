@@ -56,8 +56,8 @@ fun CategoryCreateScreen(
 
         // Campo nombre categoría
         OutlinedTextField(
-            value = nombre, // 👈 viene del estado del VM
-            onValueChange = onNombreChanged, // 👈 actualiza en VM
+            value = nombre,
+            onValueChange = onNombreChanged,
             label = { Text("Nombre de la categoría") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
@@ -89,7 +89,7 @@ fun CategoryCreateScreen(
 
         // Botón guardar
         Button(
-            onClick = onGuardarClick, // 👈 llama al VM
+            onClick = onGuardarClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
