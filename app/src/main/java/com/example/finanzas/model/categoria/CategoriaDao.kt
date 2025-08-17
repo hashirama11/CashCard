@@ -3,6 +3,7 @@ package com.example.finanzas.model.categoria
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
@@ -13,6 +14,10 @@ interface CategoriaDao {
     // Crear una categoría
     @Insert
     suspend fun crearCategoria(categoria: CategoriaEntity)
+
+    // 🔹 Crear varias categorías (para precarga inicial)
+    @Insert
+    suspend fun crearCategorias(categorias: List<CategoriaEntity>)
 
     // Leer todas las categorías (una sola vez)
     @Query("SELECT * FROM categorias")

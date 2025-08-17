@@ -17,6 +17,10 @@ class CategoriaRepositoryImpl @Inject constructor(
         return categoriaDao.obtenerTodasLasCategorias()
     }
 
+    override suspend fun crearCategorias(categorias: List<CategoriaEntity>) { // 👈 nuevo
+        categoriaDao.crearCategorias(categorias)
+    }
+
     override fun obtenerTodasLasCategoriasFlow(): Flow<List<CategoriaEntity>> {
         return categoriaDao.obtenerTodasLasCategoriasFlow()
     }
