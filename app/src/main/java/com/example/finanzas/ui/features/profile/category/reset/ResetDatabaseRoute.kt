@@ -1,7 +1,9 @@
 package com.example.finanzas.ui.features.profile.category.reset
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import com.example.finanzas.ui.screen.AppNavigationBar
 
 @Composable
@@ -22,10 +24,11 @@ fun ResetDatabaseRoute(
                 onSettingsClick = onSettingsClick
             )
         }
-    ) { _ ->
+    ) { paddingValues ->
         ResetDatabaseScreen(
             onConfirmReset = onConfirmReset,
-            onDismiss = onDismiss
+            onDismiss = onDismiss,
+            modifier = Modifier.padding(paddingValues)
         )
     }
 }

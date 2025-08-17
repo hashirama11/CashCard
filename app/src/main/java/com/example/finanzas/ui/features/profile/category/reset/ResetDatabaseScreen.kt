@@ -15,10 +15,11 @@ import androidx.compose.ui.text.font.FontWeight
 @Composable
 fun ResetDatabaseScreen(
     onConfirmReset: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.5f)),
         contentAlignment = Alignment.Center
