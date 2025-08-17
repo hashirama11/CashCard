@@ -20,6 +20,9 @@ fun CenterButtonRoute(
         onGuardarClick = {
             viewModel.guardarGasto(onSuccess = onVolver)
         },
-        onVolver = onVolver
+        onVolver = onVolver,
+        onCumplimientoChange = {
+            viewModel.onCumplimientoChange(it)
+        }
     )
 }

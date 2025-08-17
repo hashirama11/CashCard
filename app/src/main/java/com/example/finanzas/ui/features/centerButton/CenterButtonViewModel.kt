@@ -53,10 +53,14 @@ class CrearGastoViewModel @Inject constructor(
                 descripcion = state.value.descripcion
                 categoria = state.value.categoriaSeleccionada
                 monto = state.value.monto
+                cumplimiento = state.value.cumplimiento
             }
             gastoRepository.crearGasto(gasto)
             onSuccess()
         }
+    }
+    fun onCumplimientoChange(nuevoCumplimiento: Boolean) {
+        _state.value = _state.value.copy(cumplimiento = nuevoCumplimiento)
     }
 }
 
@@ -64,5 +68,6 @@ data class CrearGastoUiState(
     val descripcion: String = "",
     val categoriaSeleccionada: String = "",
     val monto: Double = 0.0,
-    val categoriasDisponibles: List<String> = emptyList()
+    val categoriasDisponibles: List<String> = emptyList(),
+    val cumplimiento: Boolean = true
 )

@@ -12,6 +12,5 @@ class GastoEntity {
     var categoria: String? = null
     var monto: Double? = 0.0
     var fecha : LocalDate = LocalDate.now()
-
     var cumplimiento : Boolean = true
 }
