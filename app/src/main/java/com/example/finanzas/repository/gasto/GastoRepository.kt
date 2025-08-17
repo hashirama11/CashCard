@@ -13,4 +13,8 @@ interface GastoRepository {
 
     fun obtenerTotalGastosPorCategoria(categoria: String): Flow<Double?>
 
+    fun obtenerGastosPorCumplimiento(cumplimiento: Boolean): Flow<List<GastoEntity>>
+    fun obtenerGastosPorCumplimientoFalse(cumplimiento: Boolean): Flow<List<GastoEntity>>
+
+
 }

@@ -32,4 +32,13 @@ interface GastoDao {
     @Query("DELETE FROM gastos")
     suspend fun eliminarTodosLosGastos()
 
+    // Obtener todos los gasto donde el cumplimiento sea true
+    @Query("SELECT * FROM gastos WHERE cumplimiento = :cumplimiento")
+    fun obtenerGastosPorCumplimiento(cumplimiento: Boolean): Flow<List<GastoEntity>>
+
+    // Obtener todos los gasto donde el cumplimiento sea false
+    @Query("SELECT * FROM gastos WHERE cumplimiento = :cumplimiento")
+    fun obtenerGastosPorCumplimientoFalse(cumplimiento: Boolean): Flow<List<GastoEntity>>
+
+
 }

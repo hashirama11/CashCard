@@ -10,4 +10,5 @@ interface CategoriaRepository {
     suspend fun obtenerCategoriaPorId(id: Int): CategoriaEntity?
     suspend fun actualizarCategoria(categoria: CategoriaEntity)
     suspend fun eliminarCategoria(categoria: CategoriaEntity)
+
 }

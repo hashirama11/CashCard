@@ -32,5 +32,12 @@ class GastoRepositoryImpl @Inject constructor(
         return gastoDao.obtenerTotalGastosPorCategoria(categoria)
     }
 
+    override fun obtenerGastosPorCumplimiento(cumplimiento: Boolean): Flow<List<GastoEntity>> {
+        return gastoDao.obtenerGastosPorCumplimiento(cumplimiento)
+    }
+    override fun obtenerGastosPorCumplimientoFalse(cumplimiento: Boolean): Flow<List<GastoEntity>> {
+        return gastoDao.obtenerGastosPorCumplimientoFalse(cumplimiento)
+    }
+
 
 }
