@@ -34,7 +34,9 @@ class AddTransactionViewModel @Inject constructor(
     private val _state = MutableStateFlow(AddTransactionState())
     val state = _state.asStateFlow()
 
-    private val transactionId: Int = savedStateHandle.get<Int>("transactionId") ?: -1
+    // --- LÍNEA CORREGIDA ---
+    // Leemos el ID como String y lo convertimos a Int de forma segura.
+    private val transactionId: Int = savedStateHandle.get<String>("transactionId")?.toIntOrNull() ?: -1
 
     init {
         _state.update { it.copy(isEditing = transactionId != -1) }
