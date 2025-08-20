@@ -1,5 +1,6 @@
 package com.example.finanzas.ui.add_transaction
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finanzas.data.local.entity.Categoria
@@ -8,10 +9,7 @@ import com.example.finanzas.data.repository.FinanzasRepository
 import com.example.finanzas.model.EstadoTransaccion
 import com.example.finanzas.model.TipoTransaccion
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
@@ -20,62 +18,94 @@ data class AddTransactionState(
     val allCategories: List<Categoria> = emptyList(),
     val filteredCategories: List<Categoria> = emptyList(),
     val selectedCategory: Categoria? = null,
-    val selectedTransactionType: TipoTransaccion = TipoTransaccion.GASTO
+    val selectedTransactionType: TipoTransaccion = TipoTransaccion.GASTO,
+    val amount: String = "",
+    val description: String = "",
+    val isEditing: Boolean = false,
+    val transactionDate: Date? = null
 )
 
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
-    private val repository: FinanzasRepository
+    private val repository: FinanzasRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AddTransactionState())
     val state = _state.asStateFlow()
 
+    private val transactionId: Int = savedStateHandle.get<Int>("transactionId") ?: -1
+
     init {
-        repository.getAllCategorias()
-            .onEach { categories ->
-                _state.value = _state.value.copy(allCategories = categories)
-                filterCategories(_state.value.selectedTransactionType)
+        _state.update { it.copy(isEditing = transactionId != -1) }
+
+        viewModelScope.launch {
+            val categories = repository.getAllCategorias().first()
+            _state.update { it.copy(allCategories = categories) }
+
+            if (_state.value.isEditing) {
+                val transactionToEdit = repository.getTransaccionById(transactionId).first()
+                transactionToEdit?.let { tx ->
+                    val category = categories.find { it.id == tx.categoriaId }
+                    _state.update {
+                        it.copy(
+                            amount = tx.monto.toString(),
+                            description = tx.descripcion,
+                            selectedTransactionType = TipoTransaccion.valueOf(tx.tipo),
+                            selectedCategory = category,
+                            transactionDate = tx.fecha
+                        )
+                    }
+                }
             }
-            .launchIn(viewModelScope)
+            filterCategories(_state.value.selectedTransactionType)
+        }
     }
 
+    fun onAmountChange(newAmount: String) { _state.update { it.copy(amount = newAmount) } }
+    fun onDescriptionChange(newDescription: String) { _state.update { it.copy(description = newDescription) } }
+    fun onCategorySelected(category: Categoria) { _state.update { it.copy(selectedCategory = category) } }
+
     fun onTransactionTypeSelected(type: TipoTransaccion) {
-        _state.value = _state.value.copy(selectedTransactionType = type)
+        _state.update { it.copy(selectedTransactionType = type) }
         filterCategories(type)
     }
 
     private fun filterCategories(type: TipoTransaccion) {
         val filtered = _state.value.allCategories.filter { it.tipo == type.name }
-        _state.value = _state.value.copy(
-            filteredCategories = filtered,
-            selectedCategory = filtered.firstOrNull()
+        val currentCategory = _state.value.selectedCategory
+        val isCurrentCategoryStillValid = filtered.any { it.id == currentCategory?.id }
+
+        _state.update {
+            it.copy(
+                filteredCategories = filtered,
+                selectedCategory = if (_state.value.isEditing && isCurrentCategoryStillValid) currentCategory else filtered.firstOrNull()
+            )
+        }
+    }
+
+    fun saveTransaction() {
+        val currentState = _state.value
+        val amountDouble = currentState.amount.toDoubleOrNull() ?: 0.0
+        if (amountDouble <= 0 || currentState.description.isBlank() || currentState.selectedCategory == null) return
+
+        val transactionToSave = Transaccion(
+            id = if (currentState.isEditing) transactionId else 0,
+            monto = amountDouble,
+            moneda = "VES",
+            descripcion = currentState.description,
+            fecha = if (currentState.isEditing) currentState.transactionDate ?: Date() else Date(),
+            tipo = currentState.selectedTransactionType.name,
+            estado = EstadoTransaccion.CONCRETADO.name,
+            categoriaId = currentState.selectedCategory.id
         )
-    }
-
-    fun onCategorySelected(category: Categoria) {
-        _state.value = _state.value.copy(selectedCategory = category)
-    }
-
-    fun saveTransaction(
-        amount: Double,
-        description: String,
-        type: TipoTransaccion,
-        category: Categoria?
-    ) {
-        if (amount <= 0 || description.isBlank() || category == null) return
 
         viewModelScope.launch {
-            val newTransaction = Transaccion(
-                monto = amount,
-                moneda = "VES",
-                descripcion = description,
-                fecha = Date(),
-                tipo = type.name,
-                estado = EstadoTransaccion.CONCRETADO.name,
-                categoriaId = category.id
-            )
-            repository.insertTransaccion(newTransaction)
+            if (currentState.isEditing) {
+                repository.updateTransaction(transactionToSave)
+            } else {
+                repository.insertTransaccion(transactionToSave)
+            }
         }
     }
 }

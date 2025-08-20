@@ -9,6 +9,9 @@ interface FinanzasRepository {
     // Funciones de Transacciones
     fun getAllTransacciones(): Flow<List<Transaccion>>
     suspend fun insertTransaccion(transaccion: Transaccion)
+    suspend fun updateTransaction(transaccion: Transaccion)
+    fun getTransaccionById(id: Int): Flow<Transaccion?>
+    suspend fun deleteTransaccionById(id: Int)
 
     // Funciones de Categorías
     fun getAllCategorias(): Flow<List<Categoria>>

@@ -1,6 +1,5 @@
 package com.example.finanzas.ui.util
 
-import androidx.compose.runtime.Composable
 import com.example.finanzas.R
 import com.example.finanzas.model.IconosEstandar
 

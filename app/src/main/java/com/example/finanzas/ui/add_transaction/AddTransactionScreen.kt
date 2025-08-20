@@ -19,16 +19,12 @@ fun AddTransactionScreen(
     onBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    var amount by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
-
-    val selectedType = state.selectedTransactionType
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Añadir Transacción") },
+                title = { Text(if (state.isEditing) "Editar Transacción" else "Añadir Transacción") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
@@ -39,13 +35,12 @@ fun AddTransactionScreen(
         bottomBar = {
             Button(
                 onClick = {
-                    val amountDouble = amount.toDoubleOrNull() ?: 0.0
-                    viewModel.saveTransaction(amountDouble, description, selectedType, state.selectedCategory)
+                    viewModel.saveTransaction()
                     onBack()
                 },
                 modifier = Modifier.fillMaxWidth().padding(16.dp).height(50.dp)
             ) {
-                Text("Guardar Transacción")
+                Text(if (state.isEditing) "Guardar Cambios" else "Guardar Transacción")
             }
         }
     ) { paddingValues ->
@@ -53,22 +48,22 @@ fun AddTransactionScreen(
             modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            TabRow(selectedTabIndex = selectedType.ordinal) {
+            TabRow(selectedTabIndex = state.selectedTransactionType.ordinal) {
                 Tab(
-                    selected = selectedType == TipoTransaccion.INGRESO,
+                    selected = state.selectedTransactionType == TipoTransaccion.INGRESO,
                     onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.INGRESO) },
                     text = { Text("Ingreso") }
                 )
                 Tab(
-                    selected = selectedType == TipoTransaccion.GASTO,
+                    selected = state.selectedTransactionType == TipoTransaccion.GASTO,
                     onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.GASTO) },
                     text = { Text("Gasto") }
                 )
             }
 
             OutlinedTextField(
-                value = amount,
-                onValueChange = { amount = it },
+                value = state.amount,
+                onValueChange = { viewModel.onAmountChange(it) },
                 label = { Text("Monto (ej: 150.50)") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -76,8 +71,8 @@ fun AddTransactionScreen(
             )
 
             OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
+                value = state.description,
+                onValueChange = { viewModel.onDescriptionChange(it) },
                 label = { Text("Descripción (ej: Café en la panadería)") },
                 modifier = Modifier.fillMaxWidth()
             )

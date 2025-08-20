@@ -5,9 +5,9 @@ import com.example.finanzas.data.local.dao.TransaccionDao
 import com.example.finanzas.data.local.dao.UsuarioDao
 import com.example.finanzas.data.local.entity.Categoria
 import com.example.finanzas.data.local.entity.Transaccion
+import com.example.finanzas.data.local.entity.Usuario
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
-import com.example.finanzas.data.local.entity.Usuario
 
 class FinanzasRepositoryImpl @Inject constructor(
     private val transaccionDao: TransaccionDao,
@@ -15,27 +15,15 @@ class FinanzasRepositoryImpl @Inject constructor(
     private val usuarioDao: UsuarioDao
 ) : FinanzasRepository {
 
-    override fun getAllTransacciones(): Flow<List<Transaccion>> {
-        return transaccionDao.getAllTransacciones()
-    }
+    override fun getAllTransacciones(): Flow<List<Transaccion>> = transaccionDao.getAllTransacciones()
+    override suspend fun insertTransaccion(transaccion: Transaccion) = transaccionDao.insertTransaccion(transaccion)
+    override suspend fun updateTransaction(transaccion: Transaccion) = transaccionDao.updateTransaccion(transaccion)
+    override fun getTransaccionById(id: Int): Flow<Transaccion?> = transaccionDao.getTransaccionById(id)
+    override suspend fun deleteTransaccionById(id: Int) = transaccionDao.deleteTransaccionById(id)
 
-    override suspend fun insertTransaccion(transaccion: Transaccion) {
-        transaccionDao.insertTransaccion(transaccion)
-    }
+    override fun getAllCategorias(): Flow<List<Categoria>> = categoriaDao.getAllCategorias()
+    override suspend fun insertCategoria(categoria: Categoria) = categoriaDao.insertCategoria(categoria)
 
-    override fun getAllCategorias(): Flow<List<Categoria>> {
-        return categoriaDao.getAllCategorias()
-    }
-
-    override suspend fun insertCategoria(categoria: Categoria) {
-        categoriaDao.insertCategoria(categoria)
-    }
-
-    override fun getUsuario(): Flow<Usuario?> {
-        return usuarioDao.getUsuario()
-    }
-
-    override suspend fun upsertUsuario(usuario: Usuario) {
-        usuarioDao.upsertUsuario(usuario)
-    }
+    override fun getUsuario(): Flow<Usuario?> = usuarioDao.getUsuario()
+    override suspend fun upsertUsuario(usuario: Usuario) = usuarioDao.upsertUsuario(usuario)
 }
