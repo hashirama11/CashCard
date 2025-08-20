@@ -12,10 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.finanzas.data.local.entity.Transaccion
+import com.example.finanzas.model.TransactionWithDetails
 
 @Composable
-fun RecentTransactions(transactions: List<Transaccion>) {
+fun RecentTransactions(
+    transactions: List<TransactionWithDetails>,
+    onTransactionClick: (Int) -> Unit
+) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Transacciones Recientes",
@@ -24,8 +27,11 @@ fun RecentTransactions(transactions: List<Transaccion>) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         LazyColumn {
-            items(transactions) { transaction ->
-                TransactionItem(transaction = transaction)
+            items(transactions) { transactionWithDetails ->
+                TransactionItem(
+                    transactionDetails = transactionWithDetails,
+                    onClick = { onTransactionClick(transactionWithDetails.transaccion.id) }
+                )
             }
         }
     }

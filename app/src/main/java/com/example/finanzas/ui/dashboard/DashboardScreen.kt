@@ -20,20 +20,19 @@ import com.example.finanzas.ui.dashboard.components.DashboardTopAppBar
 import com.example.finanzas.ui.theme.AccentGreen
 import kotlinx.coroutines.launch
 
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
-    onAddTransaction: () -> Unit
+    onAddTransaction: () -> Unit,
+    onTransactionClick: (Int) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    // Estas dos líneas son las que faltaban
     val pagerState = rememberPagerState(pageCount = { 2 })
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
-        topBar = { DashboardTopAppBar() },
+        topBar = { DashboardTopAppBar(userName = state.userName) },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { onAddTransaction() },
@@ -51,7 +50,6 @@ fun DashboardScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Pestañas (Ingresos / Gastos)
             DashboardTabRow(
                 selectedTabIndex = pagerState.currentPage,
                 onTabSelected = { index ->
@@ -61,7 +59,6 @@ fun DashboardScreen(
                 }
             )
 
-            // Contenido deslizable (Pager)
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
@@ -69,12 +66,14 @@ fun DashboardScreen(
                 when (page) {
                     0 -> DashboardContent(
                         balance = state.totalIngresos,
-                        transactions = state.transacciones.filter { it.tipo == TipoTransaccion.INGRESO.name },
+                        onTransactionClick = onTransactionClick,
+                        transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.INGRESO.name },
                         type = TipoTransaccion.INGRESO
                     )
                     1 -> DashboardContent(
                         balance = state.totalGastos,
-                        transactions = state.transacciones.filter { it.tipo == TipoTransaccion.GASTO.name },
+                        onTransactionClick = onTransactionClick,
+                        transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.GASTO.name },
                         type = TipoTransaccion.GASTO
                     )
                 }

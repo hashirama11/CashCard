@@ -15,6 +15,11 @@ fun AppNavigation(navController: NavHostController) {
             DashboardScreen(
                 onAddTransaction = {
                     navController.navigate(AppScreens.AddTransaction.route)
+                },
+                // Parámetro añadido que faltaba
+                onTransactionClick = { transactionId ->
+                    // Lógica de navegación que se ejecutará al hacer clic
+                    // (La implementaremos en el siguiente paso)
                 }
             )
         }
@@ -28,6 +33,5 @@ fun AppNavigation(navController: NavHostController) {
                 onBack = { navController.popBackStack() }
             )
         }
-        // Aquí añadiremos más pantallas como la de Categorías
     }
 }
