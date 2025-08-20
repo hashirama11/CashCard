@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.finanzas.data.local.entity.Categoria
+import com.example.finanzas.model.IconosEstandar
 import com.example.finanzas.model.TipoTransaccion
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -18,9 +20,11 @@ fun AddTransactionScreen(
     viewModel: AddTransactionViewModel = hiltViewModel(),
     onBack: () -> Unit
 ) {
+    val state by viewModel.state.collectAsState()
     var amount by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf(TipoTransaccion.GASTO) }
+    var expanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -37,8 +41,8 @@ fun AddTransactionScreen(
             Button(
                 onClick = {
                     val amountDouble = amount.toDoubleOrNull() ?: 0.0
-                    viewModel.saveTransaction(amountDouble, description, selectedType)
-                    onBack() // Vuelve a la pantalla anterior después de guardar
+                    viewModel.saveTransaction(amountDouble, description, selectedType, state.selectedCategory)
+                    onBack()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -56,7 +60,7 @@ fun AddTransactionScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Selector de Tipo (Ingreso / Gasto)
+            // ... (Selector de Tipo y campos de Monto/Descripción se mantienen igual)
             TabRow(selectedTabIndex = selectedType.ordinal) {
                 Tab(
                     selected = selectedType == TipoTransaccion.INGRESO,
@@ -70,7 +74,6 @@ fun AddTransactionScreen(
                 )
             }
 
-            // Campo de Monto
             OutlinedTextField(
                 value = amount,
                 onValueChange = { amount = it },
@@ -80,7 +83,6 @@ fun AddTransactionScreen(
                 singleLine = true
             )
 
-            // Campo de Descripción
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
@@ -88,7 +90,36 @@ fun AddTransactionScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // TODO: Añadir selector de categoría aquí
+            // Selector de Categoría
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    value = state.selectedCategory?.nombre ?: "Seleccionar categoría",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Categoría") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    state.categories.forEach { category ->
+                        DropdownMenuItem(
+                            text = { Text(category.nombre) },
+                            onClick = {
+                                viewModel.onCategorySelected(category)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 }
