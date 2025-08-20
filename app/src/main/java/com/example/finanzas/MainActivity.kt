@@ -3,47 +3,58 @@ package com.example.finanzas
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.*
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
-import com.example.finanzas.ui.add_transaction.AddTransactionScreen
-import com.example.finanzas.ui.dashboard.DashboardScreen
+import com.example.finanzas.ui.navigation.AppNavigation
+import com.example.finanzas.ui.navigation.AppScreens
 import com.example.finanzas.ui.theme.FinanzasTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val mainViewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            FinanzasTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    val navController = rememberNavController()
-                    NavHost(navController = navController, startDestination = "dashboard") {
-                        composable("dashboard") {
-                            DashboardScreen(
-                                onAddTransaction = {
-                                    navController.navigate("add_transaction")
-                                }
+            val isDarkTheme by mainViewModel.isDarkTheme.collectAsStateWithLifecycle()
+
+            FinanzasTheme(darkTheme = isDarkTheme) { // El tema ahora es dinámico
+                val navController = rememberNavController()
+                Scaffold(
+                    bottomBar = {
+                        BottomAppBar {
+                            val items = listOf(
+                                BottomNavItem("Dashboard", Icons.Default.Home, AppScreens.Dashboard.route),
+                                BottomNavItem("Perfil", Icons.Default.Person, AppScreens.Profile.route)
                             )
+                            items.forEach { item ->
+                                NavigationBarItem(
+                                    icon = { Icon(item.icon, contentDescription = item.title) },
+                                    label = { Text(item.title) },
+                                    selected = false, // Lo haremos dinámico después
+                                    onClick = { navController.navigate(item.route) }
+                                )
+                            }
                         }
-                        composable("add_transaction") {
-                            AddTransactionScreen(
-                                onBack = {
-                                    navController.popBackStack()
-                                }
-                            )
-                        }
+                    }
+                ) { innerPadding ->
+                    Surface(modifier = Modifier.padding(innerPadding)) {
+                        AppNavigation(navController = navController)
                     }
                 }
             }
         }
     }
 }
+
+data class BottomNavItem(val title: String, val icon: ImageVector, val route: String)
