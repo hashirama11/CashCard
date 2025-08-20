@@ -11,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finanzas.R
 import com.example.finanzas.model.TipoTransaccion
@@ -21,12 +20,15 @@ import com.example.finanzas.ui.dashboard.components.DashboardTopAppBar
 import com.example.finanzas.ui.theme.AccentGreen
 import kotlinx.coroutines.launch
 
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DashboardScreen(
-    viewModel: DashboardViewModel = hiltViewModel()
+    viewModel: DashboardViewModel = hiltViewModel(),
+    onAddTransaction: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
+    // Estas dos líneas son las que faltaban
     val pagerState = rememberPagerState(pageCount = { 2 })
     val coroutineScope = rememberCoroutineScope()
 
@@ -34,7 +36,7 @@ fun DashboardScreen(
         topBar = { DashboardTopAppBar() },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* TODO: Navegar a la pantalla de añadir transacción */ },
+                onClick = { onAddTransaction() },
                 containerColor = AccentGreen
             ) {
                 Icon(
