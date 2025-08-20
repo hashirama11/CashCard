@@ -3,8 +3,10 @@ package com.example.finanzas.ui.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finanzas.data.repository.FinanzasRepository
+import com.example.finanzas.model.PieChartData
 import com.example.finanzas.model.TipoTransaccion
 import com.example.finanzas.model.TransactionWithDetails
+import com.example.finanzas.ui.theme.PieChartColors
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,7 +30,6 @@ class DashboardViewModel @Inject constructor(
 
         combine(transactionsFlow, categoriesFlow, userFlow) { transactions, categories, user ->
             val categoriesMap = categories.associateBy { it.id }
-
             val transactionsWithDetails = transactions.map { transaccion ->
                 TransactionWithDetails(
                     transaccion = transaccion,
@@ -44,12 +45,31 @@ class DashboardViewModel @Inject constructor(
                 .filter { it.tipo == TipoTransaccion.GASTO.name }
                 .sumOf { it.monto }
 
+            // --- LÓGICA NUEVA PARA EL GRÁFICO ---
+            val expenseChartData = if (totalGastos > 0) {
+                transactionsWithDetails
+                    .filter { it.transaccion.tipo == TipoTransaccion.GASTO.name && it.categoria != null }
+                    .groupBy { it.categoria!! }
+                    .mapValues { (_, txs) -> txs.sumOf { it.transaccion.monto } }
+                    .map { (category, sum) ->
+                        val percentage = (sum / totalGastos).toFloat()
+                        // Asignamos un color de nuestra lista de colores
+                        val color = PieChartColors[category.id % PieChartColors.size]
+                        PieChartData(percentage, color, category.nombre)
+                    }
+                    .sortedByDescending { it.value } // Ordenamos de mayor a menor
+            } else {
+                emptyList()
+            }
+            // --- FIN DE LA LÓGICA NUEVA ---
+
             _state.update {
                 it.copy(
                     transactionsWithDetails = transactionsWithDetails,
                     totalIngresos = totalIngresos,
                     totalGastos = totalGastos,
                     userName = user?.nombre ?: "Usuario",
+                    expenseChartData = expenseChartData, // <-- ACTUALIZAMOS EL ESTADO
                     isLoading = false
                 )
             }

@@ -21,3 +21,13 @@ val TextSecondaryDark = Color(0xFFB0B0B0) // Un gris claro para textos secundari
 // Colores de Acento
 val AccentRed = Color(0xFFEF5350) // Para gastos
 val AccentGreen = Color(0xFF26A69A) // Para ingresos
+
+
+// Colores para Gráficos
+val ChartColor1 = Color(0xFF00897B)
+val ChartColor2 = Color(0xFF4DB6AC)
+val ChartColor3 = Color(0xFF80CBC4)
+val ChartColor4 = Color(0xFFB2DFDB)
+val ChartColor5 = Color(0xFF004D40)
+
+val PieChartColors = listOf(ChartColor1, ChartColor2, ChartColor3, ChartColor4, ChartColor5)

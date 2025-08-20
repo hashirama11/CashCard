@@ -68,13 +68,15 @@ fun DashboardScreen(
                         balance = state.totalIngresos,
                         onTransactionClick = onTransactionClick,
                         transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.INGRESO.name },
-                        type = TipoTransaccion.INGRESO
+                        type = TipoTransaccion.INGRESO,
+                        chartData = emptyList() // No hay gráfico para ingresos por ahora
                     )
                     1 -> DashboardContent(
                         balance = state.totalGastos,
                         onTransactionClick = onTransactionClick,
                         transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.GASTO.name },
-                        type = TipoTransaccion.GASTO
+                        type = TipoTransaccion.GASTO,
+                        chartData = state.expenseChartData // <-- PASAMOS LOS DATOS DEL GRÁFICO
                     )
                 }
             }
