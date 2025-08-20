@@ -17,8 +17,10 @@ import java.util.Date
 import javax.inject.Inject
 
 data class AddTransactionState(
-    val categories: List<Categoria> = emptyList(),
-    val selectedCategory: Categoria? = null
+    val allCategories: List<Categoria> = emptyList(),
+    val filteredCategories: List<Categoria> = emptyList(),
+    val selectedCategory: Categoria? = null,
+    val selectedTransactionType: TipoTransaccion = TipoTransaccion.GASTO
 )
 
 @HiltViewModel
@@ -32,13 +34,23 @@ class AddTransactionViewModel @Inject constructor(
     init {
         repository.getAllCategorias()
             .onEach { categories ->
-                _state.value = _state.value.copy(
-                    categories = categories,
-                    // Seleccionamos la primera categoría por defecto si no hay ninguna seleccionada
-                    selectedCategory = _state.value.selectedCategory ?: categories.firstOrNull()
-                )
+                _state.value = _state.value.copy(allCategories = categories)
+                filterCategories(_state.value.selectedTransactionType)
             }
             .launchIn(viewModelScope)
+    }
+
+    fun onTransactionTypeSelected(type: TipoTransaccion) {
+        _state.value = _state.value.copy(selectedTransactionType = type)
+        filterCategories(type)
+    }
+
+    private fun filterCategories(type: TipoTransaccion) {
+        val filtered = _state.value.allCategories.filter { it.tipo == type.name }
+        _state.value = _state.value.copy(
+            filteredCategories = filtered,
+            selectedCategory = filtered.firstOrNull()
+        )
     }
 
     fun onCategorySelected(category: Categoria) {
@@ -51,10 +63,7 @@ class AddTransactionViewModel @Inject constructor(
         type: TipoTransaccion,
         category: Categoria?
     ) {
-        if (amount <= 0 || description.isBlank() || category == null) {
-            // Ahora la categoría también es obligatoria
-            return
-        }
+        if (amount <= 0 || description.isBlank() || category == null) return
 
         viewModelScope.launch {
             val newTransaction = Transaccion(
@@ -64,7 +73,7 @@ class AddTransactionViewModel @Inject constructor(
                 fecha = Date(),
                 tipo = type.name,
                 estado = EstadoTransaccion.CONCRETADO.name,
-                categoriaId = category.id // ¡Guardamos el ID de la categoría!
+                categoriaId = category.id
             )
             repository.insertTransaccion(newTransaction)
         }

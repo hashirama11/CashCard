@@ -10,8 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.finanzas.data.local.entity.Categoria
-import com.example.finanzas.model.IconosEstandar
 import com.example.finanzas.model.TipoTransaccion
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,8 +21,9 @@ fun AddTransactionScreen(
     val state by viewModel.state.collectAsState()
     var amount by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var selectedType by remember { mutableStateOf(TipoTransaccion.GASTO) }
     var expanded by remember { mutableStateOf(false) }
+
+    val selectedType = state.selectedTransactionType
 
     Scaffold(
         topBar = {
@@ -44,32 +43,25 @@ fun AddTransactionScreen(
                     viewModel.saveTransaction(amountDouble, description, selectedType, state.selectedCategory)
                     onBack()
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .height(50.dp)
+                modifier = Modifier.fillMaxWidth().padding(16.dp).height(50.dp)
             ) {
                 Text("Guardar Transacción")
             }
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ... (Selector de Tipo y campos de Monto/Descripción se mantienen igual)
             TabRow(selectedTabIndex = selectedType.ordinal) {
                 Tab(
                     selected = selectedType == TipoTransaccion.INGRESO,
-                    onClick = { selectedType = TipoTransaccion.INGRESO },
+                    onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.INGRESO) },
                     text = { Text("Ingreso") }
                 )
                 Tab(
                     selected = selectedType == TipoTransaccion.GASTO,
-                    onClick = { selectedType = TipoTransaccion.GASTO },
+                    onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.GASTO) },
                     text = { Text("Gasto") }
                 )
             }
@@ -90,7 +82,6 @@ fun AddTransactionScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Selector de Categoría
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded }
@@ -101,21 +92,26 @@ fun AddTransactionScreen(
                     readOnly = true,
                     label = { Text("Categoría") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth()
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
                 ExposedDropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
-                    state.categories.forEach { category ->
+                    state.filteredCategories.forEach { category ->
                         DropdownMenuItem(
                             text = { Text(category.nombre) },
                             onClick = {
                                 viewModel.onCategorySelected(category)
                                 expanded = false
                             }
+                        )
+                    }
+                    if (state.filteredCategories.isEmpty()) {
+                        DropdownMenuItem(
+                            text = { Text("No hay categorías para este tipo") },
+                            onClick = { },
+                            enabled = false
                         )
                     }
                 }
