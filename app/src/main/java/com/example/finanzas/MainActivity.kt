@@ -5,9 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -59,7 +59,8 @@ fun MainScreen(startDestination: String) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
 
     showBottomBar = when (navBackStackEntry?.destination?.route) {
-        AppScreens.Dashboard.route, AppScreens.Profile.route -> true
+        // AÑADIMOS LA NUEVA PANTALLA A LA LÓGICA DE LA BARRA
+        AppScreens.Dashboard.route, AppScreens.Balance.route, AppScreens.Profile.route -> true
         else -> false
     }
 
@@ -82,7 +83,9 @@ fun MainScreen(startDestination: String) {
 @Composable
 fun AppBottomBar(navController: NavController) {
     val items = listOf(
+        // AÑADIMOS EL NUEVO BOTÓN DE NAVEGACIÓN
         BottomNavItem("Dashboard", Icons.Default.Home, AppScreens.Dashboard.route),
+        BottomNavItem("Balance", Icons.Default.AccountBox, AppScreens.Balance.route),
         BottomNavItem("Perfil", Icons.Default.Person, AppScreens.Profile.route)
     )
     NavigationBar {

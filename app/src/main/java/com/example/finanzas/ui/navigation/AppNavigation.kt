@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.finanzas.ui.add_transaction.AddTransactionScreen
 import com.example.finanzas.ui.all_transactions.AllTransactionsScreen
+import com.example.finanzas.ui.balance.BalanceScreen
 import com.example.finanzas.ui.category_management.CategoryManagementScreen
 import com.example.finanzas.ui.dashboard.DashboardScreen
 import com.example.finanzas.ui.onboarding.OnboardingScreen
@@ -17,7 +18,7 @@ import com.example.finanzas.ui.transaction_detail.TransactionDetailScreen
 @Composable
 fun AppNavigation(
     navController: NavHostController,
-    startDestination: String // <-- PARÁMETRO NUEVO
+    startDestination: String
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
         composable(AppScreens.Onboarding.route) {
@@ -41,6 +42,10 @@ fun AppNavigation(
                     navController.navigate(AppScreens.AllTransactions.route)
                 }
             )
+        }
+        // AÑADIMOS EL NUEVO DESTINO AL GRÁFICO DE NAVEGACIÓN
+        composable(AppScreens.Balance.route) {
+            BalanceScreen()
         }
         composable(
             route = AppScreens.AddTransaction.route,

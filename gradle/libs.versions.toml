@@ -20,6 +20,7 @@ runtime = "1.9.0"
 foundationVersion = "1.9.0"
 ui = "1.9.0"
 coreSplashscreen = "1.0.1"
+uiGraphics = "1.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -53,7 +54,8 @@ material3 = { group = "androidx.compose.material3", name = "material3", version.
 androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundationVersion" }
 ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
-androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" } # <-- AÑADE ESTA LÍNEA
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" } # <-- AÑADE ESTA LÍNEA
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

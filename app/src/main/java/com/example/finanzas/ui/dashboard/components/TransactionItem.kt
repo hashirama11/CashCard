@@ -9,16 +9,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.example.finanzas.model.EstadoTransaccion
+import com.example.finanzas.model.Moneda
 import com.example.finanzas.model.TipoTransaccion
 import com.example.finanzas.model.TransactionWithDetails
 import com.example.finanzas.ui.theme.AccentGreen
 import com.example.finanzas.ui.theme.AccentRed
 import com.example.finanzas.ui.util.getIconResource
 import java.text.NumberFormat
-import java.util.Locale
-import androidx.compose.ui.unit.dp
+import java.util.*
 
 @Composable
 fun TransactionItem(
@@ -26,10 +29,21 @@ fun TransactionItem(
     onClick: () -> Unit
 ) {
     val transaction = transactionDetails.transaccion
-    val currencyFormat = NumberFormat.getCurrencyInstance(Locale("es", "VE"))
+    // --- LÓGICA DE FORMATO DE MONEDA ---
+    val currencyFormat = NumberFormat.getCurrencyInstance().apply {
+        currency = Currency.getInstance(if (transaction.moneda == Moneda.USD.name) "USD" else "VES")
+        if (transaction.moneda == Moneda.VES.name) {
+            maximumFractionDigits = 2
+            (this as java.text.DecimalFormat).decimalFormatSymbols = java.text.DecimalFormatSymbols(Locale("es", "VE")).apply {
+                currencySymbol = "Bs."
+            }
+        }
+    }
+
     val amountColor = if (transaction.tipo == TipoTransaccion.INGRESO.name) AccentGreen else AccentRed
     val sign = if (transaction.tipo == TipoTransaccion.INGRESO.name) "+" else "-"
     val iconRes = getIconResource(iconName = transactionDetails.categoria?.icono)
+    val isPending = transaction.estado == EstadoTransaccion.PENDIENTE.name
 
     Row(
         modifier = Modifier
@@ -61,11 +75,29 @@ fun TransactionItem(
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold
             )
-            Text(
-                text = transactionDetails.categoria?.nombre ?: "Sin Categoría",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = transactionDetails.categoria?.nombre ?: "Sin Categoría",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
+                // --- INDICADOR VISUAL DE PENDIENTE ---
+                if (isPending) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50))
+                            .background(Color.Yellow.copy(alpha = 0.3f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            "Pendiente",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.DarkGray
+                        )
+                    }
+                }
+            }
         }
 
         Text(

@@ -7,23 +7,13 @@ import com.example.finanzas.data.local.entity.Categoria
 import com.example.finanzas.data.local.entity.Transaccion
 import com.example.finanzas.data.repository.FinanzasRepository
 import com.example.finanzas.model.EstadoTransaccion
+import com.example.finanzas.model.Moneda
 import com.example.finanzas.model.TipoTransaccion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
-
-data class AddTransactionState(
-    val allCategories: List<Categoria> = emptyList(),
-    val filteredCategories: List<Categoria> = emptyList(),
-    val selectedCategory: Categoria? = null,
-    val selectedTransactionType: TipoTransaccion = TipoTransaccion.GASTO,
-    val amount: String = "",
-    val description: String = "",
-    val isEditing: Boolean = false,
-    val transactionDate: Date? = null
-)
 
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
@@ -34,8 +24,6 @@ class AddTransactionViewModel @Inject constructor(
     private val _state = MutableStateFlow(AddTransactionState())
     val state = _state.asStateFlow()
 
-    // --- LÍNEA CORREGIDA ---
-    // Leemos el ID como String y lo convertimos a Int de forma segura.
     private val transactionId: Int = savedStateHandle.get<String>("transactionId")?.toIntOrNull() ?: -1
 
     init {
@@ -55,7 +43,10 @@ class AddTransactionViewModel @Inject constructor(
                             description = tx.descripcion,
                             selectedTransactionType = TipoTransaccion.valueOf(tx.tipo),
                             selectedCategory = category,
-                            transactionDate = tx.fecha
+                            transactionDate = tx.fecha,
+                            // --- CARGAMOS LOS NUEVOS DATOS ---
+                            selectedCurrency = Moneda.valueOf(tx.moneda),
+                            isPending = tx.estado == EstadoTransaccion.PENDIENTE.name
                         )
                     }
                 }
@@ -67,6 +58,9 @@ class AddTransactionViewModel @Inject constructor(
     fun onAmountChange(newAmount: String) { _state.update { it.copy(amount = newAmount) } }
     fun onDescriptionChange(newDescription: String) { _state.update { it.copy(description = newDescription) } }
     fun onCategorySelected(category: Categoria) { _state.update { it.copy(selectedCategory = category) } }
+    // --- NUEVAS FUNCIONES ---
+    fun onCurrencySelected(currency: Moneda) { _state.update { it.copy(selectedCurrency = currency) } }
+    fun onPendingStatusChange(isPending: Boolean) { _state.update { it.copy(isPending = isPending) } }
 
     fun onTransactionTypeSelected(type: TipoTransaccion) {
         _state.update { it.copy(selectedTransactionType = type) }
@@ -94,11 +88,12 @@ class AddTransactionViewModel @Inject constructor(
         val transactionToSave = Transaccion(
             id = if (currentState.isEditing) transactionId else 0,
             monto = amountDouble,
-            moneda = "VES",
+            // --- GUARDAMOS LOS NUEVOS DATOS ---
+            moneda = currentState.selectedCurrency.name,
             descripcion = currentState.description,
             fecha = if (currentState.isEditing) currentState.transactionDate ?: Date() else Date(),
             tipo = currentState.selectedTransactionType.name,
-            estado = EstadoTransaccion.CONCRETADO.name,
+            estado = if (currentState.isPending) EstadoTransaccion.PENDIENTE.name else EstadoTransaccion.CONCRETADO.name,
             categoriaId = currentState.selectedCategory.id
         )
 
