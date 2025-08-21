@@ -2,6 +2,7 @@ package com.example.finanzas.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index // <-- ASEGÚRATE DE IMPORTAR ESTO
 import androidx.room.PrimaryKey
 import java.util.Date
 
@@ -12,9 +13,11 @@ import java.util.Date
             entity = Categoria::class,
             parentColumns = ["id"],
             childColumns = ["categoriaId"],
-            onDelete = ForeignKey.SET_NULL // Si se borra la categoría, la transacción no se borra
+            onDelete = ForeignKey.SET_NULL
         )
-    ]
+    ],
+    // --- LÍNEA AÑADIDA PARA LA MEJORA DE RENDIMIENTO ---
+    indices = [Index(value = ["categoriaId"])]
 )
 data class Transaccion(
     @PrimaryKey(autoGenerate = true)
