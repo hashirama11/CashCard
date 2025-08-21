@@ -3,6 +3,7 @@ package com.example.finanzas.ui.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finanzas.data.repository.FinanzasRepository
+import com.example.finanzas.model.Moneda
 import com.example.finanzas.model.PieChartData
 import com.example.finanzas.model.TipoTransaccion
 import com.example.finanzas.model.TransactionWithDetails
@@ -37,22 +38,32 @@ class DashboardViewModel @Inject constructor(
                 )
             }
 
-            val totalIngresos = transactions
-                .filter { it.tipo == TipoTransaccion.INGRESO.name }
-                .sumOf { it.monto }
+            // --- LÓGICA DE CÁLCULO MULTIMONEDA ---
+            val ingresos = transactions.filter { it.tipo == TipoTransaccion.INGRESO.name }
+            val gastos = transactions.filter { it.tipo == TipoTransaccion.GASTO.name }
 
-            val totalGastos = transactions
+            val totalIngresosVes = ingresos.filter { it.moneda == Moneda.VES.name }.sumOf { it.monto }
+            val totalIngresosUsd = ingresos.filter { it.moneda == Moneda.USD.name }.sumOf { it.monto }
+            val totalGastosVes = gastos.filter { it.moneda == Moneda.VES.name }.sumOf { it.monto }
+            val totalGastosUsd = gastos.filter { it.moneda == Moneda.USD.name }.sumOf { it.monto }
+
+            val totalGastosConsolidados = transactions
                 .filter { it.tipo == TipoTransaccion.GASTO.name }
                 .sumOf { it.monto }
 
-            // --- LÓGICA PARA GRÁFICO DE GASTOS ---
-            val expenseChartData = if (totalGastos > 0) {
+            val totalIngresosConsolidados = transactions
+                .filter { it.tipo == TipoTransaccion.INGRESO.name }
+                .sumOf { it.monto }
+
+
+            // --- LÓGICA PARA GRÁFICOS (SE MANTIENE CONSOLIDADA) ---
+            val expenseChartData = if (totalGastosConsolidados > 0) {
                 transactionsWithDetails
                     .filter { it.transaccion.tipo == TipoTransaccion.GASTO.name && it.categoria != null }
                     .groupBy { it.categoria!! }
                     .mapValues { (_, txs) -> txs.sumOf { it.transaccion.monto } }
                     .map { (category, sum) ->
-                        val percentage = (sum / totalGastos).toFloat()
+                        val percentage = (sum / totalGastosConsolidados).toFloat()
                         val color = PieChartColors[category.id % PieChartColors.size]
                         PieChartData(percentage, color, category.nombre)
                     }
@@ -61,14 +72,13 @@ class DashboardViewModel @Inject constructor(
                 emptyList()
             }
 
-            // --- LÓGICA NUEVA PARA GRÁFICO DE INGRESOS ---
-            val incomeChartData = if (totalIngresos > 0) {
+            val incomeChartData = if (totalIngresosConsolidados > 0) {
                 transactionsWithDetails
                     .filter { it.transaccion.tipo == TipoTransaccion.INGRESO.name && it.categoria != null }
                     .groupBy { it.categoria!! }
                     .mapValues { (_, txs) -> txs.sumOf { it.transaccion.monto } }
                     .map { (category, sum) ->
-                        val percentage = (sum / totalIngresos).toFloat()
+                        val percentage = (sum / totalIngresosConsolidados).toFloat()
                         val color = PieChartColors[category.id % PieChartColors.size]
                         PieChartData(percentage, color, category.nombre)
                     }
@@ -80,11 +90,13 @@ class DashboardViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     transactionsWithDetails = transactionsWithDetails,
-                    totalIngresos = totalIngresos,
-                    totalGastos = totalGastos,
+                    totalIngresosVes = totalIngresosVes,
+                    totalIngresosUsd = totalIngresosUsd,
+                    totalGastosVes = totalGastosVes,
+                    totalGastosUsd = totalGastosUsd,
                     userName = user?.nombre ?: "Usuario",
                     expenseChartData = expenseChartData,
-                    incomeChartData = incomeChartData, // <-- ACTUALIZAMOS EL ESTADO
+                    incomeChartData = incomeChartData,
                     isLoading = false
                 )
             }

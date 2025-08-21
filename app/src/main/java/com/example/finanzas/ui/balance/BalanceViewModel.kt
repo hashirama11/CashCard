@@ -3,6 +3,7 @@ package com.example.finanzas.ui.balance
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finanzas.data.repository.FinanzasRepository
+import com.example.finanzas.model.Moneda
 import com.example.finanzas.model.TipoTransaccion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,18 +26,28 @@ class BalanceViewModel @Inject constructor(
 
     init {
         repository.getAllTransacciones().onEach { transactions ->
-            // Cálculos generales
-            val totalIngresos = transactions.filter { it.tipo == TipoTransaccion.INGRESO.name }.sumOf { it.monto }
-            val totalGastos = transactions.filter { it.tipo == TipoTransaccion.GASTO.name }.sumOf { it.monto }
-            val balanceNeto = totalIngresos - totalGastos
-            val tasaAhorro = if (totalIngresos > 0) (balanceNeto / totalIngresos).toFloat() else 0f
+            // --- LÓGICA DE CÁLCULO MULTIMONEDA ---
+            val ingresos = transactions.filter { it.tipo == TipoTransaccion.INGRESO.name }
+            val gastos = transactions.filter { it.tipo == TipoTransaccion.GASTO.name }
+
+            val totalIngresosVes = ingresos.filter { it.moneda == Moneda.VES.name }.sumOf { it.monto }
+            val totalIngresosUsd = ingresos.filter { it.moneda == Moneda.USD.name }.sumOf { it.monto }
+            val totalGastosVes = gastos.filter { it.moneda == Moneda.VES.name }.sumOf { it.monto }
+            val totalGastosUsd = gastos.filter { it.moneda == Moneda.USD.name }.sumOf { it.monto }
+
+            val balanceNetoVes = totalIngresosVes - totalGastosVes
+            val balanceNetoUsd = totalIngresosUsd - totalGastosUsd
+
+            val totalIngresosConsolidado = ingresos.sumOf { it.monto }
+            val balanceNetoConsolidado = transactions.sumOf { if (it.tipo == TipoTransaccion.INGRESO.name) it.monto else -it.monto }
+            val tasaAhorro = if (totalIngresosConsolidado > 0) (balanceNetoConsolidado / totalIngresosConsolidado).toFloat() else 0f
+
 
             // Agrupar transacciones por mes para el gráfico (últimos 6 meses)
             val calendar = Calendar.getInstance()
             val monthlyData = mutableMapOf<String, Pair<Double, Double>>()
             val monthFormatter = SimpleDateFormat("MMM", Locale.getDefault())
 
-            // Inicializar los últimos 6 meses en el mapa para asegurar que aparezcan
             for (i in 5 downTo 0) {
                 calendar.timeInMillis = System.currentTimeMillis()
                 calendar.add(Calendar.MONTH, -i)
@@ -63,10 +74,13 @@ class BalanceViewModel @Inject constructor(
 
             _state.update {
                 it.copy(
-                    totalIngresos = totalIngresos,
-                    totalGastos = totalGastos,
-                    balanceNeto = balanceNeto,
-                    tasaAhorro = tasaAhorro.coerceIn(0f, 1f), // Asegura que esté entre 0 y 1
+                    totalIngresosVes = totalIngresosVes,
+                    totalIngresosUsd = totalIngresosUsd,
+                    totalGastosVes = totalGastosVes,
+                    totalGastosUsd = totalGastosUsd,
+                    balanceNetoVes = balanceNetoVes,
+                    balanceNetoUsd = balanceNetoUsd,
+                    tasaAhorro = tasaAhorro.coerceIn(0f, 1f),
                     monthlyFlows = monthlyFlows,
                     isLoading = false
                 )

@@ -30,7 +30,7 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
     onAddTransaction: () -> Unit,
     onTransactionClick: (Int) -> Unit,
-    onSeeAllClick: () -> Unit // <-- NUEVO
+    onSeeAllClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -70,15 +70,19 @@ fun DashboardScreen(
             ) { page ->
                 when (page) {
                     0 -> DashboardContent(
-                        balance = state.totalIngresos,
+                        // Pasamos los balances por moneda
+                        balanceVes = state.totalIngresosVes,
+                        balanceUsd = state.totalIngresosUsd,
                         onTransactionClick = onTransactionClick,
                         transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.INGRESO.name },
                         type = TipoTransaccion.INGRESO,
-                        chartData = state.incomeChartData, // <-- PASAMOS DATOS DEL GRÁFICO DE INGRESOS
+                        chartData = state.incomeChartData,
                         onSeeAllClick = onSeeAllClick
                     )
                     1 -> DashboardContent(
-                        balance = state.totalGastos,
+                        // Pasamos los balances por moneda
+                        balanceVes = state.totalGastosVes,
+                        balanceUsd = state.totalGastosUsd,
                         onTransactionClick = onTransactionClick,
                         transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.GASTO.name },
                         type = TipoTransaccion.GASTO,

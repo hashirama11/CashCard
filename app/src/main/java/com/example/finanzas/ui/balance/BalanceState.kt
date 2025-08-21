@@ -9,10 +9,14 @@ data class MonthlyFlow(
 
 // Estado general de la pantalla de balance
 data class BalanceState(
-    val totalIngresos: Double = 0.0,
-    val totalGastos: Double = 0.0,
-    val balanceNeto: Double = 0.0,
-    val tasaAhorro: Float = 0f, // Un valor entre 0.0 y 1.0
+    // --- CAMPOS MODIFICADOS PARA MULTIMONEDA ---
+    val totalIngresosVes: Double = 0.0,
+    val totalIngresosUsd: Double = 0.0,
+    val totalGastosVes: Double = 0.0,
+    val totalGastosUsd: Double = 0.0,
+    val balanceNetoVes: Double = 0.0,
+    val balanceNetoUsd: Double = 0.0,
+    val tasaAhorro: Float = 0f, // Se mantiene como un % general
     val monthlyFlows: List<MonthlyFlow> = emptyList(),
     val isLoading: Boolean = true
 )

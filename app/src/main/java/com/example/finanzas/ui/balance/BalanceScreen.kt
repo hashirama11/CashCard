@@ -26,8 +26,6 @@ import com.example.finanzas.ui.balance.components.SavingsRateIndicator
 import com.example.finanzas.ui.balance.components.SummaryCard
 import com.example.finanzas.ui.theme.AccentGreen
 import com.example.finanzas.ui.theme.AccentRed
-import java.text.NumberFormat
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,7 +33,6 @@ fun BalanceScreen(
     viewModel: BalanceViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val currencyFormat = NumberFormat.getCurrencyInstance(Locale("es", "VE"))
 
     Scaffold(
         topBar = {
@@ -60,13 +57,15 @@ fun BalanceScreen(
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     SummaryCard(
                         title = "Ingresos",
-                        amount = currencyFormat.format(state.totalIngresos),
+                        amountVes = state.totalIngresosVes,
+                        amountUsd = state.totalIngresosUsd,
                         color = AccentGreen,
                         modifier = Modifier.weight(1f)
                     )
                     SummaryCard(
                         title = "Gastos",
-                        amount = currencyFormat.format(state.totalGastos),
+                        amountVes = state.totalGastosVes,
+                        amountUsd = state.totalGastosUsd,
                         color = AccentRed,
                         modifier = Modifier.weight(1f)
                     )
@@ -76,9 +75,9 @@ fun BalanceScreen(
             // Indicador de Tasa de Ahorro
             item {
                 SavingsRateIndicator(
-                    netBalance = state.balanceNeto,
-                    savingsRate = state.tasaAhorro,
-                    currencyFormat = currencyFormat
+                    netBalanceVes = state.balanceNetoVes,
+                    netBalanceUsd = state.balanceNetoUsd,
+                    savingsRate = state.tasaAhorro
                 )
             }
 

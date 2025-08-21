@@ -14,22 +14,22 @@ import com.example.finanzas.model.TransactionWithDetails
 
 @Composable
 fun DashboardContent(
-    balance: Double,
+    balanceVes: Double, // <-- Parámetro modificado
+    balanceUsd: Double, // <-- Parámetro nuevo
     transactions: List<TransactionWithDetails>,
     type: TipoTransaccion,
     chartData: List<PieChartData>,
     onTransactionClick: (Int) -> Unit,
-    onSeeAllClick: () -> Unit // <-- NUEVO
+    onSeeAllClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        BalanceCard(balance = balance, type = type)
+        BalanceCard(balanceVes = balanceVes, balanceUsd = balanceUsd, type = type)
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Mostramos el gráfico si hay datos
         if (chartData.isNotEmpty()) {
             val chartTitle = if (type == TipoTransaccion.GASTO) "Distribución de Gastos" else "Distribución de Ingresos"
             PieChartCard(chartData = chartData, title = chartTitle)
