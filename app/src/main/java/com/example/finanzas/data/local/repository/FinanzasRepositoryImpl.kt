@@ -23,6 +23,7 @@ class FinanzasRepositoryImpl @Inject constructor(
 
     override fun getAllCategorias(): Flow<List<Categoria>> = categoriaDao.getAllCategorias()
     override suspend fun insertCategoria(categoria: Categoria) = categoriaDao.insertCategoria(categoria)
+    override suspend fun deleteCategoria(categoria: Categoria) = categoriaDao.deleteCategoria(categoria)
 
     override fun getUsuario(): Flow<Usuario?> = usuarioDao.getUsuario()
     override suspend fun upsertUsuario(usuario: Usuario) = usuarioDao.upsertUsuario(usuario)

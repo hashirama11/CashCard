@@ -21,7 +21,10 @@ import com.example.finanzas.model.PieChartData
 import kotlin.math.roundToInt
 
 @Composable
-fun PieChartCard(chartData: List<PieChartData>) {
+fun PieChartCard(
+    chartData: List<PieChartData>,
+    title: String // <-- PARÁMETRO NUEVO
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(4.dp)
@@ -32,11 +35,11 @@ fun PieChartCard(chartData: List<PieChartData>) {
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Distribución de Gastos", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+            Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.height(16.dp))
 
             if (chartData.isEmpty()) {
-                Text("No hay datos de gastos para mostrar.")
+                Text("No hay datos para mostrar.")
             } else {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -71,7 +74,7 @@ private fun PieChart(chartData: List<PieChartData>, modifier: Modifier = Modifie
 
 @Composable
 private fun PieChartLegend(chartData: List<PieChartData>, modifier: Modifier = Modifier) {
-    LazyColumn(modifier = modifier) {
+    LazyColumn(modifier = modifier.heightIn(max = 150.dp)) { // Altura máxima para evitar que crezca indefinidamente
         items(chartData.size) { index ->
             val data = chartData[index]
             Row(

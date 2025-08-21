@@ -9,6 +9,9 @@ interface CategoriaDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategoria(categoria: Categoria)
 
+    @Delete
+    suspend fun deleteCategoria(categoria: Categoria)
+
     @Query("SELECT * FROM categorias ORDER BY nombre ASC")
     fun getAllCategorias(): Flow<List<Categoria>>
 }

@@ -16,6 +16,7 @@ interface FinanzasRepository {
     // Funciones de Categorías
     fun getAllCategorias(): Flow<List<Categoria>>
     suspend fun insertCategoria(categoria: Categoria)
+    suspend fun deleteCategoria(categoria: Categoria)
 
     // Funciones de Usuario
     fun getUsuario(): Flow<Usuario?>

@@ -1,10 +1,14 @@
 package com.example.finanzas.ui.dashboard
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.*
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -25,7 +29,8 @@ import kotlinx.coroutines.launch
 fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
     onAddTransaction: () -> Unit,
-    onTransactionClick: (Int) -> Unit
+    onTransactionClick: (Int) -> Unit,
+    onSeeAllClick: () -> Unit // <-- NUEVO
 ) {
     val state by viewModel.state.collectAsState()
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -69,14 +74,16 @@ fun DashboardScreen(
                         onTransactionClick = onTransactionClick,
                         transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.INGRESO.name },
                         type = TipoTransaccion.INGRESO,
-                        chartData = emptyList() // No hay gráfico para ingresos por ahora
+                        chartData = state.incomeChartData, // <-- PASAMOS DATOS DEL GRÁFICO DE INGRESOS
+                        onSeeAllClick = onSeeAllClick
                     )
                     1 -> DashboardContent(
                         balance = state.totalGastos,
                         onTransactionClick = onTransactionClick,
                         transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.GASTO.name },
                         type = TipoTransaccion.GASTO,
-                        chartData = state.expenseChartData // <-- PASAMOS LOS DATOS DEL GRÁFICO
+                        chartData = state.expenseChartData,
+                        onSeeAllClick = onSeeAllClick
                     )
                 }
             }

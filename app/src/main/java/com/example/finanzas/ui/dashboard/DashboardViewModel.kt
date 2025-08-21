@@ -45,7 +45,7 @@ class DashboardViewModel @Inject constructor(
                 .filter { it.tipo == TipoTransaccion.GASTO.name }
                 .sumOf { it.monto }
 
-            // --- LÓGICA NUEVA PARA EL GRÁFICO ---
+            // --- LÓGICA PARA GRÁFICO DE GASTOS ---
             val expenseChartData = if (totalGastos > 0) {
                 transactionsWithDetails
                     .filter { it.transaccion.tipo == TipoTransaccion.GASTO.name && it.categoria != null }
@@ -53,15 +53,29 @@ class DashboardViewModel @Inject constructor(
                     .mapValues { (_, txs) -> txs.sumOf { it.transaccion.monto } }
                     .map { (category, sum) ->
                         val percentage = (sum / totalGastos).toFloat()
-                        // Asignamos un color de nuestra lista de colores
                         val color = PieChartColors[category.id % PieChartColors.size]
                         PieChartData(percentage, color, category.nombre)
                     }
-                    .sortedByDescending { it.value } // Ordenamos de mayor a menor
+                    .sortedByDescending { it.value }
             } else {
                 emptyList()
             }
-            // --- FIN DE LA LÓGICA NUEVA ---
+
+            // --- LÓGICA NUEVA PARA GRÁFICO DE INGRESOS ---
+            val incomeChartData = if (totalIngresos > 0) {
+                transactionsWithDetails
+                    .filter { it.transaccion.tipo == TipoTransaccion.INGRESO.name && it.categoria != null }
+                    .groupBy { it.categoria!! }
+                    .mapValues { (_, txs) -> txs.sumOf { it.transaccion.monto } }
+                    .map { (category, sum) ->
+                        val percentage = (sum / totalIngresos).toFloat()
+                        val color = PieChartColors[category.id % PieChartColors.size]
+                        PieChartData(percentage, color, category.nombre)
+                    }
+                    .sortedByDescending { it.value }
+            } else {
+                emptyList()
+            }
 
             _state.update {
                 it.copy(
@@ -69,7 +83,8 @@ class DashboardViewModel @Inject constructor(
                     totalIngresos = totalIngresos,
                     totalGastos = totalGastos,
                     userName = user?.nombre ?: "Usuario",
-                    expenseChartData = expenseChartData, // <-- ACTUALIZAMOS EL ESTADO
+                    expenseChartData = expenseChartData,
+                    incomeChartData = incomeChartData, // <-- ACTUALIZAMOS EL ESTADO
                     isLoading = false
                 )
             }

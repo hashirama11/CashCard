@@ -9,5 +9,6 @@ data class DashboardState(
     val totalGastos: Double = 0.0,
     val isLoading: Boolean = true,
     val userName: String = "",
-    val expenseChartData: List<PieChartData> = emptyList() // <-- NUEVA LÍNEA
+    val expenseChartData: List<PieChartData> = emptyList(),
+    val incomeChartData: List<PieChartData> = emptyList() // <-- NUEVA LÍNEA
 )

@@ -10,4 +10,6 @@ sealed class AppScreens(val route: String) {
     object TransactionDetail : AppScreens("transaction_detail/{transactionId}") {
         fun createRoute(transactionId: Int) = "transaction_detail/$transactionId"
     }
+    object AllTransactions : AppScreens("all_transactions")
+    object CategoryManagement : AppScreens("category_management")
 }

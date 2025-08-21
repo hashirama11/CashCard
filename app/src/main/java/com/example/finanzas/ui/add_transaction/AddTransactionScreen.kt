@@ -21,6 +21,12 @@ fun AddTransactionScreen(
     val state by viewModel.state.collectAsState()
     var expanded by remember { mutableStateOf(false) }
 
+    // --- LÓGICA PARA CAMBIAR EL PLACEHOLDER ---
+    val descriptionLabel = when (state.selectedTransactionType) {
+        TipoTransaccion.INGRESO -> "Descripción (ej: Salario, Venta)"
+        TipoTransaccion.GASTO -> "Descripción (ej: Café en la panadería)"
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -38,14 +44,20 @@ fun AddTransactionScreen(
                     viewModel.saveTransaction()
                     onBack()
                 },
-                modifier = Modifier.fillMaxWidth().padding(16.dp).height(50.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .height(50.dp)
             ) {
                 Text(if (state.isEditing) "Guardar Cambios" else "Guardar Transacción")
             }
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             TabRow(selectedTabIndex = state.selectedTransactionType.ordinal) {
@@ -73,7 +85,7 @@ fun AddTransactionScreen(
             OutlinedTextField(
                 value = state.description,
                 onValueChange = { viewModel.onDescriptionChange(it) },
-                label = { Text("Descripción (ej: Café en la panadería)") },
+                label = { Text(descriptionLabel) }, // <-- TEXTO DINÁMICO
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -87,7 +99,9 @@ fun AddTransactionScreen(
                     readOnly = true,
                     label = { Text("Categoría") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
                     expanded = expanded,

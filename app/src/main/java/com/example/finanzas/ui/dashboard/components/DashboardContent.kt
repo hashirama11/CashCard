@@ -1,6 +1,10 @@
 package com.example.finanzas.ui.dashboard.components
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -13,8 +17,9 @@ fun DashboardContent(
     balance: Double,
     transactions: List<TransactionWithDetails>,
     type: TipoTransaccion,
-    chartData: List<PieChartData>, // <-- DATO NUEVO
-    onTransactionClick: (Int) -> Unit
+    chartData: List<PieChartData>,
+    onTransactionClick: (Int) -> Unit,
+    onSeeAllClick: () -> Unit // <-- NUEVO
 ) {
     Column(
         modifier = Modifier
@@ -24,9 +29,10 @@ fun DashboardContent(
         BalanceCard(balance = balance, type = type)
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Mostramos el gráfico solo en la pestaña de Gastos
-        if (type == TipoTransaccion.GASTO) {
-            PieChartCard(chartData = chartData)
+        // Mostramos el gráfico si hay datos
+        if (chartData.isNotEmpty()) {
+            val chartTitle = if (type == TipoTransaccion.GASTO) "Distribución de Gastos" else "Distribución de Ingresos"
+            PieChartCard(chartData = chartData, title = chartTitle)
             Spacer(modifier = Modifier.height(16.dp))
         }
 
@@ -35,7 +41,8 @@ fun DashboardContent(
         } else {
             RecentTransactions(
                 transactions = transactions,
-                onTransactionClick = onTransactionClick
+                onTransactionClick = onTransactionClick,
+                onSeeAllClick = onSeeAllClick
             )
         }
     }
