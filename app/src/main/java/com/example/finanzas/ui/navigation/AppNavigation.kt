@@ -10,12 +10,25 @@ import com.example.finanzas.ui.add_transaction.AddTransactionScreen
 import com.example.finanzas.ui.all_transactions.AllTransactionsScreen
 import com.example.finanzas.ui.category_management.CategoryManagementScreen
 import com.example.finanzas.ui.dashboard.DashboardScreen
+import com.example.finanzas.ui.onboarding.OnboardingScreen
 import com.example.finanzas.ui.profile.ProfileScreen
 import com.example.finanzas.ui.transaction_detail.TransactionDetailScreen
 
 @Composable
-fun AppNavigation(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = AppScreens.Dashboard.route) {
+fun AppNavigation(
+    navController: NavHostController,
+    startDestination: String // <-- PARÁMETRO NUEVO
+) {
+    NavHost(navController = navController, startDestination = startDestination) {
+        composable(AppScreens.Onboarding.route) {
+            OnboardingScreen(
+                onFinish = {
+                    navController.navigate(AppScreens.Dashboard.route) {
+                        popUpTo(AppScreens.Onboarding.route) { inclusive = true }
+                    }
+                }
+            )
+        }
         composable(AppScreens.Dashboard.route) {
             DashboardScreen(
                 onAddTransaction = {

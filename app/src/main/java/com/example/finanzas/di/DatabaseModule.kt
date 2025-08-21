@@ -48,11 +48,12 @@ object DatabaseModule {
                     // 1. Insertamos el usuario por defecto
                     usuarioDao.upsertUsuario(
                         Usuario(
-                            nombre = "Ariadne Gasta Pues",
+                            nombre = "Usuario", // Nombre genérico inicial
                             email = null,
                             fechaNacimiento = null,
                             monedaPrincipal = "VES",
-                            tema = TemaApp.CLARO.name
+                            tema = TemaApp.CLARO.name,
+                            onboardingCompletado = false // <-- VALOR INICIAL
                         )
                     )
 

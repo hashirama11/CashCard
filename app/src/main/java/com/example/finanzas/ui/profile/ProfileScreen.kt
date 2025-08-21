@@ -26,10 +26,6 @@ fun ProfileScreen(
 ) {
     val user by viewModel.userState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.initializeUser()
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -50,7 +46,7 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             user?.let {
-                // --- NUEVO PERFIL DE USUARIO ---
+                // --- PERFIL DE USUARIO ---
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.size(120.dp)
@@ -76,11 +72,11 @@ fun ProfileScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = it.email ?: "email@ejemplo.com",
+                    text = it.email ?: "Sin correo electrónico",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
-                // --- FIN DE NUEVO PERFIL ---
+                // --- FIN DE PERFIL ---
 
                 Spacer(modifier = Modifier.height(24.dp))
                 Divider()

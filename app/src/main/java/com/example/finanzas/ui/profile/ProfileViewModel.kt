@@ -26,19 +26,5 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    // Esta función es para inicializar al usuario si no existe. La llamaremos desde la UI.
-    fun initializeUser() {
-        viewModelScope.launch {
-            if (userState.value == null) {
-                val defaultUser = Usuario(
-                    nombre = "Ariadne Gasta Pues", // Nombre por defecto
-                    email = null,
-                    fechaNacimiento = null,
-                    monedaPrincipal = "VES",
-                    tema = TemaApp.CLARO.name
-                )
-                repository.upsertUsuario(defaultUser)
-            }
-        }
-    }
+
 }

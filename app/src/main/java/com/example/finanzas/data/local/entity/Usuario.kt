@@ -11,5 +11,6 @@ data class Usuario(
     val email: String?,
     val fechaNacimiento: Long?, // Guardaremos la fecha como Timestamp
     val monedaPrincipal: String, // Ej: "USD", "VES"
-    val tema: String // "CLARO" o "OSCURO"
+    val tema: String, // "CLARO" o "OSCURO"
+    val onboardingCompletado: Boolean = false // <-- NUEVO CAMPO
 )

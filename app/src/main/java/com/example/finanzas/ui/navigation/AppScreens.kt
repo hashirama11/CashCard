@@ -1,6 +1,7 @@
 package com.example.finanzas.ui.navigation
 
 sealed class AppScreens(val route: String) {
+    object Onboarding : AppScreens("onboarding") // <-- NUEVA RUTA
     object Dashboard : AppScreens("dashboard")
     object AddTransaction : AppScreens("add_transaction?transactionId={transactionId}") {
         fun createRoute() = "add_transaction"
