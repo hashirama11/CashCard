@@ -8,9 +8,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.finanzas.ui.add_transaction.AddTransactionScreen
 import com.example.finanzas.ui.all_transactions.AllTransactionsScreen
-import com.example.finanzas.ui.balance.BalanceScreen
+import com.example.finanzas.ui.balance.HistoricalBalanceScreen // <-- CAMBIO DE NOMBRE
 import com.example.finanzas.ui.category_management.CategoryManagementScreen
 import com.example.finanzas.ui.dashboard.DashboardScreen
+import com.example.finanzas.ui.monthly_goal.MonthlyGoalScreen // <-- NUEVA PANTALLA
 import com.example.finanzas.ui.onboarding.OnboardingScreen
 import com.example.finanzas.ui.profile.ProfileScreen
 import com.example.finanzas.ui.transaction_detail.TransactionDetailScreen
@@ -21,6 +22,7 @@ fun AppNavigation(
     startDestination: String
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
+        // ... (composable de Onboarding no cambia)
         composable(AppScreens.Onboarding.route) {
             OnboardingScreen(
                 onFinish = {
@@ -43,10 +45,16 @@ fun AppNavigation(
                 }
             )
         }
-        // AÑADIMOS EL NUEVO DESTINO AL GRÁFICO DE NAVEGACIÓN
-        composable(AppScreens.Balance.route) {
-            BalanceScreen()
+
+        // --- DESTINOS ACTUALIZADOS ---
+        composable(AppScreens.HistoricalBalance.route) {
+            HistoricalBalanceScreen() // La antigua pantalla de balance
         }
+        composable(AppScreens.MonthlyGoal.route) {
+            MonthlyGoalScreen() // La nueva pantalla de objetivo mensual
+        }
+
+        // ... (El resto de composables no cambian)
         composable(
             route = AppScreens.AddTransaction.route,
             arguments = listOf(navArgument("transactionId") {

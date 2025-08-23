@@ -5,11 +5,11 @@ import com.example.finanzas.model.TransactionWithDetails
 
 data class DashboardState(
     val transactionsWithDetails: List<TransactionWithDetails> = emptyList(),
-    // --- CAMPOS MODIFICADOS PARA MULTIMONEDA ---
     val totalIngresosVes: Double = 0.0,
     val totalIngresosUsd: Double = 0.0,
     val totalGastosVes: Double = 0.0,
     val totalGastosUsd: Double = 0.0,
+    val ahorroAcumulado: Double = 0.0, // <-- NUEVO
     val isLoading: Boolean = true,
     val userName: String = "",
     val expenseChartData: List<PieChartData> = emptyList(),

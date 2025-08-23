@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.CheckCircle // <-- Icono nuevo
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -59,8 +60,8 @@ fun MainScreen(startDestination: String) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
 
     showBottomBar = when (navBackStackEntry?.destination?.route) {
-        // AÑADIMOS LA NUEVA PANTALLA A LA LÓGICA DE LA BARRA
-        AppScreens.Dashboard.route, AppScreens.Balance.route, AppScreens.Profile.route -> true
+        // --- RUTAS ACTUALIZADAS ---
+        AppScreens.Dashboard.route, AppScreens.MonthlyGoal.route, AppScreens.HistoricalBalance.route, AppScreens.Profile.route -> true
         else -> false
     }
 
@@ -82,10 +83,11 @@ fun MainScreen(startDestination: String) {
 
 @Composable
 fun AppBottomBar(navController: NavController) {
+    // --- BOTONES ACTUALIZADOS ---
     val items = listOf(
-        // AÑADIMOS EL NUEVO BOTÓN DE NAVEGACIÓN
-        BottomNavItem("Dashboard", Icons.Default.Home, AppScreens.Dashboard.route),
-        BottomNavItem("Balance", Icons.Default.AccountBox, AppScreens.Balance.route),
+        BottomNavItem("Inicio", Icons.Default.Home, AppScreens.Dashboard.route),
+        BottomNavItem("Meta Mensual", Icons.Default.CheckCircle, AppScreens.MonthlyGoal.route),
+        BottomNavItem("Histórico", Icons.Default.AccountBox, AppScreens.HistoricalBalance.route),
         BottomNavItem("Perfil", Icons.Default.Person, AppScreens.Profile.route)
     )
     NavigationBar {

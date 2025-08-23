@@ -26,6 +26,7 @@ import java.util.Locale
 fun BalanceCard(
     balanceVes: Double,
     balanceUsd: Double,
+    ahorroAcumulado: Double, // <-- NUEVO
     type: TipoTransaccion
 ) {
     val vesFormat = NumberFormat.getCurrencyInstance(Locale("es", "VE")).apply {
@@ -36,8 +37,10 @@ fun BalanceCard(
         currency = Currency.getInstance("USD")
     }
 
-    val title = if (type == TipoTransaccion.INGRESO) "Total Ingresos" else "Total Gastos"
-    val color = if (type == TipoTransaccion.INGRESO) AccentGreen else AccentRed
+    val title = "Balance del Mes Actual"
+    // El balance total del mes ahora es el ahorro + ingresos - gastos
+    val totalBalance = ahorroAcumulado + (balanceVes + balanceUsd)
+    val color = if (totalBalance >= 0) AccentGreen else AccentRed
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -53,13 +56,14 @@ fun BalanceCard(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
             Spacer(modifier = Modifier.height(8.dp))
-            // Monto en USD
-            AmountText(amount = usdFormat.format(balanceUsd), color = color)
-            Spacer(modifier = Modifier.height(4.dp))
+            // El monto principal ahora es el balance total
+            AmountText(amount = usdFormat.format(totalBalance), color = color)
+            Spacer(modifier = Modifier.height(8.dp))
             Divider()
-            Spacer(modifier = Modifier.height(4.dp))
-            // Monto en VES
-            AmountText(amount = vesFormat.format(balanceVes), color = color)
+            Spacer(modifier = Modifier.height(8.dp))
+            // Mostramos un desglose
+            Text("Ahorro arrastrado: ${usdFormat.format(ahorroAcumulado)}", style = MaterialTheme.typography.bodySmall)
+            Text("Neto del mes: ${usdFormat.format(balanceVes + balanceUsd)}", style = MaterialTheme.typography.bodySmall)
         }
     }
 }

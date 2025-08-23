@@ -2,15 +2,19 @@ package com.example.finanzas.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.Date
 
 @Entity(tableName = "usuario")
 data class Usuario(
     @PrimaryKey
-    val id: Int = 1, // Siempre usaremos el ID 1 para el único usuario
+    val id: Int = 1,
     val nombre: String,
     val email: String?,
-    val fechaNacimiento: Long?, // Guardaremos la fecha como Timestamp
-    val monedaPrincipal: String, // Ej: "USD", "VES"
-    val tema: String, // "CLARO" o "OSCURO"
-    val onboardingCompletado: Boolean = false // <-- NUEVO CAMPO
+    val fechaNacimiento: Long?,
+    val monedaPrincipal: String,
+    val tema: String,
+    val onboardingCompletado: Boolean = false,
+    // --- NUEVOS CAMPOS ---
+    val ahorroAcumulado: Double = 0.0, // Para guardar el saldo arrastrado
+    val fechaUltimoCierre: Long = Date().time // Para saber cuándo se hizo el último cierre
 )

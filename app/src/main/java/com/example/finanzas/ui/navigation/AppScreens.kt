@@ -3,7 +3,10 @@ package com.example.finanzas.ui.navigation
 sealed class AppScreens(val route: String) {
     object Onboarding : AppScreens("onboarding")
     object Dashboard : AppScreens("dashboard")
-    object Balance : AppScreens("balance") // <-- NUEVA RUTA
+    // RENOMBRADO: Esta es ahora la pantalla de balance histórico general
+    object HistoricalBalance : AppScreens("historical_balance")
+    // NUEVO: Una pantalla para el objetivo del mes
+    object MonthlyGoal : AppScreens("monthly_goal")
     object AddTransaction : AppScreens("add_transaction?transactionId={transactionId}") {
         fun createRoute() = "add_transaction"
         fun createRouteForEdit(transactionId: Int) = "add_transaction?transactionId=$transactionId"

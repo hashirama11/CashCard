@@ -8,7 +8,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.finanzas.data.local.FinanzasDatabase
-import com.example.finanzas.data.local.MIGRATION_3_4
 import com.example.finanzas.data.local.dao.CategoriaDao
 import com.example.finanzas.data.local.dao.TransaccionDao
 import com.example.finanzas.data.local.dao.UsuarioDao
@@ -26,6 +25,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.Date
 import javax.inject.Singleton
 
 @Module
@@ -42,7 +42,7 @@ object DatabaseModule {
             FinanzasDatabase::class.java,
             "finanzas_db"
         )
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration() // Esto manejará el cambio de esquema
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
@@ -51,7 +51,7 @@ object DatabaseModule {
                         val categoriaDao = database.categoriaDao()
                         val usuarioDao = database.usuarioDao()
 
-                        // 1. Insertamos el usuario por defecto
+                        // 1. Insertamos el usuario por defecto (actualizado)
                         usuarioDao.upsertUsuario(
                             Usuario(
                                 nombre = "Usuario",
@@ -59,7 +59,9 @@ object DatabaseModule {
                                 fechaNacimiento = null,
                                 monedaPrincipal = "VES",
                                 tema = TemaApp.CLARO.name,
-                                onboardingCompletado = false
+                                onboardingCompletado = false,
+                                ahorroAcumulado = 0.0,
+                                fechaUltimoCierre = Date().time
                             )
                         )
 
@@ -92,6 +94,8 @@ object DatabaseModule {
                 FinanzasDatabase.INSTANCE = it
             }
     }
+
+    // ... (El resto del archivo no cambia)
 
     @Provides
     @Singleton

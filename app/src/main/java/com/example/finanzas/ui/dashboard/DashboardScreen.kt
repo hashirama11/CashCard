@@ -70,9 +70,9 @@ fun DashboardScreen(
             ) { page ->
                 when (page) {
                     0 -> DashboardContent(
-                        // Pasamos los balances por moneda
                         balanceVes = state.totalIngresosVes,
                         balanceUsd = state.totalIngresosUsd,
+                        ahorroAcumulado = state.ahorroAcumulado, // <-- Pasamos el ahorro
                         onTransactionClick = onTransactionClick,
                         transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.INGRESO.name },
                         type = TipoTransaccion.INGRESO,
@@ -80,9 +80,10 @@ fun DashboardScreen(
                         onSeeAllClick = onSeeAllClick
                     )
                     1 -> DashboardContent(
-                        // Pasamos los balances por moneda
-                        balanceVes = state.totalGastosVes,
-                        balanceUsd = state.totalGastosUsd,
+                        // Para gastos, el balance es negativo
+                        balanceVes = -state.totalGastosVes,
+                        balanceUsd = -state.totalGastosUsd,
+                        ahorroAcumulado = state.ahorroAcumulado, // <-- Pasamos el ahorro
                         onTransactionClick = onTransactionClick,
                         transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.GASTO.name },
                         type = TipoTransaccion.GASTO,
