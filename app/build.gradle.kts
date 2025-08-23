@@ -81,6 +81,7 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.google.material)
+    implementation("androidx.biometric:biometric-ktx:1.2.0-alpha05")
 
 
 }
