@@ -26,8 +26,8 @@ import java.util.Locale
 fun BalanceCard(
     balanceVes: Double,
     balanceUsd: Double,
-    ahorroAcumulado: Double, // <-- NUEVO
-    type: TipoTransaccion
+    ahorroAcumulado: Double,
+    type: TipoTransaccion // 'type' nos dice si estamos en la pestaña Ingresos o Gastos
 ) {
     val vesFormat = NumberFormat.getCurrencyInstance(Locale("es", "VE")).apply {
         currency = Currency.getInstance("VES")
@@ -37,10 +37,19 @@ fun BalanceCard(
         currency = Currency.getInstance("USD")
     }
 
-    val title = "Balance del Mes Actual"
-    // El balance total del mes ahora es el ahorro + ingresos - gastos
-    val totalBalance = ahorroAcumulado + (balanceVes + balanceUsd)
-    val color = if (totalBalance >= 0) AccentGreen else AccentRed
+    // --- INICIO DE LA CORRECCIÓN ---
+
+    // 1. Asumimos que el ahorro acumulado está en USD.
+    // Calculamos el balance final para cada moneda por separado.
+    val finalBalanceUsd = ahorroAcumulado + balanceUsd
+    val finalBalanceVes = balanceVes // El balance en VES no se mezcla con el ahorro.
+
+    // 2. Determinamos el color para cada monto de forma independiente.
+    val colorUsd = if (finalBalanceUsd >= 0) AccentGreen else AccentRed
+    val colorVes = if (finalBalanceVes >= 0) AccentGreen else AccentRed
+
+    val title = if (type == TipoTransaccion.INGRESO) "Ingresos del Mes" else "Gastos del Mes"
+
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -56,16 +65,29 @@ fun BalanceCard(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
             Spacer(modifier = Modifier.height(8.dp))
-            // El monto principal ahora es el balance total
-            AmountText(amount = usdFormat.format(totalBalance), color = color)
+
+            // 3. Mostramos el balance final de USD
+            AmountText(amount = usdFormat.format(finalBalanceUsd), color = colorUsd)
+            Text(
+                "Balance Final en USD (incluye ahorro)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+
             Spacer(modifier = Modifier.height(8.dp))
             Divider()
             Spacer(modifier = Modifier.height(8.dp))
-            // Mostramos un desglose
-            Text("Ahorro arrastrado: ${usdFormat.format(ahorroAcumulado)}", style = MaterialTheme.typography.bodySmall)
-            Text("Neto del mes: ${usdFormat.format(balanceVes + balanceUsd)}", style = MaterialTheme.typography.bodySmall)
+
+            // 4. Mostramos el balance final de VES
+            AmountText(amount = vesFormat.format(finalBalanceVes), color = colorVes)
+            Text(
+                "Balance Neto del Mes en VES",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
         }
     }
+    // --- FIN DE LA CORRECCIÓN ---
 }
 
 @Composable
