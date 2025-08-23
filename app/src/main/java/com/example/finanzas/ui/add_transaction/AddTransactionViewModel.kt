@@ -9,8 +9,12 @@ import com.example.finanzas.data.repository.FinanzasRepository
 import com.example.finanzas.model.EstadoTransaccion
 import com.example.finanzas.model.Moneda
 import com.example.finanzas.model.TipoTransaccion
+import com.example.finanzas.notifications.AlarmScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
@@ -18,6 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
     private val repository: FinanzasRepository,
+    private val alarmScheduler: AlarmScheduler, // <-- Inyectamos el scheduler
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -44,9 +49,9 @@ class AddTransactionViewModel @Inject constructor(
                             selectedTransactionType = TipoTransaccion.valueOf(tx.tipo),
                             selectedCategory = category,
                             transactionDate = tx.fecha,
-                            // --- CARGAMOS LOS NUEVOS DATOS ---
                             selectedCurrency = Moneda.valueOf(tx.moneda),
-                            isPending = tx.estado == EstadoTransaccion.PENDIENTE.name
+                            isPending = tx.estado == EstadoTransaccion.PENDIENTE.name,
+                            completionDate = tx.fechaConcrecion
                         )
                     }
                 }
@@ -58,9 +63,9 @@ class AddTransactionViewModel @Inject constructor(
     fun onAmountChange(newAmount: String) { _state.update { it.copy(amount = newAmount) } }
     fun onDescriptionChange(newDescription: String) { _state.update { it.copy(description = newDescription) } }
     fun onCategorySelected(category: Categoria) { _state.update { it.copy(selectedCategory = category) } }
-    // --- NUEVAS FUNCIONES ---
     fun onCurrencySelected(currency: Moneda) { _state.update { it.copy(selectedCurrency = currency) } }
     fun onPendingStatusChange(isPending: Boolean) { _state.update { it.copy(isPending = isPending) } }
+    fun onCompletionDateChange(date: Date?) { _state.update { it.copy(completionDate = date) } }
 
     fun onTransactionTypeSelected(type: TipoTransaccion) {
         _state.update { it.copy(selectedTransactionType = type) }
@@ -88,13 +93,13 @@ class AddTransactionViewModel @Inject constructor(
         val transactionToSave = Transaccion(
             id = if (currentState.isEditing) transactionId else 0,
             monto = amountDouble,
-            // --- GUARDAMOS LOS NUEVOS DATOS ---
             moneda = currentState.selectedCurrency.name,
             descripcion = currentState.description,
             fecha = if (currentState.isEditing) currentState.transactionDate ?: Date() else Date(),
             tipo = currentState.selectedTransactionType.name,
             estado = if (currentState.isPending) EstadoTransaccion.PENDIENTE.name else EstadoTransaccion.CONCRETADO.name,
-            categoriaId = currentState.selectedCategory.id
+            categoriaId = currentState.selectedCategory.id,
+            fechaConcrecion = if (currentState.isPending) currentState.completionDate else null
         )
 
         viewModelScope.launch {
@@ -102,6 +107,12 @@ class AddTransactionViewModel @Inject constructor(
                 repository.updateTransaction(transactionToSave)
             } else {
                 repository.insertTransaccion(transactionToSave)
+            }
+            // --- LÓGICA DE ALARMAS ---
+            if (transactionToSave.estado == EstadoTransaccion.PENDIENTE.name && transactionToSave.fechaConcrecion != null) {
+                alarmScheduler.schedule(transactionToSave)
+            } else {
+                alarmScheduler.cancel(transactionToSave) // Cancela si deja de ser pendiente
             }
         }
     }

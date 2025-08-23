@@ -21,6 +21,7 @@ foundationVersion = "1.9.0"
 ui = "1.9.0"
 coreSplashscreen = "1.0.1"
 uiGraphics = "1.9.0"
+material = "1.12.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -56,6 +57,7 @@ foundation = { group = "androidx.compose.foundation", name = "foundation", versi
 ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" } # <-- AÑADE ESTA LÍNEA
+google-material = { group = "com.google.android.material", name = "material", version.ref = "material" } # <-- AÑADE ESTA LÍNEA
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
