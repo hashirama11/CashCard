@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -44,8 +42,11 @@ fun RecentTransactions(
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
-        LazyColumn {
-            items(transactions.take(DASHBOARD_TRANSACTION_LIMIT)) { transactionWithDetails ->
+
+        // Se reemplaza LazyColumn por una Column normal
+        Column {
+            // Se itera sobre la lista con un forEach en lugar de 'items'
+            transactions.take(DASHBOARD_TRANSACTION_LIMIT).forEach { transactionWithDetails ->
                 TransactionItem(
                     transactionDetails = transactionWithDetails,
                     onClick = { onTransactionClick(transactionWithDetails.transaccion.id) }
