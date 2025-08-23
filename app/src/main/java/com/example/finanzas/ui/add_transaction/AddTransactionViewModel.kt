@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 
@@ -90,6 +91,25 @@ class AddTransactionViewModel @Inject constructor(
         val amountDouble = currentState.amount.toDoubleOrNull() ?: 0.0
         if (amountDouble <= 0 || currentState.description.isBlank() || currentState.selectedCategory == null) return
 
+        // --- INICIO DE LA MODIFICACIÓN ---
+        // Aquí es donde ajustamos la hora de la notificación
+        val completionDateTime: Date? = if (currentState.isPending && currentState.completionDate != null) {
+            // 1. Tomamos la fecha que el usuario seleccionó
+            val calendar = Calendar.getInstance().apply {
+                time = currentState.completionDate
+
+                // 2. Le establecemos manualmente la hora a las 9:00 AM
+                set(Calendar.HOUR_OF_DAY, 9)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+            }
+            // 3. Obtenemos la nueva fecha con la hora ajustada
+            calendar.time
+        } else {
+            null
+        }
+        // --- FIN DE LA MODIFICACIÓN ---
+
         val transactionToSave = Transaccion(
             id = if (currentState.isEditing) transactionId else 0,
             monto = amountDouble,
@@ -98,8 +118,8 @@ class AddTransactionViewModel @Inject constructor(
             fecha = if (currentState.isEditing) currentState.transactionDate ?: Date() else Date(),
             tipo = currentState.selectedTransactionType.name,
             estado = if (currentState.isPending) EstadoTransaccion.PENDIENTE.name else EstadoTransaccion.CONCRETADO.name,
-            categoriaId = currentState.selectedCategory.id,
-            fechaConcrecion = if (currentState.isPending) currentState.completionDate else null
+            categoriaId = currentState.selectedCategory!!.id,
+            fechaConcrecion = completionDateTime // Usamos la nueva fecha con la hora ajustada
         )
 
         viewModelScope.launch {
@@ -108,11 +128,11 @@ class AddTransactionViewModel @Inject constructor(
             } else {
                 repository.insertTransaccion(transactionToSave)
             }
-            // --- LÓGICA DE ALARMAS ---
+            // El resto de la lógica de guardado no cambia
             if (transactionToSave.estado == EstadoTransaccion.PENDIENTE.name && transactionToSave.fechaConcrecion != null) {
                 alarmScheduler.schedule(transactionToSave)
             } else {
-                alarmScheduler.cancel(transactionToSave) // Cancela si deja de ser pendiente
+                alarmScheduler.cancel(transactionToSave)
             }
         }
     }

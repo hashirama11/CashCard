@@ -1,6 +1,11 @@
 package com.example.finanzas.ui.monthly_goal
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -9,10 +14,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -20,18 +25,30 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.finanzas.R // Asegúrate de tener los íconos en tu carpeta res/drawable
 import com.example.finanzas.ui.theme.AccentGreen
 import com.example.finanzas.ui.theme.AccentRed
 import java.text.NumberFormat
 import java.util.Currency
 import java.util.Locale
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +59,12 @@ fun MonthlyGoalScreen(
     val currencyFormat = NumberFormat.getCurrencyInstance(Locale.US).apply {
         currency = Currency.getInstance("USD")
     }
+    // Calculamos el porcentaje de ahorro sobre los ingresos del mes
+    val savingsRate = if (state.ingresosDelMes > 0) {
+        (state.balanceDelMes / state.ingresosDelMes).toFloat()
+    } else {
+        0f
+    }.coerceIn(0f, 1f) // Lo limitamos entre 0 y 1
 
     Scaffold(
         topBar = {
@@ -59,72 +82,161 @@ fun MonthlyGoalScreen(
                 .fillMaxSize()
                 .padding(paddingValues),
             contentPadding = PaddingValues(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // --- Indicador de Progreso Circular ---
             item {
-                GoalSummaryCard(
-                    title = "Balance Final del Mes",
-                    amount = state.saldoActual,
-                    format = currencyFormat,
-                    color = if (state.saldoActual >= 0) MaterialTheme.colorScheme.primary else AccentRed
+                SavingsProgressIndicator(
+                    progress = savingsRate,
+                    balanceDelMes = state.balanceDelMes,
+                    format = currencyFormat
                 )
             }
+
+            // --- Tarjetas de Resumen ---
             item {
-                DetailRow(label = "Saldo Inicial (Ahorro Anterior)", value = currencyFormat.format(state.ahorroAcumulado))
-                Divider()
-                DetailRow(label = "+ Ingresos del Mes", value = currencyFormat.format(state.ingresosDelMes), color = AccentGreen)
-                Divider()
-                DetailRow(label = "- Gastos del Mes", value = currencyFormat.format(state.gastosDelMes), color = AccentRed)
-                Divider(thickness = 2.dp, modifier = Modifier.padding(top = 8.dp))
-                DetailRow(label = "= Saldo Actual", value = currencyFormat.format(state.saldoActual), isTotal = true)
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    SummaryCard(
+                        title = "Ingresos del Mes",
+                        amount = state.ingresosDelMes,
+                        format = currencyFormat,
+                        color = AccentGreen,
+                        modifier = Modifier.weight(1f)
+                    )
+                    SummaryCard(
+                        title = "Gastos del Mes",
+                        amount = state.gastosDelMes,
+                        format = currencyFormat,
+                        color = AccentRed,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
+            // --- Saldo Inicial ---
+            item {
+                InitialBalanceCard(
+                    amount = state.ahorroAcumulado,
+                    format = currencyFormat
+                )
             }
         }
     }
 }
 
 @Composable
-private fun GoalSummaryCard(title: String, amount: Double, format: NumberFormat, color: Color) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = color)
+fun SavingsProgressIndicator(progress: Float, balanceDelMes: Double, format: NumberFormat) {
+    val indicatorColor = if (balanceDelMes >= 0) AccentGreen else AccentRed
+    val illustration = if (balanceDelMes >= 0) R.drawable.savings_24dp else R.drawable.credit_card_24dp
+
+    var targetRate by remember { mutableStateOf(0f) }
+    val animatedRate by animateFloatAsState(
+        targetValue = targetRate,
+        animationSpec = tween(durationMillis = 1200), label = ""
+    )
+    LaunchedEffect(progress) {
+        targetRate = progress
+    }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
+        Box(
+            modifier = Modifier.size(180.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                drawArc(
+                    color = Color.LightGray,
+                    startAngle = -90f,
+                    sweepAngle = 360f,
+                    useCenter = false,
+                    style = Stroke(width = 40f, cap = StrokeCap.Round)
+                )
+                drawArc(
+                    color = indicatorColor,
+                    startAngle = -90f,
+                    sweepAngle = 360 * animatedRate,
+                    useCenter = false,
+                    style = Stroke(width = 40f, cap = StrokeCap.Round)
+                )
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Image(
+                    painter = painterResource(id = illustration),
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${(animatedRate * 100).roundToInt()}%",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(
+                    text = "Ahorrado",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+        Text(
+            text = "Balance del Mes: ${format.format(balanceDelMes)}",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = indicatorColor
+        )
+    }
+}
+
+
+@Composable
+fun SummaryCard(title: String, amount: Double, format: NumberFormat, color: Color, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier,
+        elevation = CardDefaults.cardElevation(2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimary
+                style = MaterialTheme.typography.labelLarge
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = format.format(amount),
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onPrimary
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = color
             )
         }
     }
 }
 
 @Composable
-private fun DetailRow(label: String, value: String, color: Color = MaterialTheme.colorScheme.onSurface, isTotal: Boolean = false) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+fun InitialBalanceCard(amount: Double, format: NumberFormat) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        Text(
-            text = label,
-            style = if (isTotal) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyLarge,
-            fontWeight = if (isTotal) FontWeight.Bold else FontWeight.Normal
-        )
-        Text(
-            text = value,
-            style = if (isTotal) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = color
-        )
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Saldo Inicial (Ahorro Anterior)",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = format.format(amount),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.End
+            )
+        }
     }
 }
