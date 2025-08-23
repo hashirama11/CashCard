@@ -3,6 +3,7 @@ package com.example.finanzas.ui.monthly_goal
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,10 +42,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.finanzas.R
 import com.example.finanzas.model.Moneda
 import com.example.finanzas.ui.theme.AccentGreen
 import com.example.finanzas.ui.theme.AccentRed
@@ -170,11 +173,10 @@ fun SavingsProgressIndicator(
                 )
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    imageVector = Icons.Default.Add,
+                Image(
+                    painter = painterResource(R.drawable.savings_24dp),
                     contentDescription = null,
-                    modifier = Modifier.size(40.dp),
-                    tint = indicatorColor
+                    modifier = Modifier.size(48.dp)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
