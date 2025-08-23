@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finanzas.data.local.entity.Transaccion
 import com.example.finanzas.data.repository.FinanzasRepository
+import com.example.finanzas.model.Moneda
 import com.example.finanzas.model.TipoTransaccion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,27 +29,45 @@ class MonthlyGoalViewModel @Inject constructor(
 
         combine(transactionsFlow, userFlow) { allTransactions, user ->
             val ahorroAcumulado = user?.ahorroAcumulado ?: 0.0
-
             val currentMonthTransactions = allTransactions.filter { isTransactionInCurrentMonth(it) }
 
-            val ingresosDelMes = currentMonthTransactions
-                .filter { it.tipo == TipoTransaccion.INGRESO.name }
-                .sumOf { it.monto }
+            val ingresosDelMes = currentMonthTransactions.filter { it.tipo == TipoTransaccion.INGRESO.name }
+            val gastosDelMes = currentMonthTransactions.filter { it.tipo == TipoTransaccion.GASTO.name }
 
-            val gastosDelMes = currentMonthTransactions
-                .filter { it.tipo == TipoTransaccion.GASTO.name }
-                .sumOf { it.monto }
+            val ingresosDelMesUsd = ingresosDelMes.filter { it.moneda == Moneda.USD.name }.sumOf { it.monto }
+            val ingresosDelMesVes = ingresosDelMes.filter { it.moneda == Moneda.VES.name }.sumOf { it.monto }
 
-            val balanceDelMes = ingresosDelMes - gastosDelMes
-            val saldoActual = ahorroAcumulado + balanceDelMes
+            val gastosDelMesUsd = gastosDelMes.filter { it.moneda == Moneda.USD.name }.sumOf { it.monto }
+            val gastosDelMesVes = gastosDelMes.filter { it.moneda == Moneda.VES.name }.sumOf { it.monto }
+
+            val balanceDelMesUsd = ingresosDelMesUsd - gastosDelMesUsd
+            val balanceDelMesVes = ingresosDelMesVes - gastosDelMesVes
+
+            val saldoActualUsd = ahorroAcumulado + balanceDelMesUsd
+            val saldoActualVes = balanceDelMesVes
+
+            val savingsRateUsd = if (ingresosDelMesUsd > 0) {
+                (balanceDelMesUsd / ingresosDelMesUsd).toFloat()
+            } else { 0f }.coerceIn(0f, 1f)
+
+            // --- NUEVO CÁLCULO PARA TASA DE AHORRO EN VES ---
+            val savingsRateVes = if (ingresosDelMesVes > 0) {
+                (balanceDelMesVes / ingresosDelMesVes).toFloat()
+            } else { 0f }.coerceIn(0f, 1f)
 
             _state.update {
                 it.copy(
                     ahorroAcumulado = ahorroAcumulado,
-                    ingresosDelMes = ingresosDelMes,
-                    gastosDelMes = gastosDelMes,
-                    balanceDelMes = balanceDelMes,
-                    saldoActual = saldoActual,
+                    ingresosDelMesUsd = ingresosDelMesUsd,
+                    ingresosDelMesVes = ingresosDelMesVes,
+                    gastosDelMesUsd = gastosDelMesUsd,
+                    gastosDelMesVes = gastosDelMesVes,
+                    balanceDelMesUsd = balanceDelMesUsd,
+                    balanceDelMesVes = balanceDelMesVes,
+                    saldoActualUsd = saldoActualUsd,
+                    saldoActualVes = saldoActualVes,
+                    savingsRateUsd = savingsRateUsd,
+                    savingsRateVes = savingsRateVes, // <-- Actualizamos el estado
                     isLoading = false
                 )
             }

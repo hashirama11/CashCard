@@ -3,7 +3,6 @@ package com.example.finanzas.ui.monthly_goal
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,9 +15,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,13 +41,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.finanzas.R // Asegúrate de tener los íconos en tu carpeta res/drawable
+import com.example.finanzas.model.Moneda
 import com.example.finanzas.ui.theme.AccentGreen
 import com.example.finanzas.ui.theme.AccentRed
 import java.text.NumberFormat
@@ -56,15 +59,10 @@ fun MonthlyGoalScreen(
     viewModel: MonthlyGoalViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val currencyFormat = NumberFormat.getCurrencyInstance(Locale.US).apply {
-        currency = Currency.getInstance("USD")
-    }
-    // Calculamos el porcentaje de ahorro sobre los ingresos del mes
-    val savingsRate = if (state.ingresosDelMes > 0) {
-        (state.balanceDelMes / state.ingresosDelMes).toFloat()
-    } else {
-        0f
-    }.coerceIn(0f, 1f) // Lo limitamos entre 0 y 1
+    val usdFormat = NumberFormat.getCurrencyInstance(Locale.US).apply { currency = Currency.getInstance("USD") }
+    val vesFormat = NumberFormat.getCurrencyInstance(Locale("es", "VE")).apply { currency = Currency.getInstance("VES") }
+
+    var selectedCurrencyForChart by remember { mutableStateOf(Moneda.USD) }
 
     Scaffold(
         topBar = {
@@ -78,47 +76,51 @@ fun MonthlyGoalScreen(
         }
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
             contentPadding = PaddingValues(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // --- Indicador de Progreso Circular ---
             item {
-                SavingsProgressIndicator(
-                    progress = savingsRate,
-                    balanceDelMes = state.balanceDelMes,
-                    format = currencyFormat
-                )
-            }
-
-            // --- Tarjetas de Resumen ---
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    SummaryCard(
-                        title = "Ingresos del Mes",
-                        amount = state.ingresosDelMes,
-                        format = currencyFormat,
-                        color = AccentGreen,
-                        modifier = Modifier.weight(1f)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = selectedCurrencyForChart == Moneda.USD,
+                        onClick = { selectedCurrencyForChart = Moneda.USD },
+                        label = { Text("Ahorro en USD") }
                     )
-                    SummaryCard(
-                        title = "Gastos del Mes",
-                        amount = state.gastosDelMes,
-                        format = currencyFormat,
-                        color = AccentRed,
-                        modifier = Modifier.weight(1f)
+                    FilterChip(
+                        selected = selectedCurrencyForChart == Moneda.VES,
+                        onClick = { selectedCurrencyForChart = Moneda.VES },
+                        label = { Text("Ahorro en VES") }
                     )
                 }
             }
 
-            // --- Saldo Inicial ---
+            item {
+                SavingsProgressIndicator(
+                    progress = if (selectedCurrencyForChart == Moneda.USD) state.savingsRateUsd else state.savingsRateVes,
+                    balanceDelMes = if (selectedCurrencyForChart == Moneda.USD) state.balanceDelMesUsd else state.balanceDelMesVes,
+                    currencyFormat = if (selectedCurrencyForChart == Moneda.USD) usdFormat else vesFormat,
+                    currencyName = selectedCurrencyForChart.name
+                )
+            }
+
+            item {
+                MonthlyBreakdownCard(
+                    title = "Movimientos del Mes",
+                    ingresosUsd = state.ingresosDelMesUsd,
+                    ingresosVes = state.ingresosDelMesVes,
+                    gastosUsd = state.gastosDelMesUsd,
+                    gastosVes = state.gastosDelMesVes,
+                    usdFormat = usdFormat,
+                    vesFormat = vesFormat
+                )
+            }
+
             item {
                 InitialBalanceCard(
                     amount = state.ahorroAcumulado,
-                    format = currencyFormat
+                    format = usdFormat
                 )
             }
         }
@@ -126,11 +128,15 @@ fun MonthlyGoalScreen(
 }
 
 @Composable
-fun SavingsProgressIndicator(progress: Float, balanceDelMes: Double, format: NumberFormat) {
+fun SavingsProgressIndicator(
+    progress: Float,
+    balanceDelMes: Double,
+    currencyFormat: NumberFormat,
+    currencyName: String
+) {
     val indicatorColor = if (balanceDelMes >= 0) AccentGreen else AccentRed
-    val illustration = if (balanceDelMes >= 0) R.drawable.savings_24dp else R.drawable.credit_card_24dp
 
-    var targetRate by remember { mutableStateOf(0f) }
+    var targetRate by remember { mutableFloatStateOf(0f) }
     val animatedRate by animateFloatAsState(
         targetValue = targetRate,
         animationSpec = tween(durationMillis = 1200), label = ""
@@ -164,10 +170,11 @@ fun SavingsProgressIndicator(progress: Float, balanceDelMes: Double, format: Num
                 )
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Image(
-                    painter = painterResource(id = illustration),
+                Icon(
+                    imageVector = Icons.Default.Add,
                     contentDescription = null,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(40.dp),
+                    tint = indicatorColor
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -175,14 +182,11 @@ fun SavingsProgressIndicator(progress: Float, balanceDelMes: Double, format: Num
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.ExtraBold
                 )
-                Text(
-                    text = "Ahorrado",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Text(text = "Ahorro en $currencyName", style = MaterialTheme.typography.bodyMedium)
             }
         }
         Text(
-            text = "Balance del Mes: ${format.format(balanceDelMes)}",
+            text = "Balance del Mes: ${currencyFormat.format(balanceDelMes)}",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
             color = indicatorColor
@@ -190,28 +194,43 @@ fun SavingsProgressIndicator(progress: Float, balanceDelMes: Double, format: Num
     }
 }
 
-
 @Composable
-fun SummaryCard(title: String, amount: Double, format: NumberFormat, color: Color, modifier: Modifier = Modifier) {
+fun MonthlyBreakdownCard(
+    title: String,
+    ingresosUsd: Double,
+    ingresosVes: Double,
+    gastosUsd: Double,
+    gastosVes: Double,
+    usdFormat: NumberFormat,
+    vesFormat: NumberFormat
+) {
     Card(
-        modifier = modifier,
+        modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(2.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelLarge
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = format.format(amount),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = color
-            )
+            Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+            Spacer(modifier = Modifier.height(16.dp))
+            BreakdownRow("Ingresos", vesFormat.format(ingresosVes), usdFormat.format(ingresosUsd), AccentGreen)
+            BreakdownRow("Gastos", vesFormat.format(gastosVes), usdFormat.format(gastosUsd), AccentRed)
         }
     }
+}
+
+@Composable
+fun BreakdownRow(label: String, amountVes: String, amountUsd: String, color: Color) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = label, style = MaterialTheme.typography.bodyLarge, color = color, modifier = Modifier.weight(1f))
+        Text(text = amountVes, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = color, modifier = Modifier.weight(1f), textAlign = TextAlign.End)
+        Text(text = amountUsd, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = color, modifier = Modifier.weight(1f), textAlign = TextAlign.End)
+    }
+    Divider()
 }
 
 @Composable
