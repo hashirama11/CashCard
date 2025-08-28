@@ -9,9 +9,14 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.finanzas.data.local.FinanzasDatabase
 import com.example.finanzas.data.local.dao.CategoriaDao
+import com.example.finanzas.data.local.MIGRATION_4_5
+import com.example.finanzas.data.local.MIGRATION_5_6
+import com.example.finanzas.data.local.MIGRATION_6_7
+import com.example.finanzas.data.local.dao.MonedaDao
 import com.example.finanzas.data.local.dao.TransaccionDao
 import com.example.finanzas.data.local.dao.UsuarioDao
 import com.example.finanzas.data.local.entity.Categoria
+import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.local.entity.Usuario
 import com.example.finanzas.model.IconosEstandar
 import com.example.finanzas.model.TemaApp
@@ -42,7 +47,7 @@ object DatabaseModule {
             FinanzasDatabase::class.java,
             "finanzas_db"
         )
-            .fallbackToDestructiveMigration() // Esto manejará el cambio de esquema
+            .addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
@@ -50,6 +55,12 @@ object DatabaseModule {
                     CoroutineScope(Dispatchers.IO).launch {
                         val categoriaDao = database.categoriaDao()
                         val usuarioDao = database.usuarioDao()
+                        val monedaDao = database.monedaDao()
+
+                        // Insert default currencies
+                        monedaDao.insertMoneda(Moneda(nombre = "Dólar", simbolo = "$", tasa_conversion = 1.0))
+                        monedaDao.insertMoneda(Moneda(nombre = "Bolívar", simbolo = "Bs.", tasa_conversion = 36.5))
+
 
                         // 1. Insertamos el usuario por defecto (actualizado)
                         usuarioDao.upsertUsuario(
@@ -58,6 +69,7 @@ object DatabaseModule {
                                 email = null,
                                 fechaNacimiento = null,
                                 monedaPrincipal = "VES",
+                                monedaSecundaria = null,
                                 tema = TemaApp.CLARO.name,
                                 onboardingCompletado = false,
                                 ahorroAcumulado = 0.0,
@@ -108,6 +120,10 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideUsuarioDao(database: FinanzasDatabase): UsuarioDao = database.usuarioDao()
+
+    @Provides
+    @Singleton
+    fun provideMonedaDao(database: FinanzasDatabase): MonedaDao = database.monedaDao()
 
     @Provides
     @Singleton

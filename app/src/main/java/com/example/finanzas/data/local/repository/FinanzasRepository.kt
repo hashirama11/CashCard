@@ -1,6 +1,8 @@
 package com.example.finanzas.data.repository
 
 import com.example.finanzas.data.local.entity.Categoria
+import com.example.finanzas.data.local.entity.Categoria
+import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.local.entity.Transaccion
 import com.example.finanzas.data.local.entity.Usuario
 import kotlinx.coroutines.flow.Flow
@@ -21,4 +23,9 @@ interface FinanzasRepository {
     // Funciones de Usuario
     fun getUsuario(): Flow<Usuario?>
     suspend fun upsertUsuario(usuario: Usuario)
+
+    // Funciones de Moneda
+    fun getAllMonedas(): Flow<List<Moneda>>
+    suspend fun insertMoneda(moneda: Moneda)
+    suspend fun updateMoneda(moneda: Moneda)
 }

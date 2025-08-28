@@ -2,9 +2,9 @@ package com.example.finanzas.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.local.entity.Transaccion
 import com.example.finanzas.data.repository.FinanzasRepository
-import com.example.finanzas.model.Moneda
 import com.example.finanzas.model.PieChartData
 import com.example.finanzas.model.TipoTransaccion
 import com.example.finanzas.model.TransactionWithDetails
@@ -38,9 +38,14 @@ class DashboardViewModel @Inject constructor(
         val transactionsFlow = repository.getAllTransacciones()
         val categoriesFlow = repository.getAllCategorias()
         val userFlow = repository.getUsuario()
+        val monedasFlow = repository.getAllMonedas()
 
-        combine(transactionsFlow, categoriesFlow, userFlow) { allTransactions, categories, user ->
+        combine(transactionsFlow, categoriesFlow, userFlow, monedasFlow) { allTransactions, categories, user, monedas ->
             val categoriesMap = categories.associateBy { it.id }
+            val monedasMap = monedas.associateBy { it.nombre }
+
+            val primaryCurrencySymbol = monedasMap[user?.monedaPrincipal]?.simbolo ?: ""
+            val secondaryCurrencySymbol = monedasMap[user?.monedaSecundaria]?.simbolo ?: ""
 
             // --- LÓGICA PRINCIPAL: FILTRAR TRANSACCIONES SOLO DEL MES ACTUAL ---
             val currentMonthTransactions = allTransactions.filter { isTransactionInCurrentMonth(it) }
@@ -55,10 +60,10 @@ class DashboardViewModel @Inject constructor(
             val ingresos = currentMonthTransactions.filter { it.tipo == TipoTransaccion.INGRESO.name }
             val gastos = currentMonthTransactions.filter { it.tipo == TipoTransaccion.GASTO.name }
 
-            val totalIngresosVes = ingresos.filter { it.moneda == Moneda.VES.name }.sumOf { it.monto }
-            val totalIngresosUsd = ingresos.filter { it.moneda == Moneda.USD.name }.sumOf { it.monto }
-            val totalGastosVes = gastos.filter { it.moneda == Moneda.VES.name }.sumOf { it.monto }
-            val totalGastosUsd = gastos.filter { it.moneda == Moneda.USD.name }.sumOf { it.monto }
+            val totalIngresosVes = ingresos.filter { it.moneda == primaryCurrencySymbol }.sumOf { it.monto }
+            val totalIngresosUsd = ingresos.filter { it.moneda == secondaryCurrencySymbol }.sumOf { it.monto }
+            val totalGastosVes = gastos.filter { it.moneda == primaryCurrencySymbol }.sumOf { it.monto }
+            val totalGastosUsd = gastos.filter { it.moneda == secondaryCurrencySymbol }.sumOf { it.monto }
 
             val totalGastosConsolidados = gastos.sumOf { it.monto }
             val totalIngresosConsolidados = ingresos.sumOf { it.monto }

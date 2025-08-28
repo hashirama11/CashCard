@@ -1,9 +1,12 @@
 package com.example.finanzas.data.repository
 
 import com.example.finanzas.data.local.dao.CategoriaDao
+import com.example.finanzas.data.local.dao.CategoriaDao
+import com.example.finanzas.data.local.dao.MonedaDao
 import com.example.finanzas.data.local.dao.TransaccionDao
 import com.example.finanzas.data.local.dao.UsuarioDao
 import com.example.finanzas.data.local.entity.Categoria
+import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.local.entity.Transaccion
 import com.example.finanzas.data.local.entity.Usuario
 import kotlinx.coroutines.flow.Flow
@@ -12,7 +15,8 @@ import javax.inject.Inject
 class FinanzasRepositoryImpl @Inject constructor(
     private val transaccionDao: TransaccionDao,
     private val categoriaDao: CategoriaDao,
-    private val usuarioDao: UsuarioDao
+    private val usuarioDao: UsuarioDao,
+    private val monedaDao: MonedaDao
 ) : FinanzasRepository {
 
     override fun getAllTransacciones(): Flow<List<Transaccion>> = transaccionDao.getAllTransacciones()
@@ -27,4 +31,8 @@ class FinanzasRepositoryImpl @Inject constructor(
 
     override fun getUsuario(): Flow<Usuario?> = usuarioDao.getUsuario()
     override suspend fun upsertUsuario(usuario: Usuario) = usuarioDao.upsertUsuario(usuario)
+
+    override fun getAllMonedas(): Flow<List<Moneda>> = monedaDao.getAllMonedas()
+    override suspend fun insertMoneda(moneda: Moneda) = monedaDao.insertMoneda(moneda)
+    override suspend fun updateMoneda(moneda: Moneda) = monedaDao.updateMoneda(moneda)
 }

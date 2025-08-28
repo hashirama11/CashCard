@@ -18,12 +18,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finanzas.R
+import com.example.finanzas.data.local.entity.Moneda
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel = hiltViewModel(),
@@ -36,11 +37,15 @@ fun OnboardingScreen(
     )
     val pagerState = rememberPagerState(pageCount = { pages.size + 1 }) // +1 para la pantalla de datos
     val coroutineScope = rememberCoroutineScope()
+    val monedas by viewModel.monedas.collectAsState()
 
     // --- MEJORA: El estado se gestiona aquí, en el nivel superior ---
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var birthDate by remember { mutableStateOf<Date?>(null) }
+    var primaryCurrency by remember { mutableStateOf<Moneda?>(null) }
+    var secondaryCurrency by remember { mutableStateOf<Moneda?>(null) }
+
 
     Column(modifier = Modifier.fillMaxSize()) {
         HorizontalPager(
@@ -58,7 +63,12 @@ fun OnboardingScreen(
                     email = email,
                     onEmailChange = { email = it },
                     birthDate = birthDate,
-                    onBirthDateChange = { birthDate = it }
+                    onBirthDateChange = { birthDate = it },
+                    monedas = monedas,
+                    primaryCurrency = primaryCurrency,
+                    onPrimaryCurrencyChange = { primaryCurrency = it },
+                    secondaryCurrency = secondaryCurrency,
+                    onSecondaryCurrencyChange = { secondaryCurrency = it }
                 )
             }
         }
@@ -75,7 +85,7 @@ fun OnboardingScreen(
             AnimatedVisibility(visible = pagerState.currentPage < pages.size) {
                 TextButton(onClick = {
                     // Al saltar, guardamos con los valores por defecto y finalizamos
-                    viewModel.completeOnboarding("Usuario", "", null)
+                    viewModel.completeOnboarding("Usuario", "", null, "Dólar", "Bolívar")
                     onFinish()
                 }) {
                     Text("Saltar")
@@ -116,7 +126,9 @@ fun OnboardingScreen(
                         viewModel.completeOnboarding(
                             name.ifBlank { "Usuario" }, // Usamos un nombre por defecto si está vacío
                             email,
-                            birthDate
+                            birthDate,
+                            primaryCurrency?.nombre ?: "Dólar",
+                            secondaryCurrency?.nombre ?: "Bolívar"
                         )
                         onFinish()
                     }
@@ -166,9 +178,16 @@ fun UserDataScreen(
     email: String,
     onEmailChange: (String) -> Unit,
     birthDate: Date?,
-    onBirthDateChange: (Date?) -> Unit
+    onBirthDateChange: (Date?) -> Unit,
+    monedas: List<Moneda>,
+    primaryCurrency: Moneda?,
+    onPrimaryCurrencyChange: (Moneda) -> Unit,
+    secondaryCurrency: Moneda?,
+    onSecondaryCurrencyChange: (Moneda) -> Unit
 ) {
     val showDatePicker = remember { mutableStateOf(false) }
+    var primaryExpanded by remember { mutableStateOf(false) }
+    var secondaryExpanded by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -199,6 +218,62 @@ fun UserDataScreen(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
+        Spacer(modifier = Modifier.height(16.dp))
+        ExposedDropdownMenuBox(
+            expanded = primaryExpanded,
+            onExpandedChange = { primaryExpanded = !primaryExpanded }
+        ) {
+            OutlinedTextField(
+                value = primaryCurrency?.nombre ?: "Seleccione Moneda Principal",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Moneda Principal") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = primaryExpanded) },
+                modifier = Modifier.fillMaxWidth().menuAnchor()
+            )
+            ExposedDropdownMenu(
+                expanded = primaryExpanded,
+                onDismissRequest = { primaryExpanded = false }
+            ) {
+                monedas.forEach { moneda ->
+                    DropdownMenuItem(
+                        text = { Text(moneda.nombre) },
+                        onClick = {
+                            onPrimaryCurrencyChange(moneda)
+                            primaryExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        ExposedDropdownMenuBox(
+            expanded = secondaryExpanded,
+            onExpandedChange = { secondaryExpanded = !secondaryExpanded }
+        ) {
+            OutlinedTextField(
+                value = secondaryCurrency?.nombre ?: "Seleccione Moneda Secundaria",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Moneda Secundaria (Opcional)") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = secondaryExpanded) },
+                modifier = Modifier.fillMaxWidth().menuAnchor()
+            )
+            ExposedDropdownMenu(
+                expanded = secondaryExpanded,
+                onDismissRequest = { secondaryExpanded = false }
+            ) {
+                monedas.forEach { moneda ->
+                    DropdownMenuItem(
+                        text = { Text(moneda.nombre) },
+                        onClick = {
+                            onSecondaryCurrencyChange(moneda)
+                            secondaryExpanded = false
+                        }
+                    )
+                }
+            }
+        }
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = birthDate?.let { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(it) } ?: "",

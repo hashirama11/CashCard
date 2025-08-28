@@ -2,7 +2,8 @@ package com.example.finanzas.model
 
 enum class TipoTransaccion {
     INGRESO,
-    GASTO
+    GASTO,
+    COMPRA
 }
 
 enum class EstadoTransaccion {
@@ -13,10 +14,4 @@ enum class EstadoTransaccion {
 enum class TemaApp {
     CLARO,
     OSCURO
-}
-
-// Puedes expandir esta lista según necesites
-enum class Moneda(val simbolo: String) {
-    VES("Bs."),
-    USD("$")
 }

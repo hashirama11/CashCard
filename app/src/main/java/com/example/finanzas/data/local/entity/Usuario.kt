@@ -12,6 +12,7 @@ data class Usuario(
     val email: String?,
     val fechaNacimiento: Long?,
     val monedaPrincipal: String,
+    val monedaSecundaria: String?,
     val tema: String,
     val onboardingCompletado: Boolean = false,
     // --- NUEVOS CAMPOS ---

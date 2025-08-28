@@ -1,20 +1,34 @@
 package com.example.finanzas.di
 
+import com.example.finanzas.data.local.dao.CategoriaDao
+import com.example.finanzas.data.local.dao.MonedaDao
+import com.example.finanzas.data.local.dao.TransaccionDao
+import com.example.finanzas.data.local.dao.UsuarioDao
 import com.example.finanzas.data.repository.FinanzasRepository
 import com.example.finanzas.data.repository.FinanzasRepositoryImpl
-import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class RepositoryModule {
+object RepositoryModule {
 
-    @Binds
+    @Provides
     @Singleton
-    abstract fun bindFinanzasRepository(
-        finanzasRepositoryImpl: FinanzasRepositoryImpl
-    ): FinanzasRepository
+    fun provideFinanzasRepository(
+        transaccionDao: TransaccionDao,
+        categoriaDao: CategoriaDao,
+        usuarioDao: UsuarioDao,
+        monedaDao: MonedaDao
+    ): FinanzasRepository {
+        return FinanzasRepositoryImpl(
+            transaccionDao = transaccionDao,
+            categoriaDao = categoriaDao,
+            usuarioDao = usuarioDao,
+            monedaDao = monedaDao
+        )
+    }
 }
