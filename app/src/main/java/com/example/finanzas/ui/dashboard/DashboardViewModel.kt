@@ -5,7 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.local.entity.Transaccion
 import com.example.finanzas.data.repository.FinanzasRepository
+import com.example.finanzas.model.MonthlySummary
 import com.example.finanzas.model.PieChartData
+import com.example.finanzas.model.SavingsChartData
+import com.example.finanzas.model.SavingsDataPoint
 import com.example.finanzas.model.TipoTransaccion
 import com.example.finanzas.model.TransactionWithDetails
 import com.example.finanzas.ui.theme.PieChartColors
@@ -17,8 +20,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -71,6 +76,18 @@ class DashboardViewModel @Inject constructor(
             val expenseChartData = createChartData(transactionsWithDetails, TipoTransaccion.GASTO, totalGastosConsolidados)
             val incomeChartData = createChartData(transactionsWithDetails, TipoTransaccion.INGRESO, totalIngresosConsolidados)
 
+            val savingsTransactions = allTransactions
+                .filter { it.tipo == TipoTransaccion.AHORRO.name }
+                .sortedBy { it.fecha }
+
+            var cumulativeSavings = 0.0
+            val savingsDataPoints = savingsTransactions.map {
+                cumulativeSavings += it.monto
+                SavingsDataPoint(it.fecha, cumulativeSavings.toFloat())
+            }
+            val savingsChartData = SavingsChartData(savingsDataPoints)
+
+
             _state.update {
                 it.copy(
                     transactionsWithDetails = transactionsWithDetails,
@@ -82,11 +99,47 @@ class DashboardViewModel @Inject constructor(
                     ahorroAcumulado = user?.ahorroAcumulado ?: 0.0, // <-- Nuevo
                     expenseChartData = expenseChartData,
                     incomeChartData = incomeChartData,
+                    savingsChartData = savingsChartData,
                     isLoading = false
                 )
             }
         }.launchIn(viewModelScope)
+
+        repository.getTransactionsFromLastThreeMonths().combine(repository.getAllMonedas()) { transactions, monedas ->
+            val monthlySummary = calculateMonthlySummary(transactions, monedas)
+            _state.update { it.copy(monthlySummary = monthlySummary) }
+        }.launchIn(viewModelScope)
     }
+
+    private fun calculateMonthlySummary(transactions: List<Transaccion>, monedas: List<Moneda>): List<MonthlySummary> {
+        val calendar = Calendar.getInstance()
+        val summaries = mutableMapOf<String, MonthlySummary>()
+
+        for (i in 0..2) {
+            val monthCalendar = (calendar.clone() as Calendar).apply { add(Calendar.MONTH, -i) }
+            val monthName = SimpleDateFormat("MMM", Locale.getDefault()).format(monthCalendar.time)
+            summaries[monthName] = MonthlySummary(monthName, 0.0, 0.0)
+        }
+
+        transactions.forEach { transaction ->
+            val transactionCalendar = Calendar.getInstance().apply { time = transaction.fecha }
+            val monthName = SimpleDateFormat("MMM", Locale.getDefault()).format(transactionCalendar.time)
+
+            if (summaries.containsKey(monthName)) {
+                val moneda = monedas.find { it.simbolo == transaction.moneda }
+                val amountInPrimaryCurrency = if (moneda != null) transaction.monto * moneda.tasa_conversion else transaction.monto
+
+                val currentSummary = summaries[monthName]!!
+                if (transaction.tipo == TipoTransaccion.INGRESO.name) {
+                    summaries[monthName] = currentSummary.copy(income = currentSummary.income + amountInPrimaryCurrency)
+                } else {
+                    summaries[monthName] = currentSummary.copy(expense = currentSummary.expense + amountInPrimaryCurrency)
+                }
+            }
+        }
+        return summaries.values.toList().reversed()
+    }
+
 
     private suspend fun checkAndPerformMonthEndClosure() {
         val user = repository.getUsuario().first() ?: return

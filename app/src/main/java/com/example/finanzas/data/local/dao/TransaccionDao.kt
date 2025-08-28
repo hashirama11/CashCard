@@ -23,4 +23,7 @@ interface TransaccionDao {
 
     @Query("DELETE FROM transacciones WHERE id = :id")
     suspend fun deleteTransaccionById(id: Int)
+
+    @Query("SELECT * FROM transacciones WHERE fecha >= :threeMonthsAgo")
+    fun getTransactionsFromLastThreeMonths(threeMonthsAgo: Long): Flow<List<Transaccion>>
 }

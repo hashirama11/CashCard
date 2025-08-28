@@ -14,6 +14,8 @@ interface FinanzasRepository {
     suspend fun updateTransaction(transaccion: Transaccion)
     fun getTransaccionById(id: Int): Flow<Transaccion?>
     suspend fun deleteTransaccionById(id: Int)
+    fun getTransactionsFromLastThreeMonths(): Flow<List<Transaccion>>
+
 
     // Funciones de Categorías
     fun getAllCategorias(): Flow<List<Categoria>>

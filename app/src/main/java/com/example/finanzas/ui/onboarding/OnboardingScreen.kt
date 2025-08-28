@@ -2,7 +2,6 @@ package com.example.finanzas.ui.onboarding
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -140,8 +139,14 @@ fun OnboardingScreen(
     }
 }
 
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
+
 @Composable
 fun PagerScreen(onboardingPage: OnboardingPage) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(onboardingPage.animation))
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -149,11 +154,10 @@ fun PagerScreen(onboardingPage: OnboardingPage) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Image(
-            modifier = Modifier
-                .size(200.dp),
-            painter = painterResource(id = onboardingPage.image),
-            contentDescription = onboardingPage.title
+        LottieAnimation(
+            composition = composition,
+            iterations = LottieConstants.IterateForever,
+            modifier = Modifier.size(200.dp)
         )
         Spacer(modifier = Modifier.height(40.dp))
         Text(

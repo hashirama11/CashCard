@@ -17,4 +17,6 @@ sealed class AppScreens(val route: String) {
     }
     object AllTransactions : AppScreens("all_transactions")
     object CategoryManagement : AppScreens("category_management")
+    object PurchaseHistory : AppScreens("purchase_history")
+    object NotificationSettings : AppScreens("notification_settings")
 }

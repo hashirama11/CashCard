@@ -12,8 +12,10 @@ import com.example.finanzas.ui.balance.HistoricalBalanceScreen // <-- CAMBIO DE 
 import com.example.finanzas.ui.category_management.CategoryManagementScreen
 import com.example.finanzas.ui.dashboard.DashboardScreen
 import com.example.finanzas.ui.monthly_goal.MonthlyGoalScreen // <-- NUEVA PANTALLA
+import com.example.finanzas.ui.notification_settings.NotificationSettingsScreen
 import com.example.finanzas.ui.onboarding.OnboardingScreen
 import com.example.finanzas.ui.profile.ProfileScreen
+import com.example.finanzas.ui.purchase_history.PurchaseHistoryScreen
 import com.example.finanzas.ui.transaction_detail.TransactionDetailScreen
 
 @Composable
@@ -42,6 +44,9 @@ fun AppNavigation(
                 },
                 onSeeAllClick = {
                     navController.navigate(AppScreens.AllTransactions.route)
+                },
+                onPurchaseHistoryClick = {
+                    navController.navigate(AppScreens.PurchaseHistory.route)
                 }
             )
         }
@@ -71,6 +76,9 @@ fun AppNavigation(
                 onBack = { navController.popBackStack() },
                 onCategoryManagementClick = {
                     navController.navigate(AppScreens.CategoryManagement.route)
+                },
+                onNotificationSettingsClick = {
+                    navController.navigate(AppScreens.NotificationSettings.route)
                 }
             )
         }
@@ -96,6 +104,19 @@ fun AppNavigation(
         composable(AppScreens.CategoryManagement.route) {
             CategoryManagementScreen(
                 onBack = { navController.popBackStack() }
+            )
+        }
+        composable(AppScreens.PurchaseHistory.route) {
+            PurchaseHistoryScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(AppScreens.NotificationSettings.route) {
+            NotificationSettingsScreen(
+                onBack = { navController.popBackStack() },
+                onEditClick = { transactionId ->
+                    navController.navigate(AppScreens.AddTransaction.createRouteForEdit(transactionId))
+                }
             )
         }
     }

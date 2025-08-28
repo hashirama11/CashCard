@@ -21,6 +21,8 @@ import com.example.finanzas.model.TipoTransaccion
 import com.example.finanzas.ui.dashboard.components.DashboardContent
 import com.example.finanzas.ui.dashboard.components.DashboardTabRow
 import com.example.finanzas.ui.dashboard.components.DashboardTopAppBar
+import com.example.finanzas.ui.dashboard.components.MonthlySummaryChart
+import com.example.finanzas.ui.dashboard.components.SavingsChart
 import com.example.finanzas.ui.theme.AccentGreen
 import kotlinx.coroutines.launch
 
@@ -30,14 +32,15 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
     onAddTransaction: () -> Unit,
     onTransactionClick: (Int) -> Unit,
-    onSeeAllClick: () -> Unit
+    onSeeAllClick: () -> Unit,
+    onPurchaseHistoryClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val pagerState = rememberPagerState(pageCount = { 2 })
+    val pagerState = rememberPagerState(pageCount = { 4 })
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
-        topBar = { DashboardTopAppBar(userName = state.userName) },
+        topBar = { DashboardTopAppBar(userName = state.userName, onPurchaseHistoryClick = onPurchaseHistoryClick) },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { onAddTransaction() },
@@ -90,6 +93,8 @@ fun DashboardScreen(
                         chartData = state.expenseChartData,
                         onSeeAllClick = onSeeAllClick
                     )
+                    2 -> MonthlySummaryChart(monthlySummary = state.monthlySummary)
+                    3 -> SavingsChart(savingsChartData = state.savingsChartData)
                 }
             }
         }

@@ -4,10 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finanzas.data.local.entity.Categoria
+import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.local.entity.Transaccion
 import com.example.finanzas.data.repository.FinanzasRepository
 import com.example.finanzas.model.EstadoTransaccion
-import com.example.finanzas.model.Moneda
 import com.example.finanzas.model.TipoTransaccion
 import com.example.finanzas.notifications.AlarmScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,12 +37,14 @@ class AddTransactionViewModel @Inject constructor(
 
         viewModelScope.launch {
             val categories = repository.getAllCategorias().first()
-            _state.update { it.copy(allCategories = categories) }
+            val currencies = repository.getAllMonedas().first()
+            _state.update { it.copy(allCategories = categories, currencies = currencies, selectedCurrency = currencies.firstOrNull()) }
 
             if (_state.value.isEditing) {
                 val transactionToEdit = repository.getTransaccionById(transactionId).first()
                 transactionToEdit?.let { tx ->
                     val category = categories.find { it.id == tx.categoriaId }
+                    val currency = currencies.find { it.simbolo == tx.moneda }
                     _state.update {
                         it.copy(
                             amount = tx.monto.toString(),
@@ -50,9 +52,11 @@ class AddTransactionViewModel @Inject constructor(
                             selectedTransactionType = TipoTransaccion.valueOf(tx.tipo),
                             selectedCategory = category,
                             transactionDate = tx.fecha,
-                            selectedCurrency = Moneda.valueOf(tx.moneda),
+                            selectedCurrency = currency,
                             isPending = tx.estado == EstadoTransaccion.PENDIENTE.name,
-                            completionDate = tx.fechaConcrecion
+                            completionDate = tx.fechaConcrecion,
+                            tipoCompra = tx.tipoCompra,
+                            imageUri = tx.imageUri
                         )
                     }
                 }
@@ -67,6 +71,9 @@ class AddTransactionViewModel @Inject constructor(
     fun onCurrencySelected(currency: Moneda) { _state.update { it.copy(selectedCurrency = currency) } }
     fun onPendingStatusChange(isPending: Boolean) { _state.update { it.copy(isPending = isPending) } }
     fun onCompletionDateChange(date: Date?) { _state.update { it.copy(completionDate = date) } }
+    fun onTipoCompraSelected(tipo: String) { _state.update { it.copy(tipoCompra = tipo) } }
+    fun onImageUriSelected(uri: String) { _state.update { it.copy(imageUri = uri) } }
+
 
     fun onTransactionTypeSelected(type: TipoTransaccion) {
         _state.update { it.copy(selectedTransactionType = type) }
@@ -113,13 +120,15 @@ class AddTransactionViewModel @Inject constructor(
         val transactionToSave = Transaccion(
             id = if (currentState.isEditing) transactionId else 0,
             monto = amountDouble,
-            moneda = currentState.selectedCurrency.name,
+            moneda = currentState.selectedCurrency?.simbolo ?: "",
             descripcion = currentState.description,
             fecha = if (currentState.isEditing) currentState.transactionDate ?: Date() else Date(),
             tipo = currentState.selectedTransactionType.name,
             estado = if (currentState.isPending) EstadoTransaccion.PENDIENTE.name else EstadoTransaccion.CONCRETADO.name,
             categoriaId = currentState.selectedCategory!!.id,
-            fechaConcrecion = completionDateTime // Usamos la nueva fecha con la hora ajustada
+            fechaConcrecion = completionDateTime, // Usamos la nueva fecha con la hora ajustada
+            tipoCompra = currentState.tipoCompra,
+            imageUri = currentState.imageUri
         )
 
         viewModelScope.launch {

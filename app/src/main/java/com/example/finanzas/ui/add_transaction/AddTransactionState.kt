@@ -1,7 +1,7 @@
 package com.example.finanzas.ui.add_transaction
 
 import com.example.finanzas.data.local.entity.Categoria
-import com.example.finanzas.model.Moneda
+import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.model.TipoTransaccion
 import java.util.Date
 
@@ -14,8 +14,10 @@ data class AddTransactionState(
     val description: String = "",
     val isEditing: Boolean = false,
     val transactionDate: Date? = null,
-    val selectedCurrency: Moneda = Moneda.VES,
+    val currencies: List<Moneda> = emptyList(),
+    val selectedCurrency: Moneda? = null,
     val isPending: Boolean = false,
-    // --- NUEVO CAMPO ---
-    val completionDate: Date? = null
+    val completionDate: Date? = null,
+    val tipoCompra: String? = null,
+    val imageUri: String? = null
 )

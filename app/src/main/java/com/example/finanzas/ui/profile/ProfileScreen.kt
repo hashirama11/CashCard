@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,9 +23,20 @@ import com.example.finanzas.model.TemaApp
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
     onBack: () -> Unit,
-    onCategoryManagementClick: () -> Unit
+    onCategoryManagementClick: () -> Unit,
+    onNotificationSettingsClick: () -> Unit
 ) {
     val user by viewModel.userState.collectAsState()
+    val editMode by viewModel.editMode.collectAsState()
+    var name by remember { mutableStateOf(user?.nombre ?: "") }
+    var email by remember { mutableStateOf(user?.email ?: "") }
+
+    LaunchedEffect(user) {
+        user?.let {
+            name = it.nombre
+            email = it.email ?: ""
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -33,6 +45,11 @@ fun ProfileScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { viewModel.toggleEditMode() }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Editar Perfil")
                     }
                 }
             )
@@ -66,16 +83,34 @@ fun ProfileScreen(
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = it.nombre,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = it.email ?: "Sin correo electrónico",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                )
+                if (editMode) {
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text("Nombre") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Correo Electrónico") }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = { viewModel.updateProfile(name, email) }) {
+                        Text("Guardar")
+                    }
+                } else {
+                    Text(
+                        text = it.nombre,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = it.email ?: "Sin correo electrónico",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
                 // --- FIN DE PERFIL ---
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -109,6 +144,14 @@ fun ProfileScreen(
                             .padding(top = 16.dp)
                     ) {
                         Text("Gestionar mis categorías")
+                    }
+                    Button(
+                        onClick = onNotificationSettingsClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp)
+                    ) {
+                        Text("Gestionar notificaciones")
                     }
                 }
             }

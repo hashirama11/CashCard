@@ -9,7 +9,7 @@ fun DashboardTabRow(
     selectedTabIndex: Int,
     onTabSelected: (Int) -> Unit
 ) {
-    val titles = listOf("Ingresos", "Gastos")
+    val titles = listOf("Ingresos", "Gastos", "Resumen", "Ahorro")
     TabRow(
         selectedTabIndex = selectedTabIndex,
         containerColor = MaterialTheme.colorScheme.primary,

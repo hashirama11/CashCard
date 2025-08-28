@@ -4,11 +4,17 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -29,7 +35,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.finanzas.model.Moneda
 import com.example.finanzas.model.TipoTransaccion
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -44,8 +49,17 @@ fun AddTransactionScreen(
     val state by viewModel.state.collectAsState()
     var expanded by remember { mutableStateOf(false) }
     val showDatePicker = remember { mutableStateOf(false) }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
 
     val context = LocalContext.current
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        imageUri = uri
+        viewModel.onImageUriSelected(uri.toString())
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -63,6 +77,8 @@ fun AddTransactionScreen(
     val descriptionLabel = when (state.selectedTransactionType) {
         TipoTransaccion.INGRESO -> "Descripción (ej: Salario, Venta)"
         TipoTransaccion.GASTO -> "Descripción (ej: Café en la panadería)"
+        TipoTransaccion.COMPRA -> "Descripción (ej: Compra de supermercado)"
+        TipoTransaccion.AHORRO -> "Descripción (ej: Ahorro para vacaciones)"
     }
 
     Scaffold(
@@ -110,30 +126,43 @@ fun AddTransactionScreen(
                     onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.GASTO) },
                     text = { Text("Gasto") }
                 )
+                Tab(
+                    selected = state.selectedTransactionType == TipoTransaccion.COMPRA,
+                    onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.COMPRA) },
+                    text = { Text("Compra") }
+                )
+                Tab(
+                    selected = state.selectedTransactionType == TipoTransaccion.AHORRO,
+                    onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.AHORRO) },
+                    text = { Text("Ahorro") }
+                )
             }
 
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Moneda.entries.forEach { moneda ->
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .border(
-                                1.dp,
-                                if (state.selectedCurrency == moneda) MaterialTheme.colorScheme.primary else Color.Gray,
-                                RoundedCornerShape(8.dp)
-                            )
-                            .background(
-                                if (state.selectedCurrency == moneda) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent
-                            )
-                            .clickable { viewModel.onCurrencySelected(moneda) }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(moneda.name, color = if (state.selectedCurrency == moneda) MaterialTheme.colorScheme.primary else Color.Gray)
-                    }
-                    if (moneda != Moneda.entries.last()) {
-                        Spacer(modifier = Modifier.width(8.dp))
+            var currencyExpanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = currencyExpanded,
+                onExpandedChange = { currencyExpanded = !currencyExpanded }
+            ) {
+                OutlinedTextField(
+                    value = state.selectedCurrency?.nombre ?: "Seleccione Moneda",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Moneda") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = currencyExpanded) },
+                    modifier = Modifier.fillMaxWidth().menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = currencyExpanded,
+                    onDismissRequest = { currencyExpanded = false }
+                ) {
+                    state.currencies.forEach { currency ->
+                        DropdownMenuItem(
+                            text = { Text(currency.nombre) },
+                            onClick = {
+                                viewModel.onCurrencySelected(currency)
+                                currencyExpanded = false
+                            }
+                        )
                     }
                 }
             }
@@ -142,7 +171,7 @@ fun AddTransactionScreen(
                 value = state.amount,
                 onValueChange = { viewModel.onAmountChange(it) },
                 label = { Text("Monto") },
-                leadingIcon = { Text(state.selectedCurrency.simbolo, style = MaterialTheme.typography.bodyLarge) },
+                leadingIcon = { Text(state.selectedCurrency?.simbolo ?: "", style = MaterialTheme.typography.bodyLarge) },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true
@@ -154,6 +183,52 @@ fun AddTransactionScreen(
                 label = { Text(descriptionLabel) },
                 modifier = Modifier.fillMaxWidth()
             )
+
+            AnimatedVisibility(visible = state.selectedTransactionType == TipoTransaccion.COMPRA) {
+                Column {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Button(
+                            onClick = { viewModel.onTipoCompraSelected("Factura") },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (state.tipoCompra == "Factura") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+                            )
+                        ) {
+                            Text("Factura")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = { viewModel.onTipoCompraSelected("Producto") },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (state.tipoCompra == "Producto") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+                            )
+                        ) {
+                            Text("Producto")
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = { imagePickerLauncher.launch("image/*") },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Seleccionar Imagen")
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    if (imageUri != null) {
+                        AsyncImage(
+                            model = imageUri,
+                            contentDescription = "Imagen de la compra",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .clip(RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+            }
+
 
             ExposedDropdownMenuBox(
                 expanded = expanded,

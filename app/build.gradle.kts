@@ -82,6 +82,8 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.google.material)
     implementation("androidx.biometric:biometric-ktx:1.2.0-alpha05")
+    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("com.airbnb.android:lottie-compose:6.0.0")
 
 
 }

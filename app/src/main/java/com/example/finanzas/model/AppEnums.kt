@@ -3,7 +3,8 @@ package com.example.finanzas.model
 enum class TipoTransaccion {
     INGRESO,
     GASTO,
-    COMPRA
+    COMPRA,
+    AHORRO
 }
 
 enum class EstadoTransaccion {

@@ -1,6 +1,8 @@
 package com.example.finanzas.ui.dashboard
 
+import com.example.finanzas.model.MonthlySummary
 import com.example.finanzas.model.PieChartData
+import com.example.finanzas.model.SavingsChartData
 import com.example.finanzas.model.TransactionWithDetails
 
 data class DashboardState(
@@ -13,5 +15,7 @@ data class DashboardState(
     val isLoading: Boolean = true,
     val userName: String = "",
     val expenseChartData: List<PieChartData> = emptyList(),
-    val incomeChartData: List<PieChartData> = emptyList()
+    val incomeChartData: List<PieChartData> = emptyList(),
+    val monthlySummary: List<MonthlySummary> = emptyList(),
+    val savingsChartData: SavingsChartData? = null
 )
