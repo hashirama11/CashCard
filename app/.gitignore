@@ -1,1 +1,16 @@
-/build
+# Ignorar carpetas de compilación
+.gradle/
+build/
+*/build/
+
+# Incluir el wrapper de Gradle
+!gradlew
+!gradlew.bat
+!gradle/wrapper/gradle-wrapper.properties
+!gradle/wrapper/gradle-wrapper.jar
+
+# Ignorar configuraciones locales
+local.properties
+.idea/
+*.iml
+.env
