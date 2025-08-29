@@ -1,6 +1,5 @@
 package com.example.finanzas.ui.dashboard.components
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
@@ -53,7 +52,7 @@ fun MonthlySummaryChart(monthlySummary: List<MonthlySummary>) {
 }
 
 @Composable
-private fun ColumnScope.Bar(
+private fun Bar(
     value: Double,
     maxValue: Double,
     color: Color
