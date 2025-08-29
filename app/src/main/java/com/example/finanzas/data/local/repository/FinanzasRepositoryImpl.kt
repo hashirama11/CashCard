@@ -1,7 +1,6 @@
 package com.example.finanzas.data.repository
 
 import com.example.finanzas.data.local.dao.CategoriaDao
-import com.example.finanzas.data.local.dao.CategoriaDao
 import com.example.finanzas.data.local.dao.MonedaDao
 import com.example.finanzas.data.local.dao.TransaccionDao
 import com.example.finanzas.data.local.dao.UsuarioDao
@@ -10,17 +9,8 @@ import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.local.entity.Transaccion
 import com.example.finanzas.data.local.entity.Usuario
 import kotlinx.coroutines.flow.Flow
-import javax.inject.Inject
-
-class FinanzasRepositoryImpl @Inject constructor(
-    private val transaccionDao: TransaccionDao,
-    private val categoriaDao: CategoriaDao,
-    private val usuarioDao: UsuarioDao,
-    private val monedaDao: MonedaDao
-) : FinanzasRepository {
-
-    override fun getAllTransacciones(): Flow<List<Transaccion>> = transaccionDao.getAllTransacciones()
 import java.util.Calendar
+import javax.inject.Inject
 
 class FinanzasRepositoryImpl @Inject constructor(
     private val transaccionDao: TransaccionDao,
