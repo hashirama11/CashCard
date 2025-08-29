@@ -1,22 +1,20 @@
 package com.example.finanzas.ui.dashboard.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.dp
 import com.example.finanzas.model.MonthlySummary
 
 @Composable
 fun MonthlySummaryChart(monthlySummary: List<MonthlySummary>) {
-    val maxAmount = monthlySummary.flatMap { listOf(it.income, it.expense) }.maxOrNull() ?: 1.0
+    val maxAmount = monthlySummary.flatMap { listOf(it.income, it.expense) }.maxOrNull()?.coerceAtLeast(1.0) ?: 1.0
 
     Row(
         modifier = Modifier
@@ -65,9 +63,6 @@ private fun ColumnScope.Bar(
         modifier = Modifier
             .width(30.dp)
             .height(barHeight.coerceAtLeast(0.dp))
-            .let { if (barHeight > 0.dp) it else it.height(2.dp) } // min height for visibility
-            .let {
-                if (value > 0) it.background(color) else it.background(Color.Gray)
-            }
+            .background(color)
     )
 }
