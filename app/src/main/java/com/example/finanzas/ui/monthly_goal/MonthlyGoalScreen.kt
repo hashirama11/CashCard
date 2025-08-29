@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -48,7 +46,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finanzas.R
-import com.example.finanzas.model.Moneda
 import com.example.finanzas.ui.theme.AccentGreen
 import com.example.finanzas.ui.theme.AccentRed
 import java.text.NumberFormat
@@ -65,7 +62,7 @@ fun MonthlyGoalScreen(
     val usdFormat = NumberFormat.getCurrencyInstance(Locale.US).apply { currency = Currency.getInstance("USD") }
     val vesFormat = NumberFormat.getCurrencyInstance(Locale("es", "VE")).apply { currency = Currency.getInstance("VES") }
 
-    var selectedCurrencyForChart by remember { mutableStateOf(Moneda.USD) }
+    var selectedCurrencyForChart by remember { mutableStateOf("USD") }
 
     Scaffold(
         topBar = {
@@ -87,13 +84,13 @@ fun MonthlyGoalScreen(
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(
-                        selected = selectedCurrencyForChart == Moneda.USD,
-                        onClick = { selectedCurrencyForChart = Moneda.USD },
+                        selected = selectedCurrencyForChart == "USD",
+                        onClick = { selectedCurrencyForChart = "USD" },
                         label = { Text("Ahorro en USD") }
                     )
                     FilterChip(
-                        selected = selectedCurrencyForChart == Moneda.VES,
-                        onClick = { selectedCurrencyForChart = Moneda.VES },
+                        selected = selectedCurrencyForChart == "VES",
+                        onClick = { selectedCurrencyForChart = "VES" },
                         label = { Text("Ahorro en VES") }
                     )
                 }
@@ -101,10 +98,10 @@ fun MonthlyGoalScreen(
 
             item {
                 SavingsProgressIndicator(
-                    progress = if (selectedCurrencyForChart == Moneda.USD) state.savingsRateUsd else state.savingsRateVes,
-                    balanceDelMes = if (selectedCurrencyForChart == Moneda.USD) state.balanceDelMesUsd else state.balanceDelMesVes,
-                    currencyFormat = if (selectedCurrencyForChart == Moneda.USD) usdFormat else vesFormat,
-                    currencyName = selectedCurrencyForChart.name
+                    progress = if (selectedCurrencyForChart == "USD") state.savingsRateUsd else state.savingsRateVes,
+                    balanceDelMes = if (selectedCurrencyForChart == "USD") state.balanceDelMesUsd else state.balanceDelMesVes,
+                    currencyFormat = if (selectedCurrencyForChart == "USD") usdFormat else vesFormat,
+                    currencyName = selectedCurrencyForChart
                 )
             }
 

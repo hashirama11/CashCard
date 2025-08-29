@@ -33,13 +33,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.finanzas.model.Moneda
 import com.example.finanzas.model.TipoTransaccion
 import com.example.finanzas.ui.theme.AccentGreen
 import com.example.finanzas.ui.theme.AccentRed
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
-import java.util.Currency
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,14 +67,9 @@ fun TransactionDetailScreen(
             val category = details.categoria
             val isIncome = transaction.tipo == TipoTransaccion.INGRESO.name
             val amountColor = if (isIncome) AccentGreen else AccentRed
-            val currencyFormat = NumberFormat.getCurrencyInstance().apply {
-                currency = Currency.getInstance(if (transaction.moneda == Moneda.USD.name) "USD" else "VES")
-                if (transaction.moneda == Moneda.VES.name) {
-                    maximumFractionDigits = 2
-                    (this as java.text.DecimalFormat).decimalFormatSymbols = java.text.DecimalFormatSymbols(Locale("es", "VE")).apply {
-                        currencySymbol = "Bs."
-                    }
-                }
+            val currencyFormat = NumberFormat.getNumberInstance().apply {
+                maximumFractionDigits = 2
+                minimumFractionDigits = 2
             }
 
             Column(
@@ -87,7 +80,7 @@ fun TransactionDetailScreen(
             ) {
                 // Monto y descripción
                 Text(
-                    text = currencyFormat.format(transaction.monto),
+                    text = "${transaction.moneda} ${currencyFormat.format(transaction.monto)}",
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.ExtraBold,
                     color = amountColor

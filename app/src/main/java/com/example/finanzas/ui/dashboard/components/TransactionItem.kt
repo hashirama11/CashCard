@@ -14,7 +14,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.finanzas.model.EstadoTransaccion
-import com.example.finanzas.model.Moneda
 import com.example.finanzas.model.TipoTransaccion
 import com.example.finanzas.model.TransactionWithDetails
 import com.example.finanzas.ui.theme.AccentGreen
@@ -29,15 +28,9 @@ fun TransactionItem(
     onClick: () -> Unit
 ) {
     val transaction = transactionDetails.transaccion
-    // --- LÓGICA DE FORMATO DE MONEDA ---
-    val currencyFormat = NumberFormat.getCurrencyInstance().apply {
-        currency = Currency.getInstance(if (transaction.moneda == Moneda.USD.name) "USD" else "VES")
-        if (transaction.moneda == Moneda.VES.name) {
-            maximumFractionDigits = 2
-            (this as java.text.DecimalFormat).decimalFormatSymbols = java.text.DecimalFormatSymbols(Locale("es", "VE")).apply {
-                currencySymbol = "Bs."
-            }
-        }
+    val currencyFormat = NumberFormat.getNumberInstance().apply {
+        maximumFractionDigits = 2
+        minimumFractionDigits = 2
     }
 
     val amountColor = if (transaction.tipo == TipoTransaccion.INGRESO.name) AccentGreen else AccentRed
@@ -101,7 +94,7 @@ fun TransactionItem(
         }
 
         Text(
-            text = "$sign${currencyFormat.format(transaction.monto)}",
+            text = "$sign${transaction.moneda} ${currencyFormat.format(transaction.monto)}",
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.Bold,
             color = amountColor
