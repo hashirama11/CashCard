@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finanzas.model.TipoTransaccion
+import com.example.finanzas.ui.util.TimePickerDialog
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -49,6 +50,7 @@ fun AddTransactionScreen(
     val state by viewModel.state.collectAsState()
     var expanded by remember { mutableStateOf(false) }
     val showDatePicker = remember { mutableStateOf(false) }
+    val showTimePicker = remember { mutableStateOf(false) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
     val context = LocalContext.current
@@ -274,14 +276,12 @@ fun AddTransactionScreen(
 
             AnimatedVisibility(visible = state.isPending) {
                 OutlinedTextField(
-                    value = state.completionDate?.let { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(it) } ?: "",
+                    value = state.completionDate?.let { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(it) } ?: "",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Fecha de recordatorio (Opcional)") },
-                    // --- CORRECCIÓN PRINCIPAL AQUÍ ---
-                    modifier = Modifier.fillMaxWidth(), // Se elimina el .clickable de aquí
+                    modifier = Modifier.fillMaxWidth(),
                     trailingIcon = {
-                        // Se envuelve el Icono en un IconButton para hacerlo clicleable
                         IconButton(onClick = {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 when (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)) {
@@ -292,7 +292,7 @@ fun AddTransactionScreen(
                                 showDatePicker.value = true
                             }
                         }) {
-                            Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
+                            Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha y hora")
                         }
                     }
                 )
@@ -307,7 +307,8 @@ fun AddTransactionScreen(
             confirmButton = {
                 Button(onClick = {
                     datePickerState.selectedDateMillis?.let {
-                        viewModel.onCompletionDateChange(Date(it + 86400000))
+                        viewModel.onCompletionDateChange(Date(it + 86400000)) // Add one day to avoid timezone issues
+                        showTimePicker.value = true
                     }
                     showDatePicker.value = false
                 }) { Text("Aceptar") }
@@ -316,5 +317,21 @@ fun AddTransactionScreen(
                 TextButton(onClick = { showDatePicker.value = false }) { Text("Cancelar") }
             }
         ) { DatePicker(state = datePickerState) }
+    }
+
+    if (showTimePicker.value) {
+        TimePickerDialog(
+            context = context,
+            onCancel = { showTimePicker.value = false },
+            onConfirm = { hour, minute ->
+                val calendar = Calendar.getInstance().apply {
+                    time = state.completionDate ?: Date()
+                    set(Calendar.HOUR_OF_DAY, hour)
+                    set(Calendar.MINUTE, minute)
+                }
+                viewModel.onCompletionDateChange(calendar.time)
+                showTimePicker.value = false
+            }
+        )
     }
 }

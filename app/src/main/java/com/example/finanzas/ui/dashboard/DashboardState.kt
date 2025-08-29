@@ -11,6 +11,8 @@ data class DashboardState(
     val totalIngresosUsd: Double = 0.0,
     val totalGastosVes: Double = 0.0,
     val totalGastosUsd: Double = 0.0,
+    val totalAhorrosVes: Double = 0.0,
+    val totalAhorrosUsd: Double = 0.0,
     val ahorroAcumulado: Double = 0.0, // <-- NUEVO
     val isLoading: Boolean = true,
     val userName: String = "",

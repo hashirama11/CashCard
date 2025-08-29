@@ -45,49 +45,52 @@ class DashboardViewModel @Inject constructor(
         val userFlow = repository.getUsuario()
         val monedasFlow = repository.getAllMonedas()
 
+        // Unificamos toda la lógica en un solo colector para garantizar la reactividad.
         combine(transactionsFlow, categoriesFlow, userFlow, monedasFlow) { allTransactions, categories, user, monedas ->
+            // Mapeos iniciales
             val categoriesMap = categories.associateBy { it.id }
             val monedasMap = monedas.associateBy { it.nombre }
-
             val primaryCurrencySymbol = monedasMap[user?.monedaPrincipal]?.simbolo ?: ""
             val secondaryCurrencySymbol = monedasMap[user?.monedaSecundaria]?.simbolo ?: ""
 
-            // --- LÓGICA PRINCIPAL: FILTRAR TRANSACCIONES SOLO DEL MES ACTUAL ---
+            // --- CÁLCULO PARA EL DASHBOARD PRINCIPAL (MES ACTUAL) ---
             val currentMonthTransactions = allTransactions.filter { isTransactionInCurrentMonth(it) }
-
             val transactionsWithDetails = currentMonthTransactions.map { transaccion ->
                 TransactionWithDetails(
                     transaccion = transaccion,
                     categoria = categoriesMap[transaccion.categoriaId]
                 )
             }
-
             val ingresos = currentMonthTransactions.filter { it.tipo == TipoTransaccion.INGRESO.name }
             val gastos = currentMonthTransactions.filter { it.tipo == TipoTransaccion.GASTO.name }
-
             val totalIngresosVes = ingresos.filter { it.moneda == primaryCurrencySymbol }.sumOf { it.monto }
             val totalIngresosUsd = ingresos.filter { it.moneda == secondaryCurrencySymbol }.sumOf { it.monto }
             val totalGastosVes = gastos.filter { it.moneda == primaryCurrencySymbol }.sumOf { it.monto }
             val totalGastosUsd = gastos.filter { it.moneda == secondaryCurrencySymbol }.sumOf { it.monto }
-
             val totalGastosConsolidados = gastos.sumOf { it.monto }
             val totalIngresosConsolidados = ingresos.sumOf { it.monto }
-
             val expenseChartData = createChartData(transactionsWithDetails, TipoTransaccion.GASTO, totalGastosConsolidados)
             val incomeChartData = createChartData(transactionsWithDetails, TipoTransaccion.INGRESO, totalIngresosConsolidados)
 
-            val savingsTransactions = allTransactions
+            // --- CÁLCULO PARA EL GRÁFICO DE AHORROS ---
+            val savingsTransactions = currentMonthTransactions.filter { it.tipo == TipoTransaccion.AHORRO.name }
+            val totalAhorrosVes = savingsTransactions.filter { it.moneda == primaryCurrencySymbol }.sumOf { it.monto }
+            val totalAhorrosUsd = savingsTransactions.filter { it.moneda == secondaryCurrencySymbol }.sumOf { it.monto }
+
+            val allSavingsTransactions = allTransactions
                 .filter { it.tipo == TipoTransaccion.AHORRO.name }
                 .sortedBy { it.fecha }
-
             var cumulativeSavings = 0.0
-            val savingsDataPoints = savingsTransactions.map {
+            val savingsDataPoints = allSavingsTransactions.map {
                 cumulativeSavings += it.monto
                 SavingsDataPoint(it.fecha, cumulativeSavings.toFloat())
             }
             val savingsChartData = SavingsChartData(savingsDataPoints)
 
+            // --- CÁLCULO PARA EL RESUMEN MENSUAL (ÚLTIMOS 3 MESES) ---
+            val monthlySummary = calculateMonthlySummary(allTransactions, monedas)
 
+            // --- ACTUALIZACIÓN ÚNICA Y CONSISTENTE DEL ESTADO ---
             _state.update {
                 it.copy(
                     transactionsWithDetails = transactionsWithDetails,
@@ -95,33 +98,36 @@ class DashboardViewModel @Inject constructor(
                     totalIngresosUsd = totalIngresosUsd,
                     totalGastosVes = totalGastosVes,
                     totalGastosUsd = totalGastosUsd,
+                    totalAhorrosVes = totalAhorrosVes,
+                    totalAhorrosUsd = totalAhorrosUsd,
                     userName = user?.nombre ?: "Usuario",
-                    ahorroAcumulado = user?.ahorroAcumulado ?: 0.0, // <-- Nuevo
+                    ahorroAcumulado = user?.ahorroAcumulado ?: 0.0,
                     expenseChartData = expenseChartData,
                     incomeChartData = incomeChartData,
                     savingsChartData = savingsChartData,
+                    monthlySummary = monthlySummary,
                     isLoading = false
                 )
             }
-        }.launchIn(viewModelScope)
-
-        repository.getTransactionsFromLastThreeMonths().combine(repository.getAllMonedas()) { transactions, monedas ->
-            val monthlySummary = calculateMonthlySummary(transactions, monedas)
-            _state.update { it.copy(monthlySummary = monthlySummary) }
         }.launchIn(viewModelScope)
     }
 
     private fun calculateMonthlySummary(transactions: List<Transaccion>, monedas: List<Moneda>): List<MonthlySummary> {
         val calendar = Calendar.getInstance()
         val summaries = mutableMapOf<String, MonthlySummary>()
+        val threeMonthsAgo = (calendar.clone() as Calendar).apply { add(Calendar.MONTH, -2) }
 
+        // Inicializar los últimos 3 meses
         for (i in 0..2) {
-            val monthCalendar = (calendar.clone() as Calendar).apply { add(Calendar.MONTH, -i) }
+            val monthCalendar = (Calendar.getInstance() as Calendar).apply { add(Calendar.MONTH, -i) }
             val monthName = SimpleDateFormat("MMM", Locale.getDefault()).format(monthCalendar.time)
             summaries[monthName] = MonthlySummary(monthName, 0.0, 0.0)
         }
 
-        transactions.forEach { transaction ->
+        // Filtrar transacciones de los últimos 3 meses
+        val recentTransactions = transactions.filter { it.fecha.after(threeMonthsAgo.time) }
+
+        recentTransactions.forEach { transaction ->
             val transactionCalendar = Calendar.getInstance().apply { time = transaction.fecha }
             val monthName = SimpleDateFormat("MMM", Locale.getDefault()).format(transactionCalendar.time)
 
@@ -132,44 +138,35 @@ class DashboardViewModel @Inject constructor(
                 val currentSummary = summaries[monthName]!!
                 if (transaction.tipo == TipoTransaccion.INGRESO.name) {
                     summaries[monthName] = currentSummary.copy(income = currentSummary.income + amountInPrimaryCurrency)
-                } else {
+                } else if (transaction.tipo == TipoTransaccion.GASTO.name) { // Solo sumar gastos
                     summaries[monthName] = currentSummary.copy(expense = currentSummary.expense + amountInPrimaryCurrency)
                 }
             }
         }
-        return summaries.values.toList().reversed()
+        return summaries.values.toList().sortedBy { SimpleDateFormat("MMM", Locale.getDefault()).parse(it.month) }
     }
-
 
     private suspend fun checkAndPerformMonthEndClosure() {
         val user = repository.getUsuario().first() ?: return
         val lastClosureDate = Calendar.getInstance().apply { timeInMillis = user.fechaUltimoCierre }
         val today = Calendar.getInstance()
 
-        // Si el mes o el año de la última vez que abrimos la app es diferente al de hoy, hacemos el cierre
         if (lastClosureDate.get(Calendar.MONTH) != today.get(Calendar.MONTH) ||
             lastClosureDate.get(Calendar.YEAR) != today.get(Calendar.YEAR)) {
 
             val allTransactions = repository.getAllTransacciones().first()
-
-            // Filtramos las transacciones del mes que acaba de terminar
             val lastMonthTransactions = allTransactions.filter {
                 val txCal = Calendar.getInstance().apply { time = it.fecha }
                 txCal.get(Calendar.MONTH) == lastClosureDate.get(Calendar.MONTH) &&
                         txCal.get(Calendar.YEAR) == lastClosureDate.get(Calendar.YEAR)
             }
-
             val ingresos = lastMonthTransactions.filter { it.tipo == TipoTransaccion.INGRESO.name }.sumOf { it.monto }
             val gastos = lastMonthTransactions.filter { it.tipo == TipoTransaccion.GASTO.name }.sumOf { it.monto }
-
             val ahorroDelMes = ingresos - gastos
-
             var newAhorroAcumulado = user.ahorroAcumulado
             if (ahorroDelMes > 0) {
                 newAhorroAcumulado += ahorroDelMes
             }
-
-            // Actualizamos el usuario con el nuevo ahorro y la fecha de hoy como último cierre
             repository.upsertUsuario(user.copy(
                 ahorroAcumulado = newAhorroAcumulado,
                 fechaUltimoCierre = today.timeInMillis

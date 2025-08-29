@@ -23,6 +23,7 @@ import com.example.finanzas.ui.dashboard.components.DashboardTabRow
 import com.example.finanzas.ui.dashboard.components.DashboardTopAppBar
 import com.example.finanzas.ui.dashboard.components.MonthlySummaryChart
 import com.example.finanzas.ui.dashboard.components.SavingsChart
+import com.example.finanzas.ui.dashboard.components.SavingsDashboardContent
 import com.example.finanzas.ui.theme.AccentGreen
 import kotlinx.coroutines.launch
 
@@ -94,7 +95,13 @@ fun DashboardScreen(
                         onSeeAllClick = onSeeAllClick
                     )
                     2 -> MonthlySummaryChart(monthlySummary = state.monthlySummary)
-                    3 -> SavingsChart(savingsChartData = state.savingsChartData)
+                    3 -> SavingsDashboardContent(
+                        totalAhorrosVes = state.totalAhorrosVes,
+                        totalAhorrosUsd = state.totalAhorrosUsd,
+                        savingsChartData = state.savingsChartData,
+                        transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.AHORRO.name },
+                        onTransactionClick = onTransactionClick
+                    )
                 }
             }
         }
