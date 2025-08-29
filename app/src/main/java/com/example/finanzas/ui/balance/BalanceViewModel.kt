@@ -2,14 +2,14 @@ package com.example.finanzas.ui.balance
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.repository.FinanzasRepository
-import com.example.finanzas.model.Moneda
 import com.example.finanzas.model.TipoTransaccion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -25,15 +25,23 @@ class BalanceViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     init {
-        repository.getAllTransacciones().onEach { transactions ->
+        val transactionsFlow = repository.getAllTransacciones()
+        val userFlow = repository.getUsuario()
+        val monedasFlow = repository.getAllMonedas()
+
+        combine(transactionsFlow, userFlow, monedasFlow) { transactions, user, monedas ->
+            val monedasMap = monedas.associateBy { it.nombre }
+            val primaryCurrencySymbol = monedasMap[user?.monedaPrincipal]?.simbolo ?: ""
+            val secondaryCurrencySymbol = monedasMap[user?.monedaSecundaria]?.simbolo ?: ""
+
             // --- LÓGICA DE CÁLCULO MULTIMONEDA ---
             val ingresos = transactions.filter { it.tipo == TipoTransaccion.INGRESO.name }
             val gastos = transactions.filter { it.tipo == TipoTransaccion.GASTO.name }
 
-            val totalIngresosVes = ingresos.filter { it.moneda == Moneda.VES.name }.sumOf { it.monto }
-            val totalIngresosUsd = ingresos.filter { it.moneda == Moneda.USD.name }.sumOf { it.monto }
-            val totalGastosVes = gastos.filter { it.moneda == Moneda.VES.name }.sumOf { it.monto }
-            val totalGastosUsd = gastos.filter { it.moneda == Moneda.USD.name }.sumOf { it.monto }
+            val totalIngresosVes = ingresos.filter { it.moneda == primaryCurrencySymbol }.sumOf { it.monto }
+            val totalIngresosUsd = ingresos.filter { it.moneda == secondaryCurrencySymbol }.sumOf { it.monto }
+            val totalGastosVes = gastos.filter { it.moneda == primaryCurrencySymbol }.sumOf { it.monto }
+            val totalGastosUsd = gastos.filter { it.moneda == secondaryCurrencySymbol }.sumOf { it.monto }
 
             val balanceNetoVes = totalIngresosVes - totalGastosVes
             val balanceNetoUsd = totalIngresosUsd - totalGastosUsd
