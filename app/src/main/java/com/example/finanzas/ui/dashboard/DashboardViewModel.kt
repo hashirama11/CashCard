@@ -69,7 +69,6 @@ class DashboardViewModel @Inject constructor(
 
             val currentMonthTransactions = allTransactions.filter { isTransactionInCurrentMonth(it) }
 
-            // --- LÓGICA DEL DASHBOARD DINÁMICO ---
             val usedCurrencies = currentMonthTransactions.map { it.moneda }.distinct()
             val dashboardPanels = usedCurrencies.map { currencySymbol ->
                 val currencyTransactions = currentMonthTransactions.filter { it.moneda == currencySymbol }
@@ -95,7 +94,6 @@ class DashboardViewModel @Inject constructor(
                 )
             }
 
-            // --- Lógica de Ahorros (se mantiene separada por ahora) ---
             val savingsTransactions = currentMonthTransactions.filter { it.tipo == TipoTransaccion.AHORRO.name }
             val totalAhorrosVes = savingsTransactions.filter { it.moneda == primaryCurrencySymbol }.sumOf { it.monto }
             val totalAhorrosUsd = savingsTransactions.filter { it.moneda == secondaryCurrencySymbol }.sumOf { it.monto }
@@ -134,15 +132,99 @@ class DashboardViewModel @Inject constructor(
     }
 
     private fun calculateMonthlySummary(transactions: List<Transaccion>, monedas: List<Moneda>): List<MonthlySummary> {
-        // ... (lógica existente)
+        val calendar = Calendar.getInstance()
+        val summaries = mutableMapOf<String, MonthlySummary>()
+        val threeMonthsAgo = (calendar.clone() as Calendar).apply { add(Calendar.MONTH, -2) }
+
+        for (i in 0..2) {
+            val monthCalendar = (Calendar.getInstance() as Calendar).apply { add(Calendar.MONTH, -i) }
+            val monthName = SimpleDateFormat("MMM", Locale.getDefault()).format(monthCalendar.time)
+            summaries[monthName] = MonthlySummary(monthName, 0.0, 0.0)
+        }
+
+        val recentTransactions = transactions.filter { it.fecha.after(threeMonthsAgo.time) }
+
+        recentTransactions.forEach { transaction ->
+            val transactionCalendar = Calendar.getInstance().apply { time = transaction.fecha }
+            val monthName = SimpleDateFormat("MMM", Locale.getDefault()).format(transactionCalendar.time)
+
+            if (summaries.containsKey(monthName)) {
+                val moneda = monedas.find { it.simbolo == transaction.moneda }
+                val amountInPrimaryCurrency = if (moneda != null && moneda.tasa_conversion > 0) transaction.monto / moneda.tasa_conversion else transaction.monto
+
+                val currentSummary = summaries[monthName]!!
+                if (transaction.tipo == TipoTransaccion.INGRESO.name) {
+                    summaries[monthName] = currentSummary.copy(income = currentSummary.income + amountInPrimaryCurrency)
+                } else if (transaction.tipo == TipoTransaccion.GASTO.name) {
+                    summaries[monthName] = currentSummary.copy(expense = currentSummary.expense + amountInPrimaryCurrency)
+                }
+            }
+        }
+        return summaries.values.toList().sortedBy { SimpleDateFormat("MMM", Locale.getDefault()).parse(it.month) }
     }
 
     private suspend fun checkAndPerformMonthEndClosure() {
-        // ... (lógica existente)
+        val user = repository.getUsuario().first() ?: return
+        val monedas = repository.getAllMonedas().first()
+        if (monedas.isEmpty()) return
+
+        val lastClosureDate = Calendar.getInstance().apply { timeInMillis = user.fechaUltimoCierre }
+        val today = Calendar.getInstance()
+
+        if (lastClosureDate.get(Calendar.MONTH) != today.get(Calendar.MONTH) ||
+            lastClosureDate.get(Calendar.YEAR) != today.get(Calendar.YEAR)) {
+
+            val allTransactions = repository.getAllTransacciones().first()
+            val monedasMapByNombre = monedas.associateBy { it.nombre }
+
+            val primaryCurrency = monedasMapByNombre[user.monedaPrincipal]
+            val secondaryCurrency = user.monedaSecundaria?.let { monedasMapByNombre[it] }
+
+            val lastMonthTransactions = allTransactions.filter {
+                val txCal = Calendar.getInstance().apply { time = it.fecha }
+                txCal.get(Calendar.MONTH) == lastClosureDate.get(Calendar.MONTH) &&
+                        txCal.get(Calendar.YEAR) == lastClosureDate.get(Calendar.YEAR)
+            }
+
+            val ingresos = lastMonthTransactions.filter { it.tipo == TipoTransaccion.INGRESO.name }
+            val gastos = lastMonthTransactions.filter { it.tipo == TipoTransaccion.GASTO.name }
+
+            var totalBalanceInPrimary = 0.0
+
+            if (primaryCurrency != null) {
+                val primaryIngresos = ingresos.filter { it.moneda == primaryCurrency.simbolo }.sumOf { it.monto }
+                val primaryGastos = gastos.filter { it.moneda == primaryCurrency.simbolo }.sumOf { it.monto }
+                totalBalanceInPrimary += primaryIngresos - primaryGastos
+            }
+
+            if (secondaryCurrency != null) {
+                val secondaryIngresos = ingresos.filter { it.moneda == secondaryCurrency.simbolo }.sumOf { it.monto }
+                val secondaryGastos = gastos.filter { it.moneda == secondaryCurrency.simbolo }.sumOf { it.monto }
+                val secondaryBalance = secondaryIngresos - secondaryGastos
+
+                val conversionRate = secondaryCurrency.tasa_conversion
+                if (conversionRate > 0) {
+                    totalBalanceInPrimary += secondaryBalance / conversionRate
+                }
+            }
+
+            var newAhorroAcumulado = user.ahorroAcumulado
+            if (totalBalanceInPrimary > 0) {
+                newAhorroAcumulado += totalBalanceInPrimary
+            }
+
+            repository.upsertUsuario(user.copy(
+                ahorroAcumulado = newAhorroAcumulado,
+                fechaUltimoCierre = today.timeInMillis
+            ))
+        }
     }
 
     private fun isTransactionInCurrentMonth(transaction: Transaccion): Boolean {
-        // ... (lógica existente)
+        val txCalendar = Calendar.getInstance().apply { time = transaction.fecha }
+        val currentCalendar = Calendar.getInstance()
+        return txCalendar.get(Calendar.YEAR) == currentCalendar.get(Calendar.YEAR) &&
+                txCalendar.get(Calendar.MONTH) == currentCalendar.get(Calendar.MONTH)
     }
 
     private fun createChartData(
