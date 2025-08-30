@@ -142,40 +142,27 @@ fun PagerScreen(onboardingPage: OnboardingPage) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(onboardingPage.animation))
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top,
+        verticalArrangement = Arrangement.Center,
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            LottieAnimation(
-                composition = composition,
-                iterations = LottieConstants.IterateForever,
-                modifier = Modifier.size(64.dp)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = onboardingPage.title,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        LottieAnimation(
+            composition = composition,
+            iterations = LottieConstants.IterateForever,
+            modifier = Modifier.size(200.dp)
+        )
+        Spacer(modifier = Modifier.height(40.dp))
+        Text(
+            text = onboardingPage.title,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = onboardingPage.description,
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Image(
-            painter = painterResource(id = onboardingPage.featureImage),
-            contentDescription = onboardingPage.title,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color.LightGray.copy(alpha = 0.2f)),
-            contentScale = ContentScale.Fit
         )
     }
 }
