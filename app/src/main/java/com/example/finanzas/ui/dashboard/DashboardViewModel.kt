@@ -15,6 +15,7 @@ import com.example.finanzas.model.TransactionWithDetails
 import com.example.finanzas.ui.theme.PieChartColors
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -37,7 +38,9 @@ class DashboardViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     init {
-        viewModelScope.launch(Dispatchers.IO) { // <-- Run on a background thread
+        // Lanza la tarea pesada en un hilo de fondo CON RETRASO para no bloquear el inicio.
+        viewModelScope.launch(Dispatchers.IO) {
+            delay(3000L) // Retraso de 3 segundos
             try {
                 checkAndPerformMonthEndClosure()
             } catch (e: Exception) {
@@ -52,7 +55,6 @@ class DashboardViewModel @Inject constructor(
 
         combine(transactionsFlow, categoriesFlow, userFlow, monedasFlow) { allTransactions, categories, user, monedas ->
             if (user == null || monedas.isEmpty()) {
-                // Do not update state until user and currencies are loaded
                 return@combine
             }
 
