@@ -149,7 +149,7 @@ fun GoalProgressCard(balanceDelMes: Double, monthlyGoal: Double, numberFormat: N
                     .fillMaxWidth()
                     .height(12.dp)
                     .clip(MaterialTheme.shapes.small),
-                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                trackColor = MaterialTheme.colorScheme.surface,
             )
             Spacer(Modifier.height(8.dp))
             Text(
@@ -185,7 +185,7 @@ fun SavingsRateIndicator(
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 drawArc(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    color = MaterialTheme.colorScheme.surface,
                     startAngle = -90f,
                     sweepAngle = 360f,
                     useCenter = false,
@@ -233,7 +233,7 @@ fun MonthlyBreakdownCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
@@ -264,7 +264,7 @@ fun InitialBalanceCard(amount: Double, numberFormat: NumberFormat) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),

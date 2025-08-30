@@ -17,7 +17,7 @@ import com.example.finanzas.util.Converters
 
 @Database(
     entities = [Transaccion::class, Categoria::class, Usuario::class, Moneda::class],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -56,5 +56,11 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("ALTER TABLE transacciones ADD COLUMN tipoCompra TEXT")
         db.execSQL("ALTER TABLE transacciones ADD COLUMN imageUri TEXT")
+    }
+}
+
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE usuario ADD COLUMN objetivoAhorroMensual REAL NOT NULL DEFAULT 0.0")
     }
 }
