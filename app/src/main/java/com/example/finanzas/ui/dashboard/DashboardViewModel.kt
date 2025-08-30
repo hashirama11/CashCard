@@ -14,6 +14,7 @@ import com.example.finanzas.model.TipoTransaccion
 import com.example.finanzas.model.TransactionWithDetails
 import com.example.finanzas.ui.theme.PieChartColors
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -36,7 +37,7 @@ class DashboardViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) { // <-- Run on a background thread
             try {
                 checkAndPerformMonthEndClosure()
             } catch (e: Exception) {
