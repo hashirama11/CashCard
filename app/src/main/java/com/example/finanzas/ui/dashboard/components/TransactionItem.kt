@@ -33,8 +33,9 @@ fun TransactionItem(
         minimumFractionDigits = 2
     }
 
-    val amountColor = if (transaction.tipo == TipoTransaccion.INGRESO.name) AccentGreen else AccentRed
-    val sign = if (transaction.tipo == TipoTransaccion.INGRESO.name) "+" else "-"
+    val isPositive = transaction.tipo == TipoTransaccion.INGRESO.name || transaction.tipo == TipoTransaccion.AHORRO.name
+    val amountColor = if (isPositive) AccentGreen else AccentRed
+    val sign = if (isPositive) "+" else "-"
     val iconRes = getIconResource(iconName = transactionDetails.categoria?.icono)
     val isPending = transaction.estado == EstadoTransaccion.PENDIENTE.name
 

@@ -62,41 +62,36 @@ class DashboardViewModel @Inject constructor(
             val primaryCurrencySymbol = monedasMap[user.monedaPrincipal]?.simbolo ?: ""
             val secondaryCurrencySymbol = user.monedaSecundaria?.let { monedasMap[it]?.simbolo } ?: ""
 
+            if (_state.value.selectedDashboardCurrency == null && primaryCurrencySymbol.isNotBlank()) {
+                _state.update { it.copy(selectedDashboardCurrency = primaryCurrencySymbol) }
+            }
+            val selectedDashboardCurrency = _state.value.selectedDashboardCurrency
+
             if (_state.value.selectedSavingsCurrency == null && primaryCurrencySymbol.isNotBlank()) {
                 _state.update { it.copy(selectedSavingsCurrency = primaryCurrencySymbol) }
             }
             val selectedCurrencyForSavings = _state.value.selectedSavingsCurrency
 
             val currentMonthTransactions = allTransactions.filter { isTransactionInCurrentMonth(it) }
+            val usedCurrenciesInMonth = currentMonthTransactions.map { it.moneda }.distinct()
+            val transactionsWithDetails = currentMonthTransactions.map { TransactionWithDetails(it, categoriesMap[it.categoriaId]) }
 
-            val usedCurrencies = currentMonthTransactions.map { it.moneda }.distinct()
-            val dashboardPanels = usedCurrencies.map { currencySymbol ->
-                val currencyTransactions = currentMonthTransactions.filter { it.moneda == currencySymbol }
-                val currencyTransactionsWithDetails = currencyTransactions.map { TransactionWithDetails(it, categoriesMap[it.categoriaId]) }
+            // --- LÓGICA DE FILTRADO PARA INGRESOS Y GASTOS ---
+            val filteredDashboardTransactions = transactionsWithDetails.filter { it.transaccion.moneda == selectedDashboardCurrency }
+            val incomeTransactions = filteredDashboardTransactions.filter { it.transaccion.tipo == TipoTransaccion.INGRESO.name }
+            val expenseTransactions = filteredDashboardTransactions.filter { it.transaccion.tipo == TipoTransaccion.GASTO.name }
+            val totalIngresosPrimario = incomeTransactions.filter { it.transaccion.moneda == primaryCurrencySymbol }.sumOf { it.transaccion.monto }
+            val totalIngresosSecundario = incomeTransactions.filter { it.transaccion.moneda == secondaryCurrencySymbol }.sumOf { it.transaccion.monto }
+            val totalGastosPrimario = expenseTransactions.filter { it.transaccion.moneda == primaryCurrencySymbol }.sumOf { it.transaccion.monto }
+            val totalGastosSecundario = expenseTransactions.filter { it.transaccion.moneda == secondaryCurrencySymbol }.sumOf { it.transaccion.monto }
 
-                val incomeTransactions = currencyTransactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.INGRESO.name }
-                val expenseTransactions = currencyTransactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.GASTO.name }
+            val incomeChartData = createChartData(incomeTransactions, incomeTransactions.sumOf { it.transaccion.monto })
+            val expenseChartData = createChartData(expenseTransactions, expenseTransactions.sumOf { it.transaccion.monto })
 
-                val totalIncome = incomeTransactions.sumOf { it.transaccion.monto }
-                val totalExpenses = expenseTransactions.sumOf { it.transaccion.monto }
-
-                val incomeChartData = createChartData(incomeTransactions, totalIncome)
-                val expenseChartData = createChartData(expenseTransactions, totalExpenses)
-
-                DashboardPanelState(
-                    currencySymbol = currencySymbol,
-                    totalIncome = totalIncome,
-                    totalExpenses = totalExpenses,
-                    incomeTransactions = incomeTransactions,
-                    expenseTransactions = expenseTransactions,
-                    incomeChartData = incomeChartData,
-                    expenseChartData = expenseChartData
-                )
-            }
-
-            val savingsTransactions = currentMonthTransactions.filter { it.tipo == TipoTransaccion.AHORRO.name }
-            val totalAhorrosVes = savingsTransactions.filter { it.moneda == primaryCurrencySymbol }.sumOf { it.monto }
-            val totalAhorrosUsd = savingsTransactions.filter { it.moneda == secondaryCurrencySymbol }.sumOf { it.monto }
+            // --- LÓGICA DE AHORROS ---
+            val savingsTransactions = transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.AHORRO.name }
+            val totalAhorrosPrimario = savingsTransactions.filter { it.transaccion.moneda == primaryCurrencySymbol }.sumOf { it.transaccion.monto }
+            val totalAhorrosSecundario = savingsTransactions.filter { it.transaccion.moneda == secondaryCurrencySymbol }.sumOf { it.transaccion.monto }
 
             val allSavingsTransactions = allTransactions
                 .filter { it.tipo == TipoTransaccion.AHORRO.name && it.moneda == selectedCurrencyForSavings }
@@ -112,19 +107,32 @@ class DashboardViewModel @Inject constructor(
 
             _state.update {
                 it.copy(
-                    dashboardPanels = dashboardPanels,
-                    totalAhorrosVes = totalAhorrosVes,
-                    totalAhorrosUsd = totalAhorrosUsd,
+                    incomeTransactions = incomeTransactions,
+                    expenseTransactions = expenseTransactions,
+                    savingsTransactions = savingsTransactions,
+                    totalIngresosPrimario = totalIngresosPrimario,
+                    totalIngresosSecundario = totalIngresosSecundario,
+                    totalGastosPrimario = totalGastosPrimario,
+                    totalGastosSecundario = totalGastosSecundario,
+                    totalAhorrosPrimario = totalAhorrosPrimario,
+                    totalAhorrosSecundario = totalAhorrosSecundario,
+                    incomeChartData = incomeChartData,
+                    expenseChartData = expenseChartData,
                     userName = user.nombre,
                     ahorroAcumulado = user.ahorroAcumulado,
                     primaryCurrencySymbol = primaryCurrencySymbol,
                     secondaryCurrencySymbol = secondaryCurrencySymbol,
+                    usedCurrenciesInMonth = usedCurrenciesInMonth,
                     savingsChartData = savingsChartData,
                     monthlySummary = monthlySummary,
                     isLoading = false
                 )
             }
         }.launchIn(viewModelScope)
+    }
+
+    fun onDashboardCurrencySelected(currencySymbol: String) {
+        _state.update { it.copy(selectedDashboardCurrency = currencySymbol) }
     }
 
     fun onSavingsCurrencySelected(currencySymbol: String) {

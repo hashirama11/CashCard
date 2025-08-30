@@ -30,11 +30,7 @@ fun DashboardScreen(
     onPurchaseHistoryClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val dynamicTabCount = state.dashboardPanels.size
-    val fixedTabs = listOf("Ahorro", "Resumen")
-    val totalTabs = dynamicTabCount * 2 + fixedTabs.size // Each currency has Ingreso/Gasto
-
-    val pagerState = rememberPagerState(pageCount = { totalTabs })
+    val pagerState = rememberPagerState(pageCount = { 4 })
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
@@ -56,27 +52,12 @@ fun DashboardScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Dynamic TabRow
-            ScrollableTabRow(
-                selectedTabIndex = pagerState.currentPage,
-            ) {
-                state.dashboardPanels.forEachIndexed { index, panel ->
+            val titles = listOf("Ingresos", "Gastos", "Ahorro", "Resumen")
+            TabRow(selectedTabIndex = pagerState.currentPage) {
+                titles.forEachIndexed { index, title ->
                     Tab(
-                        selected = pagerState.currentPage == index * 2,
-                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index * 2) } },
-                        text = { Text("${panel.currencySymbol} Ingreso") }
-                    )
-                    Tab(
-                        selected = pagerState.currentPage == index * 2 + 1,
-                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index * 2 + 1) } },
-                        text = { Text("${panel.currencySymbol} Gasto") }
-                    )
-                }
-                fixedTabs.forEachIndexed { index, title ->
-                    val pageIndex = dynamicTabCount * 2 + index
-                    Tab(
-                        selected = pagerState.currentPage == pageIndex,
-                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(pageIndex) } },
+                        selected = pagerState.currentPage == index,
+                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
                         text = { Text(title) }
                     )
                 }
@@ -86,50 +67,47 @@ fun DashboardScreen(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
-                if (page < dynamicTabCount * 2) {
-                    val panelIndex = page / 2
-                    val type = if (page % 2 == 0) TipoTransaccion.INGRESO else TipoTransaccion.GASTO
-                    val panel = state.dashboardPanels[panelIndex]
-
-                    if (type == TipoTransaccion.INGRESO) {
-                        DashboardContent(
-                            balanceVes = panel.totalIncome,
-                            balanceUsd = 0.0, // Not used in this dynamic view
-                            ahorroAcumulado = state.ahorroAcumulado,
-                            transactions = panel.incomeTransactions,
-                            type = TipoTransaccion.INGRESO,
-                            chartData = panel.incomeChartData,
-                            onTransactionClick = onTransactionClick,
-                            onSeeAllClick = onSeeAllClick
-                        )
-                    } else {
-                        DashboardContent(
-                            balanceVes = -panel.totalExpenses,
-                            balanceUsd = 0.0, // Not used in this dynamic view
-                            ahorroAcumulado = state.ahorroAcumulado,
-                            transactions = panel.expenseTransactions,
-                            type = TipoTransaccion.GASTO,
-                            chartData = panel.expenseChartData,
-                            onTransactionClick = onTransactionClick,
-                            onSeeAllClick = onSeeAllClick
-                        )
-                    }
-                } else {
-                    when (page - dynamicTabCount * 2) {
-                        0 -> SavingsDashboardContent(
-                            totalAhorrosVes = state.totalAhorrosVes,
-                            totalAhorrosUsd = state.totalAhorrosUsd,
-                            primaryCurrencySymbol = state.primaryCurrencySymbol,
-                            secondaryCurrencySymbol = state.secondaryCurrencySymbol,
-                            selectedSavingsCurrency = state.selectedSavingsCurrency,
-                            onCurrencySelected = { viewModel.onSavingsCurrencySelected(it) },
-                            savingsChartData = state.savingsChartData,
-                            transactions = state.dashboardPanels.flatMap { it.incomeTransactions + it.expenseTransactions }
-                                .filter { it.transaccion.tipo == TipoTransaccion.AHORRO.name },
-                            onTransactionClick = onTransactionClick
-                        )
-                        1 -> MonthlySummaryChart(monthlySummary = state.monthlySummary)
-                    }
+                when (page) {
+                    0 -> DashboardContent(
+                        balanceVes = state.totalIngresosPrimario,
+                        balanceUsd = state.totalIngresosSecundario,
+                        primaryCurrencySymbol = state.primaryCurrencySymbol,
+                        secondaryCurrencySymbol = state.secondaryCurrencySymbol,
+                        usedCurrenciesInMonth = state.usedCurrenciesInMonth,
+                        selectedCurrency = state.selectedDashboardCurrency,
+                        onCurrencySelected = { viewModel.onDashboardCurrencySelected(it) },
+                        transactions = state.incomeTransactions,
+                        type = TipoTransaccion.INGRESO,
+                        chartData = state.incomeChartData,
+                        onTransactionClick = onTransactionClick,
+                        onSeeAllClick = onSeeAllClick
+                    )
+                    1 -> DashboardContent(
+                        balanceVes = -state.totalGastosPrimario,
+                        balanceUsd = -state.totalGastosSecundario,
+                        primaryCurrencySymbol = state.primaryCurrencySymbol,
+                        secondaryCurrencySymbol = state.secondaryCurrencySymbol,
+                        usedCurrenciesInMonth = state.usedCurrenciesInMonth,
+                        selectedCurrency = state.selectedDashboardCurrency,
+                        onCurrencySelected = { viewModel.onDashboardCurrencySelected(it) },
+                        transactions = state.expenseTransactions,
+                        type = TipoTransaccion.GASTO,
+                        chartData = state.expenseChartData,
+                        onTransactionClick = onTransactionClick,
+                        onSeeAllClick = onSeeAllClick
+                    )
+                    2 -> SavingsDashboardContent(
+                        totalAhorrosVes = state.totalAhorrosPrimario,
+                        totalAhorrosUsd = state.totalAhorrosSecundario,
+                        primaryCurrencySymbol = state.primaryCurrencySymbol,
+                        secondaryCurrencySymbol = state.secondaryCurrencySymbol,
+                        selectedSavingsCurrency = state.selectedSavingsCurrency,
+                        onCurrencySelected = { viewModel.onSavingsCurrencySelected(it) },
+                        savingsChartData = state.savingsChartData,
+                        transactions = state.savingsTransactions,
+                        onTransactionClick = onTransactionClick
+                    )
+                    3 -> MonthlySummaryChart(monthlySummary = state.monthlySummary)
                 }
             }
         }

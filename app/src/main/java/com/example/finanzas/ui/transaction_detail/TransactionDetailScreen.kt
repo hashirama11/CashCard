@@ -30,9 +30,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.finanzas.model.TipoTransaccion
 import com.example.finanzas.ui.theme.AccentGreen
 import com.example.finanzas.ui.theme.AccentRed
@@ -89,6 +92,18 @@ fun TransactionDetailScreen(
                     text = transaction.descripcion,
                     style = MaterialTheme.typography.titleLarge
                 )
+                if (transaction.imageUri != null && transaction.imageUri.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    AsyncImage(
+                        model = transaction.imageUri,
+                        contentDescription = "Imagen de la compra",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp)
+                            .clip(MaterialTheme.shapes.medium),
+                        contentScale = ContentScale.Crop
+                    )
+                }
                 Spacer(modifier = Modifier.height(24.dp))
                 Divider()
                 Spacer(modifier = Modifier.height(16.dp))
