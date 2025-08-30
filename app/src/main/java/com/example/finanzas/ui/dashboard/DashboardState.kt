@@ -1,25 +1,17 @@
 package com.example.finanzas.ui.dashboard
 
 import com.example.finanzas.model.MonthlySummary
-import com.example.finanzas.model.PieChartData
 import com.example.finanzas.model.SavingsChartData
-import com.example.finanzas.model.TransactionWithDetails
 
 data class DashboardState(
-    val transactionsWithDetails: List<TransactionWithDetails> = emptyList(),
-    val totalIngresosVes: Double = 0.0,
-    val totalIngresosUsd: Double = 0.0,
-    val totalGastosVes: Double = 0.0,
-    val totalGastosUsd: Double = 0.0,
+    val dashboardPanels: List<DashboardPanelState> = emptyList(),
     val totalAhorrosVes: Double = 0.0,
     val totalAhorrosUsd: Double = 0.0,
-    val ahorroAcumulado: Double = 0.0, // <-- NUEVO
+    val ahorroAcumulado: Double = 0.0,
     val isLoading: Boolean = true,
     val userName: String = "",
     val primaryCurrencySymbol: String = "",
     val secondaryCurrencySymbol: String = "",
-    val expenseChartData: List<PieChartData> = emptyList(),
-    val incomeChartData: List<PieChartData> = emptyList(),
     val monthlySummary: List<MonthlySummary> = emptyList(),
     val savingsChartData: SavingsChartData? = null,
     val selectedSavingsCurrency: String? = null

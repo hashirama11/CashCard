@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,12 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finanzas.R
 import com.example.finanzas.model.TipoTransaccion
-import com.example.finanzas.ui.dashboard.components.DashboardContent
-import com.example.finanzas.ui.dashboard.components.DashboardTabRow
-import com.example.finanzas.ui.dashboard.components.DashboardTopAppBar
-import com.example.finanzas.ui.dashboard.components.MonthlySummaryChart
-import com.example.finanzas.ui.dashboard.components.SavingsChart
-import com.example.finanzas.ui.dashboard.components.SavingsDashboardContent
+import com.example.finanzas.ui.dashboard.components.*
 import com.example.finanzas.ui.theme.AccentGreen
 import kotlinx.coroutines.launch
 
@@ -37,7 +30,11 @@ fun DashboardScreen(
     onPurchaseHistoryClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val pagerState = rememberPagerState(pageCount = { 4 })
+    val dynamicTabCount = state.dashboardPanels.size
+    val fixedTabs = listOf("Ahorro", "Resumen")
+    val totalTabs = dynamicTabCount * 2 + fixedTabs.size // Each currency has Ingreso/Gasto
+
+    val pagerState = rememberPagerState(pageCount = { totalTabs })
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
@@ -59,53 +56,80 @@ fun DashboardScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            DashboardTabRow(
+            // Dynamic TabRow
+            ScrollableTabRow(
                 selectedTabIndex = pagerState.currentPage,
-                onTabSelected = { index ->
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(index)
-                    }
+            ) {
+                state.dashboardPanels.forEachIndexed { index, panel ->
+                    Tab(
+                        selected = pagerState.currentPage == index * 2,
+                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index * 2) } },
+                        text = { Text("${panel.currencySymbol} Ingreso") }
+                    )
+                    Tab(
+                        selected = pagerState.currentPage == index * 2 + 1,
+                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index * 2 + 1) } },
+                        text = { Text("${panel.currencySymbol} Gasto") }
+                    )
                 }
-            )
+                fixedTabs.forEachIndexed { index, title ->
+                    val pageIndex = dynamicTabCount * 2 + index
+                    Tab(
+                        selected = pagerState.currentPage == pageIndex,
+                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(pageIndex) } },
+                        text = { Text(title) }
+                    )
+                }
+            }
 
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
-                when (page) {
-                    0 -> DashboardContent(
-                        balanceVes = state.totalIngresosVes,
-                        balanceUsd = state.totalIngresosUsd,
-                        ahorroAcumulado = state.ahorroAcumulado, // <-- Pasamos el ahorro
-                        onTransactionClick = onTransactionClick,
-                        transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.INGRESO.name },
-                        type = TipoTransaccion.INGRESO,
-                        chartData = state.incomeChartData,
-                        onSeeAllClick = onSeeAllClick
-                    )
-                    1 -> DashboardContent(
-                        // Para gastos, el balance es negativo
-                        balanceVes = -state.totalGastosVes,
-                        balanceUsd = -state.totalGastosUsd,
-                        ahorroAcumulado = state.ahorroAcumulado, // <-- Pasamos el ahorro
-                        onTransactionClick = onTransactionClick,
-                        transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.GASTO.name },
-                        type = TipoTransaccion.GASTO,
-                        chartData = state.expenseChartData,
-                        onSeeAllClick = onSeeAllClick
-                    )
-                    2 -> MonthlySummaryChart(monthlySummary = state.monthlySummary)
-                    3 -> SavingsDashboardContent(
-                        totalAhorrosVes = state.totalAhorrosVes,
-                        totalAhorrosUsd = state.totalAhorrosUsd,
-                        primaryCurrencySymbol = state.primaryCurrencySymbol,
-                        secondaryCurrencySymbol = state.secondaryCurrencySymbol,
-                        selectedSavingsCurrency = state.selectedSavingsCurrency,
-                        onCurrencySelected = { viewModel.onSavingsCurrencySelected(it) },
-                        savingsChartData = state.savingsChartData,
-                        transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.AHORRO.name },
-                        onTransactionClick = onTransactionClick
-                    )
+                if (page < dynamicTabCount * 2) {
+                    val panelIndex = page / 2
+                    val type = if (page % 2 == 0) TipoTransaccion.INGRESO else TipoTransaccion.GASTO
+                    val panel = state.dashboardPanels[panelIndex]
+
+                    if (type == TipoTransaccion.INGRESO) {
+                        DashboardContent(
+                            balanceVes = panel.totalIncome,
+                            balanceUsd = 0.0, // Not used in this dynamic view
+                            ahorroAcumulado = state.ahorroAcumulado,
+                            transactions = panel.incomeTransactions,
+                            type = TipoTransaccion.INGRESO,
+                            chartData = panel.incomeChartData,
+                            onTransactionClick = onTransactionClick,
+                            onSeeAllClick = onSeeAllClick
+                        )
+                    } else {
+                        DashboardContent(
+                            balanceVes = -panel.totalExpenses,
+                            balanceUsd = 0.0, // Not used in this dynamic view
+                            ahorroAcumulado = state.ahorroAcumulado,
+                            transactions = panel.expenseTransactions,
+                            type = TipoTransaccion.GASTO,
+                            chartData = panel.expenseChartData,
+                            onTransactionClick = onTransactionClick,
+                            onSeeAllClick = onSeeAllClick
+                        )
+                    }
+                } else {
+                    when (page - dynamicTabCount * 2) {
+                        0 -> SavingsDashboardContent(
+                            totalAhorrosVes = state.totalAhorrosVes,
+                            totalAhorrosUsd = state.totalAhorrosUsd,
+                            primaryCurrencySymbol = state.primaryCurrencySymbol,
+                            secondaryCurrencySymbol = state.secondaryCurrencySymbol,
+                            selectedSavingsCurrency = state.selectedSavingsCurrency,
+                            onCurrencySelected = { viewModel.onSavingsCurrencySelected(it) },
+                            savingsChartData = state.savingsChartData,
+                            transactions = state.dashboardPanels.flatMap { it.incomeTransactions + it.expenseTransactions }
+                                .filter { it.transaccion.tipo == TipoTransaccion.AHORRO.name },
+                            onTransactionClick = onTransactionClick
+                        )
+                        1 -> MonthlySummaryChart(monthlySummary = state.monthlySummary)
+                    }
                 }
             }
         }

@@ -113,7 +113,10 @@ fun AppNavigation(
         }
         composable(AppScreens.PurchaseHistory.route) {
             PurchaseHistoryScreen(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onPurchaseClick = { purchaseId ->
+                    navController.navigate(AppScreens.TransactionDetail.createRoute(purchaseId))
+                }
             )
         }
         composable(AppScreens.NotificationSettings.route) {

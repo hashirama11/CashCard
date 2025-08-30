@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -28,7 +29,8 @@ import java.util.*
 @Composable
 fun PurchaseHistoryScreen(
     viewModel: PurchaseHistoryViewModel = hiltViewModel(),
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onPurchaseClick: (Int) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     var showDatePicker by remember { mutableStateOf(false) }
@@ -67,7 +69,10 @@ fun PurchaseHistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(state.filteredPurchases) { purchase ->
-                    PurchaseItem(purchase = purchase)
+                    PurchaseItem(
+                        purchase = purchase,
+                        onClick = { onPurchaseClick(purchase.transaccion.id) }
+                    )
                 }
             }
         }
@@ -96,7 +101,7 @@ fun PurchaseHistoryScreen(
 }
 
 @Composable
-fun PurchaseItem(purchase: TransactionWithDetails) {
+fun PurchaseItem(purchase: TransactionWithDetails, onClick: () -> Unit) {
     val transaction = purchase.transaccion
     val currencyFormat = NumberFormat.getNumberInstance().apply {
         maximumFractionDigits = 2
@@ -104,7 +109,9 @@ fun PurchaseItem(purchase: TransactionWithDetails) {
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(
