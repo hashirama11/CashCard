@@ -39,18 +39,10 @@ import kotlin.math.roundToInt
 
 @Composable
 fun SavingsRateIndicator(
-    netBalanceVes: Double,
-    netBalanceUsd: Double,
+    netBalance: Double,
     savingsRate: Float,
+    numberFormat: NumberFormat,
 ) {
-    val vesFormat = NumberFormat.getCurrencyInstance(Locale("es", "VE")).apply {
-        currency = Currency.getInstance("VES")
-        maximumFractionDigits = 2
-    }
-    val usdFormat = NumberFormat.getCurrencyInstance(Locale.US).apply {
-        currency = Currency.getInstance("USD")
-    }
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
@@ -60,6 +52,7 @@ fun SavingsRateIndicator(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Circular progress indicator for Savings Rate
             Box(
                 modifier = Modifier.size(100.dp),
                 contentAlignment = Alignment.Center
@@ -73,7 +66,8 @@ fun SavingsRateIndicator(
                     targetRate = savingsRate
                 }
 
-                val indicatorColor = if (netBalanceVes + netBalanceUsd >= 0) AccentGreen else AccentRed
+                // The color of the indicator depends on the savings rate
+                val indicatorColor = if (savingsRate >= 0) AccentGreen else AccentRed
 
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     drawArc(
@@ -97,25 +91,19 @@ fun SavingsRateIndicator(
                     fontWeight = FontWeight.ExtraBold
                 )
             }
+            // Net Balance Text
             Column(modifier = Modifier.padding(start = 16.dp)) {
                 Text(
-                    text = "Balance Neto",
+                    text = "Balance Neto del Mes",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = usdFormat.format(netBalanceUsd),
-                    style = MaterialTheme.typography.titleMedium,
+                    text = numberFormat.format(netBalance),
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = if (netBalanceUsd >= 0) AccentGreen else AccentRed
-                )
-                Divider(modifier = Modifier.padding(vertical = 4.dp))
-                Text(
-                    text = vesFormat.format(netBalanceVes),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = if (netBalanceVes >= 0) AccentGreen else AccentRed
+                    color = if (netBalance >= 0) AccentGreen else AccentRed
                 )
             }
         }

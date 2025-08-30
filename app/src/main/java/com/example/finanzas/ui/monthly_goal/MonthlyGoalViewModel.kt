@@ -2,15 +2,18 @@ package com.example.finanzas.ui.monthly_goal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.local.entity.Transaccion
 import com.example.finanzas.data.repository.FinanzasRepository
 import com.example.finanzas.model.TipoTransaccion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -19,63 +22,95 @@ class MonthlyGoalViewModel @Inject constructor(
     private val repository: FinanzasRepository
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(MonthlyGoalState())
-    val state = _state.asStateFlow()
+    private val _selectedCurrency = MutableStateFlow<Moneda?>(null)
+    val selectedCurrency: StateFlow<Moneda?> = _selectedCurrency
+
+    val usedCurrencies: StateFlow<List<Moneda>> = repository.getAllTransacciones()
+        .combine(repository.getAllMonedas()) { transactions, allMonedas ->
+            val currencyNames = transactions.map { it.moneda }.distinct()
+            allMonedas.filter { it.nombre in currencyNames }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val state: StateFlow<MonthlyGoalState> = combine(
+        _selectedCurrency,
+        repository.getAllTransacciones(),
+        repository.getUsuario(),
+        usedCurrencies
+    ) { selectedCurrency, allTransactions, user, usedCurrenciesList ->
+        if (selectedCurrency == null || user == null) {
+            MonthlyGoalState(isLoading = true, usedCurrencies = usedCurrenciesList)
+        } else {
+            val currentMonthTransactions = allTransactions.filter {
+                isTransactionInCurrentMonth(it) && it.moneda == selectedCurrency.nombre
+            }
+
+            val ingresosDelMes = currentMonthTransactions
+                .filter { it.tipo == TipoTransaccion.INGRESO.name }
+                .sumOf { it.monto }
+
+            val gastosDelMes = currentMonthTransactions
+                .filter { it.tipo == TipoTransaccion.GASTO.name }
+                .sumOf { it.monto }
+
+            val balanceDelMes = ingresosDelMes - gastosDelMes
+
+            // Assuming ahorroAcumulado and monthlyGoal are in the primary currency.
+            // This is a simplification. A more robust solution would involve currency conversion.
+            val ahorroAcumulado = if (selectedCurrency.nombre == user.monedaPrincipal) {
+                user.ahorroAcumulado
+            } else {
+                0.0 // Not showing accumulated savings for other currencies to avoid confusion
+            }
+
+            val monthlyGoal = if (selectedCurrency.nombre == user.monedaPrincipal) {
+                user.objetivoAhorroMensual
+            } else {
+                0.0 // Not showing goal for other currencies
+            }
+
+            val saldoActual = ahorroAcumulado + balanceDelMes
+            val savingsRate = if (ingresosDelMes > 0) (balanceDelMes / ingresosDelMes).toFloat() else 0f
+
+            MonthlyGoalState(
+                ahorroAcumulado = ahorroAcumulado,
+                ingresosDelMes = ingresosDelMes,
+                gastosDelMes = gastosDelMes,
+                balanceDelMes = balanceDelMes,
+                saldoActual = saldoActual,
+                savingsRate = savingsRate.coerceIn(0f, 1f),
+                isLoading = false,
+                usedCurrencies = usedCurrenciesList,
+                selectedCurrency = selectedCurrency,
+                monthlyGoal = monthlyGoal
+            )
+        }
+    }
+    .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = MonthlyGoalState(isLoading = true)
+    )
 
     init {
-        val transactionsFlow = repository.getAllTransacciones()
-        val userFlow = repository.getUsuario()
-        val monedasFlow = repository.getAllMonedas()
+        // Set the initial currency to the user's primary currency
+        viewModelScope.launch {
+            val user = repository.getUsuario().first()
+            val allMonedas = repository.getAllMonedas().first()
+            val primaryCurrency = user?.monedaPrincipal?.let { p -> allMonedas.find { it.nombre == p } }
 
-        combine(transactionsFlow, userFlow, monedasFlow) { allTransactions, user, monedas ->
-            val monedasMap = monedas.associateBy { it.nombre }
-            val primaryCurrencySymbol = monedasMap[user?.monedaPrincipal]?.simbolo ?: ""
-            val secondaryCurrencySymbol = monedasMap[user?.monedaSecundaria]?.simbolo ?: ""
-
-            val ahorroAcumulado = user?.ahorroAcumulado ?: 0.0
-            val currentMonthTransactions = allTransactions.filter { isTransactionInCurrentMonth(it) }
-
-            val ingresosDelMes = currentMonthTransactions.filter { it.tipo == TipoTransaccion.INGRESO.name }
-            val gastosDelMes = currentMonthTransactions.filter { it.tipo == TipoTransaccion.GASTO.name }
-
-            val ingresosDelMesUsd = ingresosDelMes.filter { it.moneda == secondaryCurrencySymbol }.sumOf { it.monto }
-            val ingresosDelMesVes = ingresosDelMes.filter { it.moneda == primaryCurrencySymbol }.sumOf { it.monto }
-
-            val gastosDelMesUsd = gastosDelMes.filter { it.moneda == secondaryCurrencySymbol }.sumOf { it.monto }
-            val gastosDelMesVes = gastosDelMes.filter { it.moneda == primaryCurrencySymbol }.sumOf { it.monto }
-
-            val balanceDelMesUsd = ingresosDelMesUsd - gastosDelMesUsd
-            val balanceDelMesVes = ingresosDelMesVes - gastosDelMesVes
-
-            val saldoActualUsd = ahorroAcumulado + balanceDelMesUsd
-            val saldoActualVes = balanceDelMesVes
-
-            val savingsRateUsd = if (ingresosDelMesUsd > 0) {
-                (balanceDelMesUsd / ingresosDelMesUsd).toFloat()
-            } else { 0f }.coerceIn(0f, 1f)
-
-            // --- NUEVO CÁLCULO PARA TASA DE AHORRO EN VES ---
-            val savingsRateVes = if (ingresosDelMesVes > 0) {
-                (balanceDelMesVes / ingresosDelMesVes).toFloat()
-            } else { 0f }.coerceIn(0f, 1f)
-
-            _state.update {
-                it.copy(
-                    ahorroAcumulado = ahorroAcumulado,
-                    ingresosDelMesUsd = ingresosDelMesUsd,
-                    ingresosDelMesVes = ingresosDelMesVes,
-                    gastosDelMesUsd = gastosDelMesUsd,
-                    gastosDelMesVes = gastosDelMesVes,
-                    balanceDelMesUsd = balanceDelMesUsd,
-                    balanceDelMesVes = balanceDelMesVes,
-                    saldoActualUsd = saldoActualUsd,
-                    saldoActualVes = saldoActualVes,
-                    savingsRateUsd = savingsRateUsd,
-                    savingsRateVes = savingsRateVes, // <-- Actualizamos el estado
-                    isLoading = false
-                )
+            if (primaryCurrency != null) {
+                _selectedCurrency.value = primaryCurrency
+            } else {
+                usedCurrencies.first { it.isNotEmpty() }.firstOrNull()?.let {
+                    _selectedCurrency.value = it
+                }
             }
-        }.launchIn(viewModelScope)
+        }
+    }
+
+    fun onCurrencySelected(moneda: Moneda) {
+        _selectedCurrency.value = moneda
     }
 
     private fun isTransactionInCurrentMonth(transaction: Transaccion): Boolean {

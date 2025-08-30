@@ -59,7 +59,8 @@ class DashboardViewModel @Inject constructor(
 
             val categoriesMap = categories.associateBy { it.id }
             val monedasMap = monedas.associateBy { it.nombre }
-            val primaryCurrencySymbol = monedasMap[user.monedaPrincipal]?.simbolo ?: ""
+            val primaryCurrency = monedasMap[user.monedaPrincipal]
+            val primaryCurrencySymbol = primaryCurrency?.simbolo ?: ""
             val secondaryCurrencySymbol = user.monedaSecundaria?.let { monedasMap[it]?.simbolo } ?: ""
 
             if (_state.value.selectedDashboardCurrency == null && primaryCurrencySymbol.isNotBlank()) {
@@ -76,19 +77,20 @@ class DashboardViewModel @Inject constructor(
             val usedCurrenciesInMonth = currentMonthTransactions.map { it.moneda }.distinct()
             val transactionsWithDetails = currentMonthTransactions.map { TransactionWithDetails(it, categoriesMap[it.categoriaId]) }
 
-            // --- LÓGICA DE FILTRADO PARA INGRESOS Y GASTOS ---
             val filteredDashboardTransactions = transactionsWithDetails.filter { it.transaccion.moneda == selectedDashboardCurrency }
             val incomeTransactions = filteredDashboardTransactions.filter { it.transaccion.tipo == TipoTransaccion.INGRESO.name }
             val expenseTransactions = filteredDashboardTransactions.filter { it.transaccion.tipo == TipoTransaccion.GASTO.name }
-            val totalIngresosPrimario = incomeTransactions.filter { it.transaccion.moneda == primaryCurrencySymbol }.sumOf { it.transaccion.monto }
-            val totalIngresosSecundario = incomeTransactions.filter { it.transaccion.moneda == secondaryCurrencySymbol }.sumOf { it.transaccion.monto }
-            val totalGastosPrimario = expenseTransactions.filter { it.transaccion.moneda == primaryCurrencySymbol }.sumOf { it.transaccion.monto }
-            val totalGastosSecundario = expenseTransactions.filter { it.transaccion.moneda == secondaryCurrencySymbol }.sumOf { it.transaccion.monto }
+
+            val allIncomesInMonth = transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.INGRESO.name }
+            val allExpensesInMonth = transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.GASTO.name }
+            val totalIngresosPrimario = allIncomesInMonth.filter { it.transaccion.moneda == primaryCurrencySymbol }.sumOf { it.transaccion.monto }
+            val totalIngresosSecundario = allIncomesInMonth.filter { it.transaccion.moneda == secondaryCurrencySymbol }.sumOf { it.transaccion.monto }
+            val totalGastosPrimario = allExpensesInMonth.filter { it.transaccion.moneda == primaryCurrencySymbol }.sumOf { it.transaccion.monto }
+            val totalGastosSecundario = allExpensesInMonth.filter { it.transaccion.moneda == secondaryCurrencySymbol }.sumOf { it.transaccion.monto }
 
             val incomeChartData = createChartData(incomeTransactions, incomeTransactions.sumOf { it.transaccion.monto })
             val expenseChartData = createChartData(expenseTransactions, expenseTransactions.sumOf { it.transaccion.monto })
 
-            // --- LÓGICA DE AHORROS ---
             val savingsTransactions = transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.AHORRO.name }
             val totalAhorrosPrimario = savingsTransactions.filter { it.transaccion.moneda == primaryCurrencySymbol }.sumOf { it.transaccion.monto }
             val totalAhorrosSecundario = savingsTransactions.filter { it.transaccion.moneda == secondaryCurrencySymbol }.sumOf { it.transaccion.monto }
@@ -103,7 +105,7 @@ class DashboardViewModel @Inject constructor(
             }
             val savingsChartData = SavingsChartData(savingsDataPoints)
 
-            val monthlySummary = calculateMonthlySummary(allTransactions, monedas)
+            val monthlySummary = calculateMonthlySummary(allTransactions, monedas, primaryCurrency)
 
             _state.update {
                 it.copy(
@@ -139,26 +141,39 @@ class DashboardViewModel @Inject constructor(
         _state.update { it.copy(selectedSavingsCurrency = currencySymbol) }
     }
 
-    private fun calculateMonthlySummary(transactions: List<Transaccion>, monedas: List<Moneda>): List<MonthlySummary> {
+    private fun calculateMonthlySummary(transactions: List<Transaccion>, monedas: List<Moneda>, primaryCurrency: Moneda?): List<MonthlySummary> {
+        if (primaryCurrency == null) return emptyList()
+        val monedasMapBySymbol = monedas.associateBy { it.simbolo }
+        val primaryRate = primaryCurrency.tasa_conversion // Tasa de la moneda principal con respecto a la base (USD)
+
         val calendar = Calendar.getInstance()
         val summaries = mutableMapOf<String, MonthlySummary>()
-        val threeMonthsAgo = (calendar.clone() as Calendar).apply { add(Calendar.MONTH, -2) }
 
+        // Inicializar los últimos 3 meses
         for (i in 0..2) {
-            val monthCalendar = (Calendar.getInstance() as Calendar).apply { add(Calendar.MONTH, -i) }
+            val monthCalendar = (Calendar.getInstance()).apply { add(Calendar.MONTH, -i) }
             val monthName = SimpleDateFormat("MMM", Locale.getDefault()).format(monthCalendar.time)
             summaries[monthName] = MonthlySummary(monthName, 0.0, 0.0)
         }
 
-        val recentTransactions = transactions.filter { it.fecha.after(threeMonthsAgo.time) }
+        val threeMonthsAgo = (Calendar.getInstance()).apply { add(Calendar.MONTH, -2); set(Calendar.DAY_OF_MONTH, 1) }.time
+
+        val recentTransactions = transactions.filter { it.fecha.after(threeMonthsAgo) }
 
         recentTransactions.forEach { transaction ->
             val transactionCalendar = Calendar.getInstance().apply { time = transaction.fecha }
             val monthName = SimpleDateFormat("MMM", Locale.getDefault()).format(transactionCalendar.time)
 
             if (summaries.containsKey(monthName)) {
-                val moneda = monedas.find { it.simbolo == transaction.moneda }
-                val amountInPrimaryCurrency = if (moneda != null && moneda.tasa_conversion > 0) transaction.monto / moneda.tasa_conversion else transaction.monto
+                val transactionCurrency = monedasMapBySymbol[transaction.moneda]
+                // 1. Convertir el monto de la transacción a la moneda base (USD, tasa=1.0)
+                val amountInBase = if (transactionCurrency != null && transactionCurrency.tasa_conversion > 0) {
+                    transaction.monto / transactionCurrency.tasa_conversion
+                } else {
+                    transaction.monto
+                }
+                // 2. Convertir de la moneda base a la moneda principal del usuario
+                val amountInPrimaryCurrency = amountInBase * primaryRate
 
                 val currentSummary = summaries[monthName]!!
                 if (transaction.tipo == TipoTransaccion.INGRESO.name) {
@@ -168,7 +183,7 @@ class DashboardViewModel @Inject constructor(
                 }
             }
         }
-        return summaries.values.toList().sortedBy { SimpleDateFormat("MMM", Locale.getDefault()).parse(it.month) }
+        return summaries.values.toList().sortedBy { SimpleDateFormat("MMM", Locale.getDefault()).parse(it.month)!!.month }
     }
 
     private suspend fun checkAndPerformMonthEndClosure() {

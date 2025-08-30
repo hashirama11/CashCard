@@ -2,14 +2,17 @@ package com.example.finanzas.ui.balance
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.repository.FinanzasRepository
 import com.example.finanzas.model.TipoTransaccion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -20,56 +23,53 @@ class HistoricalBalanceViewModel @Inject constructor(
     private val repository: FinanzasRepository
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(BalanceState())
-    val state = _state.asStateFlow()
+    private val _selectedCurrency = MutableStateFlow<Moneda?>(null)
+    val selectedCurrency: StateFlow<Moneda?> = _selectedCurrency
 
-    init {
-        val transactionsFlow = repository.getAllTransacciones()
-        val userFlow = repository.getUsuario()
-        val monedasFlow = repository.getAllMonedas()
+    val usedCurrencies: StateFlow<List<Moneda>> = repository.getAllTransacciones()
+        .combine(repository.getAllMonedas()) { transactions, allMonedas ->
+            val currencyNames = transactions.map { it.moneda }.distinct()
+            allMonedas.filter { it.nombre in currencyNames }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-        // Esta lógica ahora calcula sobre TODAS las transacciones para dar un total histórico
-        combine(transactionsFlow, userFlow, monedasFlow) { transactions, user, monedas ->
-            val monedasMap = monedas.associateBy { it.nombre }
-            val primaryCurrencySymbol = monedasMap[user?.monedaPrincipal]?.simbolo ?: ""
-            val secondaryCurrencySymbol = monedasMap[user?.monedaSecundaria]?.simbolo ?: ""
+    val state: StateFlow<BalanceState> = combine(
+        _selectedCurrency,
+        repository.getAllTransacciones(),
+        usedCurrencies
+    ) { selectedCurrency, allTransactions, usedCurrenciesList ->
+        if (selectedCurrency == null) {
+            BalanceState(isLoading = true, usedCurrencies = usedCurrenciesList)
+        } else {
+            val filteredTransactions = allTransactions.filter { it.moneda == selectedCurrency.nombre }
 
-            val ingresos = transactions.filter { it.tipo == TipoTransaccion.INGRESO.name }
-            val gastos = transactions.filter { it.tipo == TipoTransaccion.GASTO.name }
+            val ingresos = filteredTransactions.filter { it.tipo == TipoTransaccion.INGRESO.name }
+            val gastos = filteredTransactions.filter { it.tipo == TipoTransaccion.GASTO.name }
 
-            val totalIngresosVes = ingresos.filter { it.moneda == primaryCurrencySymbol }.sumOf { it.monto }
-            val totalIngresosUsd = ingresos.filter { it.moneda == secondaryCurrencySymbol }.sumOf { it.monto }
-            val totalGastosVes = gastos.filter { it.moneda == primaryCurrencySymbol }.sumOf { it.monto }
-            val totalGastosUsd = gastos.filter { it.moneda == secondaryCurrencySymbol }.sumOf { it.monto }
+            val totalIngresos = ingresos.sumOf { it.monto }
+            val totalGastos = gastos.sumOf { it.monto }
+            val balanceNeto = totalIngresos - totalGastos
 
-            val balanceNetoVes = totalIngresosVes - totalGastosVes
-            val balanceNetoUsd = totalIngresosUsd - totalGastosUsd
+            val tasaAhorro = if (totalIngresos > 0) (balanceNeto / totalIngresos).toFloat() else 0f
 
-            val totalIngresosConsolidado = ingresos.sumOf { it.monto }
-            val balanceNetoConsolidado = transactions.sumOf { if (it.tipo == TipoTransaccion.INGRESO.name) it.monto else -it.monto }
-            val tasaAhorro = if (totalIngresosConsolidado > 0) (balanceNetoConsolidado / totalIngresosConsolidado).toFloat() else 0f
-
-
-            val calendar = Calendar.getInstance()
             val monthlyData = mutableMapOf<String, Pair<Double, Double>>()
             val monthFormatter = SimpleDateFormat("MMM", Locale.getDefault())
+            val sixMonthsAgo = Calendar.getInstance().apply { add(Calendar.MONTH, -5) }
 
-            for (i in 5 downTo 0) {
-                calendar.timeInMillis = System.currentTimeMillis()
-                calendar.add(Calendar.MONTH, -i)
-                val monthKey = monthFormatter.format(calendar.time)
+            for (i in 0..5) {
+                val monthCalendar = (sixMonthsAgo.clone() as Calendar).apply { add(Calendar.MONTH, i) }
+                val monthKey = monthFormatter.format(monthCalendar.time)
                 monthlyData[monthKey] = 0.0 to 0.0
             }
 
-            transactions.forEach { tx ->
-                calendar.time = tx.fecha
+            filteredTransactions.forEach { tx ->
+                val calendar = Calendar.getInstance().apply { time = tx.fecha }
                 val monthKey = monthFormatter.format(calendar.time)
                 if (monthlyData.containsKey(monthKey)) {
-                    val current = monthlyData[monthKey]!!
-                    if (tx.tipo == TipoTransaccion.INGRESO.name) {
-                        monthlyData[monthKey] = current.first + tx.monto to current.second
-                    } else {
-                        monthlyData[monthKey] = current.first to current.second + tx.monto
+                    val current = monthlyData.getValue(monthKey)
+                    when (tx.tipo) {
+                        TipoTransaccion.INGRESO.name -> monthlyData[monthKey] = current.first + tx.monto to current.second
+                        TipoTransaccion.GASTO.name -> monthlyData[monthKey] = current.first to current.second + tx.monto
                     }
                 }
             }
@@ -78,19 +78,43 @@ class HistoricalBalanceViewModel @Inject constructor(
                 MonthlyFlow(month, data.first.toFloat(), data.second.toFloat())
             }
 
-            _state.update {
-                it.copy(
-                    totalIngresosVes = totalIngresosVes,
-                    totalIngresosUsd = totalIngresosUsd,
-                    totalGastosVes = totalGastosVes,
-                    totalGastosUsd = totalGastosUsd,
-                    balanceNetoVes = balanceNetoVes,
-                    balanceNetoUsd = balanceNetoUsd,
-                    tasaAhorro = tasaAhorro.coerceIn(0f, 1f),
-                    monthlyFlows = monthlyFlows,
-                    isLoading = false
-                )
+            BalanceState(
+                totalIngresos = totalIngresos,
+                totalGastos = totalGastos,
+                balanceNeto = balanceNeto,
+                tasaAhorro = tasaAhorro.coerceIn(0f, 1f),
+                monthlyFlows = monthlyFlows,
+                isLoading = false,
+                usedCurrencies = usedCurrenciesList,
+                selectedCurrency = selectedCurrency
+            )
+        }
+    }
+    .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = BalanceState(isLoading = true)
+    )
+
+    init {
+        // Set the initial currency to the user's primary currency, or the first available one.
+        viewModelScope.launch {
+            val user = repository.getUsuario().first()
+            val allMonedas = repository.getAllMonedas().first()
+            val primaryCurrency = user?.monedaPrincipal?.let { p -> allMonedas.find { it.nombre == p } }
+
+            if (primaryCurrency != null) {
+                _selectedCurrency.value = primaryCurrency
+            } else {
+                // If no primary currency, wait for used currencies and pick the first one
+                usedCurrencies.first { it.isNotEmpty() }.firstOrNull()?.let {
+                    _selectedCurrency.value = it
+                }
             }
-        }.launchIn(viewModelScope)
+        }
+    }
+
+    fun onCurrencySelected(moneda: Moneda) {
+        _selectedCurrency.value = moneda
     }
 }
