@@ -24,15 +24,18 @@ class NotificationSettingsViewModel @Inject constructor(
     init {
         val transactionsFlow = repository.getAllTransacciones()
         val categoriesFlow = repository.getAllCategorias()
+        val monedasFlow = repository.getAllMonedas()
 
-        combine(transactionsFlow, categoriesFlow) { allTransactions, categories ->
+        combine(transactionsFlow, categoriesFlow, monedasFlow) { allTransactions, categories, monedas ->
             val categoriesMap = categories.associateBy { it.id }
+            val monedasMap = monedas.associateBy { it.nombre }
             val pendingTransactions = allTransactions
                 .filter { it.estado == EstadoTransaccion.PENDIENTE.name }
                 .map { transaction ->
                     TransactionWithDetails(
                         transaccion = transaction,
-                        categoria = categoriesMap[transaction.categoriaId]
+                        categoria = categoriesMap[transaction.categoriaId],
+                        moneda = monedasMap[transaction.moneda]
                     )
                 }
 

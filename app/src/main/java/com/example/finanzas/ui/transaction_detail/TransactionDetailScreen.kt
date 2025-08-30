@@ -83,7 +83,7 @@ fun TransactionDetailScreen(
             ) {
                 // Monto y descripción
                 Text(
-                    text = "${transaction.moneda} ${currencyFormat.format(transaction.monto)}",
+                    text = "${details.moneda?.simbolo ?: ""} ${currencyFormat.format(transaction.monto)}",
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.ExtraBold,
                     color = amountColor
@@ -110,7 +110,7 @@ fun TransactionDetailScreen(
                 // Fila de detalles
                 DetailRow(label = "Categoría", value = category?.nombre ?: "Sin categoría")
                 DetailRow(label = "Fecha", value = SimpleDateFormat("dd 'de' MMMM, yyyy", Locale("es", "VE")).format(transaction.fecha))
-                DetailRow(label = "Moneda", value = transaction.moneda)
+                DetailRow(label = "Moneda", value = details.moneda?.nombre ?: transaction.moneda)
                 DetailRow(label = "Estado", value = transaction.estado.replaceFirstChar { it.uppercase() })
                 Spacer(modifier = Modifier.weight(1f))
                 // Botones de acción
@@ -170,7 +170,7 @@ fun DetailRow(label: String, value: String) {
             .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text = label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
         Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
     }
 }

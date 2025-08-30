@@ -122,7 +122,7 @@ fun PurchaseItem(purchase: TransactionWithDetails, onClick: () -> Unit) {
                 modifier = Modifier
                     .size(64.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                    .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.Center
             ) {
                 if (transaction.imageUri != null && transaction.imageUri.isNotBlank()) {
@@ -137,7 +137,7 @@ fun PurchaseItem(purchase: TransactionWithDetails, onClick: () -> Unit) {
                         imageVector = Icons.Default.ShoppingCart,
                         contentDescription = "Sin imagen",
                         modifier = Modifier.size(32.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -166,7 +166,7 @@ fun PurchaseItem(purchase: TransactionWithDetails, onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(16.dp))
 
             Text(
-                text = "${transaction.moneda} ${currencyFormat.format(transaction.monto)}",
+                text = "${purchase.moneda?.simbolo ?: ""} ${currencyFormat.format(transaction.monto)}",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.error

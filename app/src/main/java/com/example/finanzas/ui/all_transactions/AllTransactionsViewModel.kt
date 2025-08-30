@@ -26,13 +26,19 @@ class AllTransactionsViewModel @Inject constructor(
 
     private val transactionsFlow = repository.getAllTransacciones()
     private val categoriesFlow = repository.getAllCategorias()
+    private val monedasFlow = repository.getAllMonedas()
 
     init {
         viewModelScope.launch {
-            combine(transactionsFlow, categoriesFlow, _state) { transactions, categories, currentState ->
+            combine(transactionsFlow, categoriesFlow, monedasFlow, _state) { transactions, categories, monedas, currentState ->
                 val categoriesMap = categories.associateBy { it.id }
+                val monedasMap = monedas.associateBy { it.nombre }
                 val transactionsWithDetails = transactions.map { transaccion ->
-                    TransactionWithDetails(transaccion, categoriesMap[transaccion.categoriaId])
+                    TransactionWithDetails(
+                        transaccion = transaccion,
+                        categoria = categoriesMap[transaccion.categoriaId],
+                        moneda = monedasMap[transaccion.moneda]
+                    )
                 }
 
                 val filtered = transactionsWithDetails.filter { details ->

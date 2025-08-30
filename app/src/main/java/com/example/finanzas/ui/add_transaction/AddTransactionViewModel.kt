@@ -44,7 +44,7 @@ class AddTransactionViewModel @Inject constructor(
                 val transactionToEdit = repository.getTransaccionById(transactionId).first()
                 transactionToEdit?.let { tx ->
                     val category = categories.find { it.id == tx.categoriaId }
-                    val currency = currencies.find { it.simbolo == tx.moneda }
+                    val currency = currencies.find { it.nombre == tx.moneda }
                     _state.update {
                         it.copy(
                             amount = tx.monto.toString(),
@@ -124,7 +124,7 @@ class AddTransactionViewModel @Inject constructor(
         val transactionToSave = Transaccion(
             id = if (currentState.isEditing) transactionId else 0,
             monto = amountDouble,
-            moneda = currentState.selectedCurrency?.simbolo ?: "",
+            moneda = currentState.selectedCurrency?.nombre ?: "",
             descripcion = currentState.description,
             fecha = if (currentState.isEditing) currentState.transactionDate ?: Date() else Date(),
             tipo = currentState.selectedTransactionType.name,

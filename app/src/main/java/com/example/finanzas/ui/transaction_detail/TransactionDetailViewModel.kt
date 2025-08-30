@@ -22,11 +22,13 @@ class TransactionDetailViewModel @Inject constructor(
 
     val transactionDetails = combine(
         repository.getTransaccionById(transactionId),
-        repository.getAllCategorias()
-    ) { transaction, categories ->
+        repository.getAllCategorias(),
+        repository.getAllMonedas()
+    ) { transaction, categories, monedas ->
         if (transaction == null) return@combine null
         val category = categories.find { it.id == transaction.categoriaId }
-        TransactionWithDetails(transaction, category)
+        val moneda = monedas.find { it.nombre == transaction.moneda }
+        TransactionWithDetails(transaction, category, moneda)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
 

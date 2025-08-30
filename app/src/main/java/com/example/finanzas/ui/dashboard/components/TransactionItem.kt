@@ -95,7 +95,7 @@ fun TransactionItem(
         }
 
         Text(
-            text = "$sign${transaction.moneda} ${currencyFormat.format(transaction.monto)}",
+            text = "$sign${transactionDetails.moneda?.simbolo ?: ""} ${currencyFormat.format(transaction.monto)}",
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.Bold,
             color = amountColor

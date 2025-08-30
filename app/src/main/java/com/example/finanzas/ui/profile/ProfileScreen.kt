@@ -73,7 +73,7 @@ fun ProfileScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .background(MaterialTheme.colorScheme.surface)
                             .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
                     )
                     Icon(
