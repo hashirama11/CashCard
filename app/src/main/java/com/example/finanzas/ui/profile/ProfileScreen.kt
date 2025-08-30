@@ -24,7 +24,8 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
     onBack: () -> Unit,
     onCategoryManagementClick: () -> Unit,
-    onNotificationSettingsClick: () -> Unit
+    onNotificationSettingsClick: () -> Unit,
+    onCurrencySettingsClick: () -> Unit
 ) {
     val user by viewModel.userState.collectAsState()
     val editMode by viewModel.editMode.collectAsState()
@@ -152,6 +153,14 @@ fun ProfileScreen(
                             .padding(top = 16.dp)
                     ) {
                         Text("Gestionar notificaciones")
+                    }
+                    Button(
+                        onClick = onCurrencySettingsClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp)
+                    ) {
+                        Text("Ajustes de Moneda")
                     }
                 }
             }

@@ -60,6 +60,9 @@ object DatabaseModule {
                         // Insert default currencies
                         monedaDao.insertMoneda(Moneda(nombre = "Dólar", simbolo = "$", tasa_conversion = 1.0))
                         monedaDao.insertMoneda(Moneda(nombre = "Bolívar", simbolo = "Bs.", tasa_conversion = 36.5))
+                        monedaDao.insertMoneda(Moneda(nombre = "Euro", simbolo = "€", tasa_conversion = 0.92))
+                        monedaDao.insertMoneda(Moneda(nombre = "Yen", simbolo = "¥", tasa_conversion = 145.5))
+                        monedaDao.insertMoneda(Moneda(nombre = "Libra Esterlina", simbolo = "£", tasa_conversion = 0.79))
 
 
                         // 1. Insertamos el usuario por defecto (actualizado)
@@ -68,8 +71,8 @@ object DatabaseModule {
                                 nombre = "Usuario",
                                 email = null,
                                 fechaNacimiento = null,
-                                monedaPrincipal = "VES",
-                                monedaSecundaria = null,
+                                monedaPrincipal = "Dólar",
+                                monedaSecundaria = "Bolívar",
                                 tema = TemaApp.CLARO.name,
                                 onboardingCompletado = false,
                                 ahorroAcumulado = 0.0,

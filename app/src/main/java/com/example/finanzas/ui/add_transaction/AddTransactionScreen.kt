@@ -1,7 +1,6 @@
 package com.example.finanzas.ui.add_transaction
 
 import android.Manifest
-import android.app.TimePickerDialog
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -9,9 +8,6 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,7 +21,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
@@ -161,25 +156,26 @@ fun AddTransactionScreen(
             )
 
             AnimatedVisibility(visible = state.selectedTransactionType == TipoTransaccion.COMPRA) {
-                Column {
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        Button(
-                            onClick = { viewModel.onTipoCompraSelected("Factura") },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(containerColor = if (state.tipoCompra == "Factura") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
-                        ) { Text("Factura") }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(
-                            onClick = { viewModel.onTipoCompraSelected("Producto") },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(containerColor = if (state.tipoCompra == "Producto") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
-                        ) { Text("Producto") }
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        val facturaSelected = state.tipoCompra == "Factura"
+                        val productoSelected = state.tipoCompra == "Producto"
+
+                        if (facturaSelected) {
+                            Button(onClick = { viewModel.onTipoCompraSelected("Factura") }, modifier = Modifier.weight(1f)) { Text("Factura") }
+                        } else {
+                            OutlinedButton(onClick = { viewModel.onTipoCompraSelected("Factura") }, modifier = Modifier.weight(1f)) { Text("Factura") }
+                        }
+
+                        if (productoSelected) {
+                            Button(onClick = { viewModel.onTipoCompraSelected("Producto") }, modifier = Modifier.weight(1f)) { Text("Producto") }
+                        } else {
+                            OutlinedButton(onClick = { viewModel.onTipoCompraSelected("Producto") }, modifier = Modifier.weight(1f)) { Text("Producto") }
+                        }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { imagePickerLauncher.launch("image/*") }, modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(onClick = { imagePickerLauncher.launch("image/*") }, modifier = Modifier.fillMaxWidth()) {
                         Text("Seleccionar Imagen")
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
                     if (imageUri != null) {
                         AsyncImage(
                             model = imageUri,
@@ -191,24 +187,26 @@ fun AddTransactionScreen(
                 }
             }
 
-            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-                OutlinedTextField(
-                    value = state.selectedCategory?.nombre ?: "Seleccionar categoría",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Categoría") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
-                )
-                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    state.filteredCategories.forEach { category ->
-                        DropdownMenuItem(
-                            text = { Text(category.nombre) },
-                            onClick = {
-                                viewModel.onCategorySelected(category)
-                                expanded = false
-                            }
-                        )
+            AnimatedVisibility(visible = state.selectedTransactionType == TipoTransaccion.INGRESO || state.selectedTransactionType == TipoTransaccion.GASTO) {
+                ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                    OutlinedTextField(
+                        value = state.selectedCategory?.nombre ?: "Seleccionar categoría",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Categoría") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        state.filteredCategories.forEach { category ->
+                            DropdownMenuItem(
+                                text = { Text(category.nombre) },
+                                onClick = {
+                                    viewModel.onCategorySelected(category)
+                                    expanded = false
+                                }
+                            )
+                        }
                     }
                 }
             }

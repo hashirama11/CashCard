@@ -12,6 +12,8 @@ import com.example.finanzas.ui.balance.HistoricalBalanceScreen // <-- CAMBIO DE 
 import com.example.finanzas.ui.category_management.CategoryManagementScreen
 import com.example.finanzas.ui.dashboard.DashboardScreen
 import com.example.finanzas.ui.monthly_goal.MonthlyGoalScreen // <-- NUEVA PANTALLA
+import com.example.finanzas.ui.currency_settings.AddCustomCurrencyScreen
+import com.example.finanzas.ui.currency_settings.CurrencySettingsScreen
 import com.example.finanzas.ui.notification_settings.NotificationSettingsScreen
 import com.example.finanzas.ui.onboarding.OnboardingScreen
 import com.example.finanzas.ui.profile.ProfileScreen
@@ -79,6 +81,9 @@ fun AppNavigation(
                 },
                 onNotificationSettingsClick = {
                     navController.navigate(AppScreens.NotificationSettings.route)
+                },
+                onCurrencySettingsClick = {
+                    navController.navigate(AppScreens.CurrencySettings.route)
                 }
             )
         }
@@ -117,6 +122,19 @@ fun AppNavigation(
                 onEditClick = { transactionId ->
                     navController.navigate(AppScreens.AddTransaction.createRouteForEdit(transactionId))
                 }
+            )
+        }
+        composable(AppScreens.CurrencySettings.route) {
+            CurrencySettingsScreen(
+                onBack = { navController.popBackStack() },
+                onAddCustomCurrencyClick = {
+                    navController.navigate(AppScreens.AddCustomCurrency.route)
+                }
+            )
+        }
+        composable(AppScreens.AddCustomCurrency.route) {
+            AddCustomCurrencyScreen(
+                onBack = { navController.popBackStack() }
             )
         }
     }

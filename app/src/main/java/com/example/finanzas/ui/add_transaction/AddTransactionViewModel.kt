@@ -96,7 +96,11 @@ class AddTransactionViewModel @Inject constructor(
     fun saveTransaction() {
         val currentState = _state.value
         val amountDouble = currentState.amount.toDoubleOrNull() ?: 0.0
-        if (amountDouble <= 0 || currentState.description.isBlank() || currentState.selectedCategory == null) return
+
+        val isCategoryRequired = currentState.selectedTransactionType == TipoTransaccion.INGRESO || currentState.selectedTransactionType == TipoTransaccion.GASTO
+        if (amountDouble <= 0 || currentState.description.isBlank() || (isCategoryRequired && currentState.selectedCategory == null)) {
+            return
+        }
 
         // --- INICIO DE LA MODIFICACIÓN ---
         // Aquí es donde ajustamos la hora de la notificación
@@ -125,7 +129,7 @@ class AddTransactionViewModel @Inject constructor(
             fecha = if (currentState.isEditing) currentState.transactionDate ?: Date() else Date(),
             tipo = currentState.selectedTransactionType.name,
             estado = if (currentState.isPending) EstadoTransaccion.PENDIENTE.name else EstadoTransaccion.CONCRETADO.name,
-            categoriaId = currentState.selectedCategory!!.id,
+            categoriaId = currentState.selectedCategory?.id,
             fechaConcrecion = completionDateTime, // Usamos la nueva fecha con la hora ajustada
             tipoCompra = currentState.tipoCompra,
             imageUri = currentState.imageUri

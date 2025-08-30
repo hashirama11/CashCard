@@ -16,8 +16,11 @@ data class DashboardState(
     val ahorroAcumulado: Double = 0.0, // <-- NUEVO
     val isLoading: Boolean = true,
     val userName: String = "",
+    val primaryCurrencySymbol: String = "",
+    val secondaryCurrencySymbol: String = "",
     val expenseChartData: List<PieChartData> = emptyList(),
     val incomeChartData: List<PieChartData> = emptyList(),
     val monthlySummary: List<MonthlySummary> = emptyList(),
-    val savingsChartData: SavingsChartData? = null
+    val savingsChartData: SavingsChartData? = null,
+    val selectedSavingsCurrency: String? = null
 )

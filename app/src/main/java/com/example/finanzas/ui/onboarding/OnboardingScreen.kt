@@ -2,15 +2,20 @@ package com.example.finanzas.ui.onboarding
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -24,8 +29,7 @@ import com.example.finanzas.R
 import com.example.finanzas.data.local.entity.Moneda
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -38,28 +42,25 @@ fun OnboardingScreen(
         OnboardingPage.Second,
         OnboardingPage.Third
     )
-    val pagerState = rememberPagerState(pageCount = { pages.size + 1 }) // +1 para la pantalla de datos
+    val pagerState = rememberPagerState(pageCount = { pages.size + 1 })
     val coroutineScope = rememberCoroutineScope()
     val monedas by viewModel.monedas.collectAsState()
 
-    // --- MEJORA: El estado se gestiona aquí, en el nivel superior ---
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var birthDate by remember { mutableStateOf<Date?>(null) }
     var primaryCurrency by remember { mutableStateOf<Moneda?>(null) }
     var secondaryCurrency by remember { mutableStateOf<Moneda?>(null) }
 
-
     Column(modifier = Modifier.fillMaxSize()) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.weight(10f),
-            userScrollEnabled = false // El usuario solo avanza con el botón
+            userScrollEnabled = false
         ) { page ->
             if (page < pages.size) {
                 PagerScreen(onboardingPage = pages[page])
             } else {
-                // Pasamos los valores y los lambdas para actualizarlos
                 UserDataScreen(
                     name = name,
                     onNameChange = { name = it },
@@ -84,23 +85,18 @@ fun OnboardingScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Botón para saltar, visible solo en las primeras páginas
             AnimatedVisibility(visible = pagerState.currentPage < pages.size) {
                 TextButton(onClick = {
-                    // Al saltar, guardamos con los valores por defecto y finalizamos
                     viewModel.completeOnboarding("Usuario", "", null, "Dólar", "Bolívar")
                     onFinish()
                 }) {
                     Text("Saltar")
                 }
             }
-            // Espaciador para centrar los otros elementos si "Saltar" no es visible
             if (pagerState.currentPage >= pages.size) {
                 Spacer(modifier = Modifier.width(64.dp))
             }
 
-
-            // Indicador de página
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
@@ -117,7 +113,6 @@ fun OnboardingScreen(
                 }
             }
 
-            // Botón Siguiente/Finalizar
             Button(
                 onClick = {
                     if (pagerState.currentPage < pages.size) {
@@ -125,9 +120,8 @@ fun OnboardingScreen(
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)
                         }
                     } else {
-                        // --- CORRECCIÓN: Guardamos los datos y finalizamos ---
                         viewModel.completeOnboarding(
-                            name.ifBlank { "Usuario" }, // Usamos un nombre por defecto si está vacío
+                            name.ifBlank { "Usuario" },
                             email,
                             birthDate,
                             primaryCurrency?.nombre ?: "Dólar",
@@ -148,27 +142,40 @@ fun PagerScreen(onboardingPage: OnboardingPage) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(onboardingPage.animation))
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Top,
     ) {
-        LottieAnimation(
-            composition = composition,
-            iterations = LottieConstants.IterateForever,
-            modifier = Modifier.size(200.dp)
-        )
-        Spacer(modifier = Modifier.height(40.dp))
-        Text(
-            text = onboardingPage.title,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
+        Spacer(modifier = Modifier.height(32.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            LottieAnimation(
+                composition = composition,
+                iterations = LottieConstants.IterateForever,
+                modifier = Modifier.size(64.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = onboardingPage.title,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = onboardingPage.description,
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Image(
+            painter = painterResource(id = onboardingPage.featureImage),
+            contentDescription = onboardingPage.title,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.LightGray.copy(alpha = 0.2f)),
+            contentScale = ContentScale.Fit
         )
     }
 }
@@ -240,7 +247,7 @@ fun UserDataScreen(
             ) {
                 monedas.forEach { moneda ->
                     DropdownMenuItem(
-                        text = { Text(moneda.nombre) },
+                        text = { Text("${moneda.nombre} (${moneda.simbolo})") },
                         onClick = {
                             onPrimaryCurrencyChange(moneda)
                             primaryExpanded = false
@@ -268,7 +275,7 @@ fun UserDataScreen(
             ) {
                 monedas.forEach { moneda ->
                     DropdownMenuItem(
-                        text = { Text(moneda.nombre) },
+                        text = { Text("${moneda.nombre} (${moneda.simbolo})") },
                         onClick = {
                             onSecondaryCurrencyChange(moneda)
                             secondaryExpanded = false
@@ -286,7 +293,6 @@ fun UserDataScreen(
             modifier = Modifier.fillMaxWidth(),
             trailingIcon = {
                 IconButton(onClick = { showDatePicker.value = true }) {
-                    // Usando un icono estándar de Material
                     Icon(painterResource(id = R.drawable.co_present_24dp), contentDescription = "Seleccionar fecha")
                 }
             }
@@ -301,7 +307,6 @@ fun UserDataScreen(
                 Button(
                     onClick = {
                         datePickerState.selectedDateMillis?.let {
-                            // Se debe sumar un día porque el selector a veces toma la zona horaria UTC
                             val selectedDate = Date(it + 86400000)
                             onBirthDateChange(selectedDate)
                         }

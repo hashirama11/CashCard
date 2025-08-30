@@ -19,4 +19,6 @@ sealed class AppScreens(val route: String) {
     object CategoryManagement : AppScreens("category_management")
     object PurchaseHistory : AppScreens("purchase_history")
     object NotificationSettings : AppScreens("notification_settings")
+    object CurrencySettings : AppScreens("currency_settings")
+    object AddCustomCurrency : AppScreens("add_custom_currency")
 }

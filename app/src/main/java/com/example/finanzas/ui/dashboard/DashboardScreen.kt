@@ -98,6 +98,10 @@ fun DashboardScreen(
                     3 -> SavingsDashboardContent(
                         totalAhorrosVes = state.totalAhorrosVes,
                         totalAhorrosUsd = state.totalAhorrosUsd,
+                        primaryCurrencySymbol = state.primaryCurrencySymbol,
+                        secondaryCurrencySymbol = state.secondaryCurrencySymbol,
+                        selectedSavingsCurrency = state.selectedSavingsCurrency,
+                        onCurrencySelected = { viewModel.onSavingsCurrencySelected(it) },
                         savingsChartData = state.savingsChartData,
                         transactions = state.transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.AHORRO.name },
                         onTransactionClick = onTransactionClick

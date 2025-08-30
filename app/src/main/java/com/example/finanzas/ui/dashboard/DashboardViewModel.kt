@@ -50,12 +50,15 @@ class DashboardViewModel @Inject constructor(
             val primaryCurrencySymbol = monedasMap[user?.monedaPrincipal]?.simbolo ?: ""
             val secondaryCurrencySymbol = monedasMap[user?.monedaSecundaria]?.simbolo ?: ""
 
+            // Inicializar el filtro de ahorro si no está seteado
+            if (_state.value.selectedSavingsCurrency == null) {
+                _state.update { it.copy(selectedSavingsCurrency = primaryCurrencySymbol) }
+            }
+            val selectedCurrency = _state.value.selectedSavingsCurrency
+
             val currentMonthTransactions = allTransactions.filter { isTransactionInCurrentMonth(it) }
             val transactionsWithDetails = currentMonthTransactions.map { transaccion ->
-                TransactionWithDetails(
-                    transaccion = transaccion,
-                    categoria = categoriesMap[transaccion.categoriaId]
-                )
+                TransactionWithDetails(transaccion = transaccion, categoria = categoriesMap[transaccion.categoriaId])
             }
             val ingresos = currentMonthTransactions.filter { it.tipo == TipoTransaccion.INGRESO.name }
             val gastos = currentMonthTransactions.filter { it.tipo == TipoTransaccion.GASTO.name }
@@ -73,7 +76,7 @@ class DashboardViewModel @Inject constructor(
             val totalAhorrosUsd = savingsTransactions.filter { it.moneda == secondaryCurrencySymbol }.sumOf { it.monto }
 
             val allSavingsTransactions = allTransactions
-                .filter { it.tipo == TipoTransaccion.AHORRO.name }
+                .filter { it.tipo == TipoTransaccion.AHORRO.name && it.moneda == selectedCurrency }
                 .sortedBy { it.fecha }
             var cumulativeSavings = 0.0
             val savingsDataPoints = allSavingsTransactions.map {
@@ -95,6 +98,8 @@ class DashboardViewModel @Inject constructor(
                     totalAhorrosUsd = totalAhorrosUsd,
                     userName = user?.nombre ?: "Usuario",
                     ahorroAcumulado = user?.ahorroAcumulado ?: 0.0,
+                    primaryCurrencySymbol = primaryCurrencySymbol,
+                    secondaryCurrencySymbol = secondaryCurrencySymbol,
                     expenseChartData = expenseChartData,
                     incomeChartData = incomeChartData,
                     savingsChartData = savingsChartData,
@@ -103,6 +108,10 @@ class DashboardViewModel @Inject constructor(
                 )
             }
         }.launchIn(viewModelScope)
+    }
+
+    fun onSavingsCurrencySelected(currencySymbol: String) {
+        _state.update { it.copy(selectedSavingsCurrency = currencySymbol) }
     }
 
     private fun calculateMonthlySummary(transactions: List<Transaccion>, monedas: List<Moneda>): List<MonthlySummary> {
@@ -148,7 +157,6 @@ class DashboardViewModel @Inject constructor(
             val allTransactions = repository.getAllTransacciones().first()
             val monedas = repository.getAllMonedas().first()
             val monedasMapByNombre = monedas.associateBy { it.nombre }
-            val monedasMapBySimbolo = monedas.associateBy { it.simbolo }
 
             val primaryCurrency = monedasMapByNombre[user.monedaPrincipal]
             val secondaryCurrency = user.monedaSecundaria?.let { monedasMapByNombre[it] }
