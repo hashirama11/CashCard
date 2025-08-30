@@ -1,20 +1,16 @@
 package com.example.finanzas.ui.add_transaction
 
 import android.Manifest
+import android.app.TimePickerDialog
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.widget.Toast
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.layout.ContentScale
-import coil.compose.AsyncImage
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -30,16 +26,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import com.example.finanzas.R
 import com.example.finanzas.model.TipoTransaccion
 import com.example.finanzas.ui.util.TimePickerDialog
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +50,6 @@ fun AddTransactionScreen(
     val showDatePicker = remember { mutableStateOf(false) }
     val showTimePicker = remember { mutableStateOf(false) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
-
     val context = LocalContext.current
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -68,11 +65,7 @@ fun AddTransactionScreen(
         if (isGranted) {
             showDatePicker.value = true
         } else {
-            Toast.makeText(
-                context,
-                "Permiso de notificaciones necesario para añadir recordatorios.",
-                Toast.LENGTH_LONG
-            ).show()
+            Toast.makeText(context, "Permiso de notificaciones necesario para añadir recordatorios.", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -118,26 +111,10 @@ fun AddTransactionScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             TabRow(selectedTabIndex = state.selectedTransactionType.ordinal) {
-                Tab(
-                    selected = state.selectedTransactionType == TipoTransaccion.INGRESO,
-                    onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.INGRESO) },
-                    text = { Text("Ingreso") }
-                )
-                Tab(
-                    selected = state.selectedTransactionType == TipoTransaccion.GASTO,
-                    onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.GASTO) },
-                    text = { Text("Gasto") }
-                )
-                Tab(
-                    selected = state.selectedTransactionType == TipoTransaccion.COMPRA,
-                    onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.COMPRA) },
-                    text = { Text("Compra") }
-                )
-                Tab(
-                    selected = state.selectedTransactionType == TipoTransaccion.AHORRO,
-                    onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.AHORRO) },
-                    text = { Text("Ahorro") }
-                )
+                Tab(selected = state.selectedTransactionType == TipoTransaccion.INGRESO, onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.INGRESO) }, text = { Text("Ingreso") })
+                Tab(selected = state.selectedTransactionType == TipoTransaccion.GASTO, onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.GASTO) }, text = { Text("Gasto") })
+                Tab(selected = state.selectedTransactionType == TipoTransaccion.COMPRA, onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.COMPRA) }, text = { Text("Compra") })
+                Tab(selected = state.selectedTransactionType == TipoTransaccion.AHORRO, onClick = { viewModel.onTransactionTypeSelected(TipoTransaccion.AHORRO) }, text = { Text("Ahorro") })
             }
 
             var currencyExpanded by remember { mutableStateOf(false) }
@@ -153,10 +130,7 @@ fun AddTransactionScreen(
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = currencyExpanded) },
                     modifier = Modifier.fillMaxWidth().menuAnchor()
                 )
-                ExposedDropdownMenu(
-                    expanded = currencyExpanded,
-                    onDismissRequest = { currencyExpanded = false }
-                ) {
+                ExposedDropdownMenu(expanded = currencyExpanded, onDismissRequest = { currencyExpanded = false }) {
                     state.currencies.forEach { currency ->
                         DropdownMenuItem(
                             text = { Text(currency.nombre) },
@@ -192,28 +166,17 @@ fun AddTransactionScreen(
                         Button(
                             onClick = { viewModel.onTipoCompraSelected("Factura") },
                             modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (state.tipoCompra == "Factura") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
-                            )
-                        ) {
-                            Text("Factura")
-                        }
+                            colors = ButtonDefaults.buttonColors(containerColor = if (state.tipoCompra == "Factura") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
+                        ) { Text("Factura") }
                         Spacer(modifier = Modifier.width(8.dp))
                         Button(
                             onClick = { viewModel.onTipoCompraSelected("Producto") },
                             modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (state.tipoCompra == "Producto") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
-                            )
-                        ) {
-                            Text("Producto")
-                        }
+                            colors = ButtonDefaults.buttonColors(containerColor = if (state.tipoCompra == "Producto") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
+                        ) { Text("Producto") }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = { imagePickerLauncher.launch("image/*") },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    Button(onClick = { imagePickerLauncher.launch("image/*") }, modifier = Modifier.fillMaxWidth()) {
                         Text("Seleccionar Imagen")
                     }
                     Spacer(modifier = Modifier.height(16.dp))
@@ -221,35 +184,23 @@ fun AddTransactionScreen(
                         AsyncImage(
                             model = imageUri,
                             contentDescription = "Imagen de la compra",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1f)
-                                .clip(RoundedCornerShape(12.dp)),
+                            modifier = Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(12.dp)),
                             contentScale = ContentScale.Crop
                         )
                     }
                 }
             }
 
-
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded }
-            ) {
+            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                 OutlinedTextField(
                     value = state.selectedCategory?.nombre ?: "Seleccionar categoría",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Categoría") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth()
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
+                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     state.filteredCategories.forEach { category ->
                         DropdownMenuItem(
                             text = { Text(category.nombre) },
@@ -268,10 +219,7 @@ fun AddTransactionScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text("¿Marcar como pendiente?", style = MaterialTheme.typography.bodyLarge)
-                Switch(
-                    checked = state.isPending,
-                    onCheckedChange = { viewModel.onPendingStatusChange(it) }
-                )
+                Switch(checked = state.isPending, onCheckedChange = { viewModel.onPendingStatusChange(it) })
             }
 
             AnimatedVisibility(visible = state.isPending) {
@@ -321,7 +269,6 @@ fun AddTransactionScreen(
 
     if (showTimePicker.value) {
         TimePickerDialog(
-            context = context,
             onCancel = { showTimePicker.value = false },
             onConfirm = { hour, minute ->
                 val calendar = Calendar.getInstance().apply {
