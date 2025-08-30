@@ -84,6 +84,7 @@ dependencies {
     implementation("androidx.biometric:biometric-ktx:1.2.0-alpha05")
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation("com.airbnb.android:lottie-compose:6.0.0")
+    implementation("androidx.compose.material:material-icons-extended:1.6.7")
 
 
 }
