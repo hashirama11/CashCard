@@ -1,5 +1,6 @@
 package com.example.finanzas.ui.dashboard
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finanzas.data.local.entity.Moneda
@@ -36,7 +37,11 @@ class DashboardViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            checkAndPerformMonthEndClosure()
+            try {
+                checkAndPerformMonthEndClosure()
+            } catch (e: Exception) {
+                Log.e("DashboardViewModel", "Error during month-end closure", e)
+            }
         }
 
         val transactionsFlow = repository.getAllTransacciones()
@@ -45,13 +50,17 @@ class DashboardViewModel @Inject constructor(
         val monedasFlow = repository.getAllMonedas()
 
         combine(transactionsFlow, categoriesFlow, userFlow, monedasFlow) { allTransactions, categories, user, monedas ->
+            if (user == null || monedas.isEmpty()) {
+                // Do not update state until user and currencies are loaded
+                return@combine
+            }
+
             val categoriesMap = categories.associateBy { it.id }
             val monedasMap = monedas.associateBy { it.nombre }
-            val primaryCurrencySymbol = monedasMap[user?.monedaPrincipal]?.simbolo ?: ""
-            val secondaryCurrencySymbol = monedasMap[user?.monedaSecundaria]?.simbolo ?: ""
+            val primaryCurrencySymbol = monedasMap[user.monedaPrincipal]?.simbolo ?: ""
+            val secondaryCurrencySymbol = user.monedaSecundaria?.let { monedasMap[it]?.simbolo } ?: ""
 
-            // Inicializar el filtro de ahorro si no está seteado
-            if (_state.value.selectedSavingsCurrency == null) {
+            if (_state.value.selectedSavingsCurrency == null && primaryCurrencySymbol.isNotBlank()) {
                 _state.update { it.copy(selectedSavingsCurrency = primaryCurrencySymbol) }
             }
             val selectedCurrency = _state.value.selectedSavingsCurrency
@@ -96,8 +105,8 @@ class DashboardViewModel @Inject constructor(
                     totalGastosUsd = totalGastosUsd,
                     totalAhorrosVes = totalAhorrosVes,
                     totalAhorrosUsd = totalAhorrosUsd,
-                    userName = user?.nombre ?: "Usuario",
-                    ahorroAcumulado = user?.ahorroAcumulado ?: 0.0,
+                    userName = user.nombre,
+                    ahorroAcumulado = user.ahorroAcumulado,
                     primaryCurrencySymbol = primaryCurrencySymbol,
                     secondaryCurrencySymbol = secondaryCurrencySymbol,
                     expenseChartData = expenseChartData,
@@ -148,6 +157,9 @@ class DashboardViewModel @Inject constructor(
 
     private suspend fun checkAndPerformMonthEndClosure() {
         val user = repository.getUsuario().first() ?: return
+        val monedas = repository.getAllMonedas().first()
+        if (monedas.isEmpty()) return
+
         val lastClosureDate = Calendar.getInstance().apply { timeInMillis = user.fechaUltimoCierre }
         val today = Calendar.getInstance()
 
@@ -155,7 +167,6 @@ class DashboardViewModel @Inject constructor(
             lastClosureDate.get(Calendar.YEAR) != today.get(Calendar.YEAR)) {
 
             val allTransactions = repository.getAllTransacciones().first()
-            val monedas = repository.getAllMonedas().first()
             val monedasMapByNombre = monedas.associateBy { it.nombre }
 
             val primaryCurrency = monedasMapByNombre[user.monedaPrincipal]
