@@ -31,13 +31,14 @@ class DashboardViewModel @Inject constructor(
         _selectedCurrency,
         repository.getAllTransacciones(),
         repository.getAllCategorias(),
-        repository.getUsuario()
-    ) { selectedCurrency, allTransactions, allCategories, user ->
+        repository.getUsuario(),
+        repository.getAllMonedas()
+    ) { selectedCurrency, allTransactions, allCategories, user, allMonedas ->
         if (selectedCurrency == null || user == null) {
             DashboardState(isLoading = true)
         } else {
             val categoriesMap = allCategories.associateBy { it.id }
-            val monedasMap = repository.getAllMonedas().first().associateBy { it.nombre }
+            val monedasMap = allMonedas.associateBy { it.nombre }
 
             val currentMonthTransactions = allTransactions.filter {
                 isTransactionInCurrentMonth(it) && it.moneda == selectedCurrency.nombre
@@ -59,7 +60,7 @@ class DashboardViewModel @Inject constructor(
             val incomeChartData = createChartData(incomeTransactions, totalIngresos)
             val expenseChartData = createChartData(expenseTransactions, totalGastos)
 
-            val allUsedCurrencies = repository.getAllMonedas().first()
+            val allUsedCurrencies = allMonedas
                 .filter { moneda -> allTransactions.any { it.moneda == moneda.nombre } }
 
             DashboardState(
