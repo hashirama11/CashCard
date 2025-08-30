@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -185,7 +186,7 @@ fun SavingsRateIndicator(
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 drawArc(
-                    color = MaterialTheme.colorScheme.surface,
+                    color = Color.LightGray.copy(alpha = 0.3f),
                     startAngle = -90f,
                     sweepAngle = 360f,
                     useCenter = false,
