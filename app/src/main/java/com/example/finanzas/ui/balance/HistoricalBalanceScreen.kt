@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,6 +20,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -28,12 +28,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finanzas.ui.balance.components.MonthlyFlowChart
 import com.example.finanzas.ui.balance.components.SavingsRateIndicator
 import com.example.finanzas.ui.balance.components.SummaryCard
+import com.example.finanzas.ui.components.LoadingIndicator
 import com.example.finanzas.ui.theme.AccentGreen
 import com.example.finanzas.ui.theme.AccentRed
 import java.text.NumberFormat
-
-import androidx.compose.runtime.remember
-import com.example.finanzas.ui.components.LoadingIndicator
 import java.util.Currency
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,7 +61,8 @@ fun HistoricalBalanceScreen(
             )
         }
     ) { paddingValues ->
-        if (state.isLoading || numberFormat == null) {
+        val currentNumberFormat = numberFormat
+        if (state.isLoading || currentNumberFormat == null) {
             LoadingIndicator()
         } else {
             LazyColumn(
@@ -89,13 +88,13 @@ fun HistoricalBalanceScreen(
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         SummaryCard(
                             title = "Ingresos Totales",
-                            amount = numberFormat.format(state.totalIngresos),
+                            amount = currentNumberFormat.format(state.totalIngresos),
                             color = AccentGreen,
                             modifier = Modifier.weight(1f)
                         )
                         SummaryCard(
                             title = "Gastos Totales",
-                            amount = numberFormat.format(state.totalGastos),
+                            amount = currentNumberFormat.format(state.totalGastos),
                             color = AccentRed,
                             modifier = Modifier.weight(1f)
                         )
@@ -106,7 +105,7 @@ fun HistoricalBalanceScreen(
                     SavingsRateIndicator(
                         netBalance = state.balanceNeto,
                         savingsRate = state.tasaAhorro,
-                        numberFormat = numberFormat
+                        numberFormat = currentNumberFormat
                     )
                 }
 
