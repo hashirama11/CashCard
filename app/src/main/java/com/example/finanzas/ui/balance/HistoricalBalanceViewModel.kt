@@ -97,20 +97,22 @@ class HistoricalBalanceViewModel @Inject constructor(
     )
 
     init {
-        // Set the initial currency to the user's primary currency, or the first available one.
         viewModelScope.launch {
-            val user = repository.getUsuario().first()
-            val allMonedas = repository.getAllMonedas().first()
-            val primaryCurrency = user?.monedaPrincipal?.let { p -> allMonedas.find { it.nombre == p } }
-
-            if (primaryCurrency != null) {
-                _selectedCurrency.value = primaryCurrency
-            } else {
-                // If no primary currency, wait for used currencies and pick the first one
-                usedCurrencies.first { it.isNotEmpty() }.firstOrNull()?.let {
-                    _selectedCurrency.value = it
+            repository.getUsuario()
+                .combine(repository.getAllMonedas()) { user, allMonedas ->
+                    val primaryCurrency = user?.monedaPrincipal?.let { p -> allMonedas.find { it.nombre == p } }
+                    if (primaryCurrency != null) {
+                        primaryCurrency
+                    } else {
+                        // Fallback using the usedCurrencies flow
+                        usedCurrencies.value.firstOrNull()
+                    }
                 }
-            }
+                .collect { initialCurrency ->
+                    if (_selectedCurrency.value == null && initialCurrency != null) {
+                        _selectedCurrency.value = initialCurrency
+                    }
+                }
         }
     }
 

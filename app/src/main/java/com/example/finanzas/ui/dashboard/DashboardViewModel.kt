@@ -85,20 +85,21 @@ class DashboardViewModel @Inject constructor(
     )
 
     init {
-        // Set the initial currency to the user's primary currency.
         viewModelScope.launch {
-            val user = repository.getUsuario().first()
-            val allMonedas = repository.getAllMonedas().first()
-            val primaryCurrency = user?.monedaPrincipal?.let { p -> allMonedas.find { it.nombre == p } }
-
-            if (primaryCurrency != null) {
-                _selectedCurrency.value = primaryCurrency
-            } else {
-                // Fallback to the first available currency if no primary is set
-                allMonedas.firstOrNull()?.let {
-                    _selectedCurrency.value = it
+            repository.getUsuario()
+                .combine(repository.getAllMonedas()) { user, allMonedas ->
+                    val primaryCurrency = user?.monedaPrincipal?.let { p -> allMonedas.find { it.nombre == p } }
+                    if (primaryCurrency != null) {
+                        primaryCurrency
+                    } else {
+                        allMonedas.firstOrNull()
+                    }
                 }
-            }
+                .collect { initialCurrency ->
+                    if (_selectedCurrency.value == null && initialCurrency != null) {
+                        _selectedCurrency.value = initialCurrency
+                    }
+                }
         }
     }
 
