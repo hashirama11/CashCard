@@ -43,9 +43,7 @@ class MainActivity : AppCompatActivity() { // Hereda de AppCompatActivity
 
         val biometricAuthenticator = BiometricAuthenticator(this)
 
-        installSplashScreen().setKeepOnScreenCondition {
-            mainViewModel.onboardingCompleted.value == null
-        }
+        installSplashScreen()
 
         setContent {
             val isDarkTheme by mainViewModel.isDarkTheme.collectAsStateWithLifecycle()
