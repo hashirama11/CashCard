@@ -62,8 +62,8 @@ class DashboardViewModel @Inject constructor(
             val incomeChartData = createChartData(incomeTransactions, totalIngresos)
             val expenseChartData = createChartData(expenseTransactions, totalGastos)
 
-            val allUsedCurrencies = allMonedas
-                .filter { moneda -> allTransactions.any { it.moneda == moneda.nombre } }
+            val usedCurrencyNames = allTransactions.map { it.moneda }.distinct()
+            val allUsedCurrencies = allMonedas.filter { it.nombre in usedCurrencyNames }
 
             DashboardState(
                 transactions = transactionsWithDetails,
