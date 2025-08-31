@@ -8,7 +8,9 @@ import com.example.finanzas.model.TransactionWithDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -56,7 +58,9 @@ class AllTransactionsViewModel @Inject constructor(
                     groupedTransactions = grouped, // Actualizamos la nueva lista
                     isLoading = false
                 )
-            }.collect { newState ->
+            }
+            .flowOn(Dispatchers.Default)
+            .collect { newState ->
                 _state.value = newState
             }
         }

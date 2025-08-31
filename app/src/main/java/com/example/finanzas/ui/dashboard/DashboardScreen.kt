@@ -118,9 +118,11 @@ fun DashboardScreen(
                 }
 
                 item {
-                    val transactionsToShow = state.transactions
-                        .filter { it.transaccion.tipo != TipoTransaccion.AHORRO.name }
-                        .sortedByDescending { it.transaccion.fecha }
+                    val transactionsToShow = remember(state.transactions) {
+                        state.transactions
+                            .filter { it.transaccion.tipo != TipoTransaccion.AHORRO.name }
+                            .sortedByDescending { it.transaccion.fecha }
+                    }
 
                     if (transactionsToShow.isEmpty()) {
                         EmptyState(modifier = Modifier.padding(vertical = 32.dp))
