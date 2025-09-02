@@ -59,15 +59,23 @@ class DashboardViewModelTest {
     @Test
     fun `state is updated with correct totals when data is emitted`() = runTest {
         // Given
-        val user = Usuario(id = 1, nombre = "Test", monedaPrincipal = "USD")
+        val user = Usuario(
+            id = 1,
+            nombre = "Test",
+            email = null,
+            fechaNacimiento = null,
+            monedaPrincipal = "USD",
+            monedaSecundaria = null,
+            tema = "CLARO"
+        )
         val usd = Moneda(id = 1, nombre = "USD", simbolo = "$")
         val categories = listOf(
-            Categoria(id = 1, nombre = "Salario", tipo = TipoTransaccion.INGRESO.name),
-            Categoria(id = 2, nombre = "Comida", tipo = TipoTransaccion.GASTO.name)
+            Categoria(id = 1, nombre = "Salario", icono = "SALARY", tipo = TipoTransaccion.INGRESO.name),
+            Categoria(id = 2, nombre = "Comida", icono = "FOOD", tipo = TipoTransaccion.GASTO.name)
         )
         val transactions = listOf(
-            Transaccion(id = 1, monto = 2000.0, moneda = "USD", tipo = TipoTransaccion.INGRESO.name, categoriaId = 1, fecha = Date(), descripcion = "", estado = ""),
-            Transaccion(id = 2, monto = 150.0, moneda = "USD", tipo = TipoTransaccion.GASTO.name, categoriaId = 2, fecha = Date(), descripcion = "", estado = "")
+            Transaccion(id = 1, monto = 2000.0, moneda = "USD", tipo = TipoTransaccion.INGRESO.name, categoriaId = 1, fecha = Date(), descripcion = "", estado = "", imageUri = null, tipoCompra = null, fechaConcrecion = null),
+            Transaccion(id = 2, monto = 150.0, moneda = "USD", tipo = TipoTransaccion.GASTO.name, categoriaId = 2, fecha = Date(), descripcion = "", estado = "", imageUri = null, tipoCompra = null, fechaConcrecion = null)
         )
 
         every { repository.getUsuario() } returns flowOf(user)
