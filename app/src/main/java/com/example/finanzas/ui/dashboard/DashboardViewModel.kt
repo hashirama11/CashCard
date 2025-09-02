@@ -105,9 +105,10 @@ class DashboardViewModel @Inject constructor(
                     }
                 }
                 .collect { initialCurrency ->
-                    if (_selectedCurrency.value == null && initialCurrency != null) {
-                        _selectedCurrency.value = initialCurrency
-                    }
+                    // Always set the initial currency. If the user has manually selected one,
+                    // this ViewModel will be recreated upon re-entering the screen,
+                    // correctly resetting to the new primary currency.
+                    _selectedCurrency.value = initialCurrency
                 }
         }
     }
