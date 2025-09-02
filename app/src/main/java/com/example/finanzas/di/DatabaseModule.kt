@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Build
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.finanzas.data.local.FinanzasDatabase
 import com.example.finanzas.data.local.dao.CategoriaDao
@@ -60,7 +61,7 @@ object DatabaseModule {
                         val usuarioDao = database.usuarioDao()
                         val monedaDao = database.monedaDao()
 
-                        database.runInTransaction {
+                        database.withTransaction {
                             monedaDao.insertMoneda(Moneda(nombre = "Dólar", simbolo = "$", tasa_conversion = 1.0))
                             monedaDao.insertMoneda(Moneda(nombre = "Bolívar", simbolo = "Bs.", tasa_conversion = 36.5))
                             monedaDao.insertMoneda(Moneda(nombre = "Euro", simbolo = "€", tasa_conversion = 0.92))
