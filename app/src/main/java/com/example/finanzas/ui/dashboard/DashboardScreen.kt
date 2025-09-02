@@ -24,8 +24,8 @@ import com.example.finanzas.ui.dashboard.components.PieChartCard
 import com.example.finanzas.ui.dashboard.components.RecentTransactions
 import com.example.finanzas.ui.theme.AccentGreen
 import com.example.finanzas.ui.theme.AccentRed
+import java.text.DecimalFormat
 import java.text.NumberFormat
-import java.util.Currency
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,10 +38,12 @@ fun DashboardScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val numberFormat = remember(state.selectedCurrency) {
-        state.selectedCurrency?.let {
-            NumberFormat.getCurrencyInstance().apply {
-                currency = Currency.getInstance(it.nombre)
+        state.selectedCurrency?.let { moneda ->
+            (NumberFormat.getCurrencyInstance() as DecimalFormat).apply {
                 maximumFractionDigits = 2
+                val symbols = this.decimalFormatSymbols
+                symbols.currencySymbol = moneda.simbolo
+                this.decimalFormatSymbols = symbols
             }
         }
     }
@@ -118,17 +120,11 @@ fun DashboardScreen(
                 }
 
                 item {
-                    val transactionsToShow = remember(state.transactions) {
-                        state.transactions
-                            .filter { it.transaccion.tipo != TipoTransaccion.AHORRO.name }
-                            .sortedByDescending { it.transaccion.fecha }
-                    }
-
-                    if (transactionsToShow.isEmpty()) {
+                    if (state.displayTransactions.isEmpty()) {
                         EmptyState(modifier = Modifier.padding(vertical = 32.dp))
                     } else {
                         RecentTransactions(
-                            transactions = transactionsToShow,
+                            transactions = state.displayTransactions,
                             onTransactionClick = onTransactionClick,
                             onSeeAllClick = onSeeAllClick
                         )

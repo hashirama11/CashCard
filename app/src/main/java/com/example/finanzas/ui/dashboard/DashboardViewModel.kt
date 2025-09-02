@@ -3,6 +3,7 @@ package com.example.finanzas.ui.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finanzas.data.local.entity.Moneda
+import com.example.finanzas.ui.dashboard.DashboardState
 import com.example.finanzas.data.repository.FinanzasRepository
 import com.example.finanzas.model.PieChartData
 import com.example.finanzas.model.TipoTransaccion
@@ -65,8 +66,13 @@ class DashboardViewModel @Inject constructor(
             val usedCurrencyNames = allTransactions.map { it.moneda }.distinct()
             val allUsedCurrencies = allMonedas.filter { it.nombre in usedCurrencyNames }
 
+            val displayTransactions = transactionsWithDetails
+                .filter { it.transaccion.tipo != TipoTransaccion.AHORRO.name }
+                .sortedByDescending { it.transaccion.fecha }
+
             DashboardState(
                 transactions = transactionsWithDetails,
+                displayTransactions = displayTransactions,
                 totalIngresos = totalIngresos,
                 totalGastos = totalGastos,
                 totalAhorros = totalAhorros,

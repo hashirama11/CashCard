@@ -45,6 +45,9 @@ class MainActivity : AppCompatActivity() { // Hereda de AppCompatActivity
         installSplashScreen()
 
         setContent {
+            // Interruptor para la autenticación biométrica
+            val BIOMETRIC_AUTH_ENABLED = false
+
             val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
             val isAuthenticated by mainViewModel.isAuthenticated.collectAsStateWithLifecycle()
             var showAuthErrorDialog by remember { mutableStateOf(false) }
@@ -65,7 +68,8 @@ class MainActivity : AppCompatActivity() { // Hereda de AppCompatActivity
             }
 
             FinanzasTheme(darkTheme = uiState.isDarkTheme) {
-                val showContent = uiState.onboardingCompleted == false || isAuthenticated
+                val authBypassed = !BIOMETRIC_AUTH_ENABLED
+                val showContent = uiState.onboardingCompleted == false || isAuthenticated || authBypassed
 
                 if (showContent) {
                     uiState.onboardingCompleted?.let {
@@ -73,7 +77,7 @@ class MainActivity : AppCompatActivity() { // Hereda de AppCompatActivity
                         MainScreen(startDestination)
                     }
                 } else {
-                    // Onboarding completo, pero no autenticado
+                    // Onboarding completo, pero no autenticado (y la autenticación está habilitada)
                     LaunchedEffect(uiState.onboardingCompleted) {
                         if (uiState.onboardingCompleted == true) {
                             promptAuth()

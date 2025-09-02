@@ -7,6 +7,7 @@ import com.example.finanzas.model.TransactionWithDetails
 data class DashboardState(
     // Data for the selected currency
     val transactions: List<TransactionWithDetails> = emptyList(),
+    val displayTransactions: List<TransactionWithDetails> = emptyList(),
     val totalIngresos: Double = 0.0,
     val totalGastos: Double = 0.0,
     val totalAhorros: Double = 0.0,
