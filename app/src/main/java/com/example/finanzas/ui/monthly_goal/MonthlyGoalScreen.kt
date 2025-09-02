@@ -25,8 +25,8 @@ import com.example.finanzas.R
 import com.example.finanzas.ui.components.LoadingIndicator
 import com.example.finanzas.ui.theme.AccentGreen
 import com.example.finanzas.ui.theme.AccentRed
+import java.text.DecimalFormat
 import java.text.NumberFormat
-import java.util.Currency
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,10 +36,12 @@ fun MonthlyGoalScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val numberFormat = remember(state.selectedCurrency) {
-        state.selectedCurrency?.let {
-            NumberFormat.getCurrencyInstance().apply {
-                currency = Currency.getInstance(it.nombre)
+        state.selectedCurrency?.let { moneda ->
+            (NumberFormat.getCurrencyInstance() as DecimalFormat).apply {
                 maximumFractionDigits = 2
+                val symbols = this.decimalFormatSymbols
+                symbols.currencySymbol = moneda.simbolo
+                this.decimalFormatSymbols = symbols
             }
         }
     }
