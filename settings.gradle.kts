@@ -1,4 +1,7 @@
 pluginManagement {
+    plugins {
+        id("androidx.baselineprofile") version "1.2.3"
+    }
     repositories {
         google {
             content {
@@ -21,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "finanzas"
 include(":app")
+include(":baselineprofile")

@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-
+    id("androidx.baselineprofile")
 }
 
 android {
@@ -83,5 +83,6 @@ dependencies {
     implementation("com.airbnb.android:lottie-compose:6.0.0")
     implementation("androidx.compose.material:material-icons-extended:1.6.7")
 
-
+    // Baseline Profile
+    baselineProfile(project(":baselineprofile"))
 }
