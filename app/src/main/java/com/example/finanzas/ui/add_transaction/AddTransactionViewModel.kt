@@ -8,9 +8,13 @@ import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.local.entity.Transaccion
 import com.example.finanzas.data.repository.FinanzasRepository
 import com.example.finanzas.model.EstadoTransaccion
+import android.content.Context
+import android.net.Uri
 import com.example.finanzas.model.TipoTransaccion
 import com.example.finanzas.notifications.AlarmScheduler
+import com.example.finanzas.util.saveImageToInternalStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -23,7 +27,8 @@ import javax.inject.Inject
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
     private val repository: FinanzasRepository,
-    private val alarmScheduler: AlarmScheduler, // <-- Inyectamos el scheduler
+    private val alarmScheduler: AlarmScheduler,
+    @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -72,7 +77,13 @@ class AddTransactionViewModel @Inject constructor(
     fun onPendingStatusChange(isPending: Boolean) { _state.update { it.copy(isPending = isPending) } }
     fun onCompletionDateChange(date: Date?) { _state.update { it.copy(completionDate = date) } }
     fun onTipoCompraSelected(tipo: String) { _state.update { it.copy(tipoCompra = tipo) } }
-    fun onImageUriSelected(uri: String) { _state.update { it.copy(imageUri = uri) } }
+    fun onImageUriSelected(uriString: String?) {
+        uriString?.let {
+            val contentUri = Uri.parse(it)
+            val permanentUri = saveImageToInternalStorage(context, contentUri)
+            _state.update { state -> state.copy(imageUri = permanentUri?.toString()) }
+        }
+    }
 
 
     fun onTransactionTypeSelected(type: TipoTransaccion) {

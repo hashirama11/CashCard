@@ -51,7 +51,7 @@ fun AddTransactionScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         imageUri = uri
-        viewModel.onImageUriSelected(uri.toString())
+        viewModel.onImageUriSelected(uri?.toString())
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
