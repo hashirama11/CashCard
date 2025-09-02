@@ -2,6 +2,8 @@ package com.example.finanzas.ui.balance
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finanzas.ui.balance.BalanceState
+import com.example.finanzas.ui.balance.MonthlyFlow
 import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.repository.FinanzasRepository
 import com.example.finanzas.model.TipoTransaccion
