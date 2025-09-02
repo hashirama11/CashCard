@@ -11,6 +11,8 @@ import com.example.finanzas.model.EstadoTransaccion
 import android.content.Context
 import android.net.Uri
 import com.example.finanzas.model.TipoTransaccion
+import com.example.finanzas.model.UserMessage
+import com.example.finanzas.model.UserMessage
 import com.example.finanzas.notifications.AlarmScheduler
 import com.example.finanzas.util.saveImageToInternalStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -78,13 +80,25 @@ class AddTransactionViewModel @Inject constructor(
     fun onCompletionDateChange(date: Date?) { _state.update { it.copy(completionDate = date) } }
     fun onTipoCompraSelected(tipo: String) { _state.update { it.copy(tipoCompra = tipo) } }
     fun onImageUriSelected(uriString: String?) {
-        uriString?.let {
-            val contentUri = Uri.parse(it)
-            val permanentUri = saveImageToInternalStorage(context, contentUri)
-            _state.update { state -> state.copy(imageUri = permanentUri?.toString()) }
-        }
+        if (uriString == null) return
+
+        val contentUri = Uri.parse(uriString)
+        saveImageToInternalStorage(context, contentUri)
+            .onSuccess { permanentUri ->
+                _state.update { it.copy(imageUri = permanentUri.toString()) }
+            }
+            .onFailure { exception ->
+                val message = UserMessage(message = "Error al guardar la imagen: ${exception.message}")
+                _state.update { it.copy(userMessages = it.userMessages + message) }
+            }
     }
 
+    fun userMessageShown(messageId: Long) {
+        _state.update { current ->
+            val messages = current.userMessages.filterNot { it.id == messageId }
+            current.copy(userMessages = messages)
+        }
+    }
 
     fun onTransactionTypeSelected(type: TipoTransaccion) {
         _state.update { it.copy(selectedTransactionType = type) }

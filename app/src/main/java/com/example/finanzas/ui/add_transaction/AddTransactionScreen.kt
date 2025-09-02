@@ -44,8 +44,16 @@ fun AddTransactionScreen(
     var expanded by remember { mutableStateOf(false) }
     val showDatePicker = remember { mutableStateOf(false) }
     val showTimePicker = remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
+
+    LaunchedEffect(state.userMessages) {
+        state.userMessages.firstOrNull()?.let { userMessage ->
+            snackbarHostState.showSnackbar(userMessage.message)
+            viewModel.userMessageShown(userMessage.id)
+        }
+    }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -72,6 +80,7 @@ fun AddTransactionScreen(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(if (state.isEditing) "Editar Transacción" else "Añadir Transacción") },

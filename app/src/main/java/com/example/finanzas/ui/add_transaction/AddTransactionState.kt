@@ -3,6 +3,7 @@ package com.example.finanzas.ui.add_transaction
 import com.example.finanzas.data.local.entity.Categoria
 import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.model.TipoTransaccion
+import com.example.finanzas.model.UserMessage
 import java.util.Date
 
 data class AddTransactionState(
@@ -19,5 +20,6 @@ data class AddTransactionState(
     val isPending: Boolean = false,
     val completionDate: Date? = null,
     val tipoCompra: String? = null,
-    val imageUri: String? = null
+    val imageUri: String? = null,
+    val userMessages: List<UserMessage> = emptyList()
 )
