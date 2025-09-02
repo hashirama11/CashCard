@@ -12,6 +12,7 @@ class AlarmScheduler(private val context: Context) {
 
     fun schedule(transaccion: Transaccion) {
         val intent = Intent(context, NotificationReceiver::class.java).apply {
+            putExtra("EXTRA_TRANSACTION_ID", transaccion.id)
             putExtra("EXTRA_MESSAGE", transaccion.descripcion)
             putExtra("EXTRA_TITLE", "Recordatorio de Transacción Pendiente")
         }

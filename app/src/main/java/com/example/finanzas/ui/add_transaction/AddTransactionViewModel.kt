@@ -113,24 +113,12 @@ class AddTransactionViewModel @Inject constructor(
             return
         }
 
-        // --- INICIO DE LA MODIFICACIÓN ---
-        // Aquí es donde ajustamos la hora de la notificación
-        val completionDateTime: Date? = if (currentState.isPending && currentState.completionDate != null) {
-            // 1. Tomamos la fecha que el usuario seleccionó
-            val calendar = Calendar.getInstance().apply {
-                time = currentState.completionDate
-
-                // 2. Le establecemos manualmente la hora a las 9:00 AM
-                set(Calendar.HOUR_OF_DAY, 9)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-            }
-            // 3. Obtenemos la nueva fecha con la hora ajustada
-            calendar.time
+        // If the transaction is pending, use the selected completion date. Otherwise, it's null.
+        val completionDateTime: Date? = if (currentState.isPending) {
+            currentState.completionDate
         } else {
             null
         }
-        // --- FIN DE LA MODIFICACIÓN ---
 
         val transactionToSave = Transaccion(
             id = if (currentState.isEditing) transactionId else 0,
@@ -141,7 +129,7 @@ class AddTransactionViewModel @Inject constructor(
             tipo = currentState.selectedTransactionType.name,
             estado = if (currentState.isPending) EstadoTransaccion.PENDIENTE.name else EstadoTransaccion.CONCRETADO.name,
             categoriaId = currentState.selectedCategory?.id,
-            fechaConcrecion = completionDateTime, // Usamos la nueva fecha con la hora ajustada
+            fechaConcrecion = completionDateTime,
             tipoCompra = currentState.tipoCompra,
             imageUri = currentState.imageUri
         )
