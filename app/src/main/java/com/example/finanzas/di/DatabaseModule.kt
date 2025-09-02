@@ -32,6 +32,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Date
+import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module
@@ -41,7 +42,8 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideFinanzasDatabase(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        dbProvider: Provider<FinanzasDatabase>
     ): FinanzasDatabase {
         return Room.databaseBuilder(
             context,
@@ -52,49 +54,44 @@ object DatabaseModule {
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
-                    val database = FinanzasDatabase.INSTANCE ?: return
                     CoroutineScope(Dispatchers.IO).launch {
+                        val database = dbProvider.get()
                         val categoriaDao = database.categoriaDao()
                         val usuarioDao = database.usuarioDao()
                         val monedaDao = database.monedaDao()
 
-                        // Insert default currencies
-                        monedaDao.insertMoneda(Moneda(nombre = "Dólar", simbolo = "$", tasa_conversion = 1.0))
-                        monedaDao.insertMoneda(Moneda(nombre = "Bolívar", simbolo = "Bs.", tasa_conversion = 36.5))
-                        monedaDao.insertMoneda(Moneda(nombre = "Euro", simbolo = "€", tasa_conversion = 0.92))
-                        monedaDao.insertMoneda(Moneda(nombre = "Yen", simbolo = "¥", tasa_conversion = 145.5))
-                        monedaDao.insertMoneda(Moneda(nombre = "Libra Esterlina", simbolo = "£", tasa_conversion = 0.79))
+                        database.runInTransaction {
+                            monedaDao.insertMoneda(Moneda(nombre = "Dólar", simbolo = "$", tasa_conversion = 1.0))
+                            monedaDao.insertMoneda(Moneda(nombre = "Bolívar", simbolo = "Bs.", tasa_conversion = 36.5))
+                            monedaDao.insertMoneda(Moneda(nombre = "Euro", simbolo = "€", tasa_conversion = 0.92))
+                            monedaDao.insertMoneda(Moneda(nombre = "Yen", simbolo = "¥", tasa_conversion = 145.5))
+                            monedaDao.insertMoneda(Moneda(nombre = "Libra Esterlina", simbolo = "£", tasa_conversion = 0.79))
 
-
-                        // 1. Insertamos el usuario por defecto (actualizado)
-                        usuarioDao.upsertUsuario(
-                            Usuario(
-                                nombre = "Usuario",
-                                email = null,
-                                fechaNacimiento = null,
-                                monedaPrincipal = "Dólar",
-                                monedaSecundaria = "Bolívar",
-                                tema = TemaApp.CLARO.name,
-                                onboardingCompletado = false,
-                                ahorroAcumulado = 0.0,
-                                objetivoAhorroMensual = 0.0,
-                                fechaUltimoCierre = Date().time
+                            usuarioDao.upsertUsuario(
+                                Usuario(
+                                    nombre = "Usuario",
+                                    email = null,
+                                    fechaNacimiento = null,
+                                    monedaPrincipal = "Dólar",
+                                    monedaSecundaria = "Bolívar",
+                                    tema = TemaApp.CLARO.name,
+                                    onboardingCompletado = false,
+                                    ahorroAcumulado = 0.0,
+                                    objetivoAhorroMensual = 0.0,
+                                    fechaUltimoCierre = Date().time
+                                )
                             )
-                        )
 
-                        // 2. Insertamos la categoría única para Ingresos
-                        categoriaDao.insertCategoria(
-                            Categoria(
-                                nombre = "Ingreso General",
-                                icono = IconosEstandar.OTROS.name,
-                                tipo = TipoTransaccion.INGRESO.name,
-                                esPersonalizada = false
-                            )
-                        )
-
-                        // 3. Insertamos todas las categorías de Gastos
-                        IconosEstandar.values().forEach { icono ->
                             categoriaDao.insertCategoria(
+                                Categoria(
+                                    nombre = "Ingreso General",
+                                    icono = IconosEstandar.OTROS.name,
+                                    tipo = TipoTransaccion.INGRESO.name,
+                                    esPersonalizada = false
+                                )
+                            )
+
+                            val categoriasDeGastos = IconosEstandar.values().map { icono ->
                                 Categoria(
                                     nombre = icono.name.replace('_', ' ').lowercase()
                                         .replaceFirstChar { it.uppercase() },
@@ -102,14 +99,13 @@ object DatabaseModule {
                                     tipo = TipoTransaccion.GASTO.name,
                                     esPersonalizada = false
                                 )
-                            )
+                            }
+                            categoriasDeGastos.forEach { categoriaDao.insertCategoria(it) }
                         }
                     }
                 }
             })
-            .build().also {
-                FinanzasDatabase.INSTANCE = it
-            }
+            .build()
     }
 
     // ... (El resto del archivo no cambia)

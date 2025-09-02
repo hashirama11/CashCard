@@ -26,12 +26,6 @@ abstract class FinanzasDatabase : RoomDatabase() {
     abstract fun categoriaDao(): CategoriaDao
     abstract fun usuarioDao(): UsuarioDao
     abstract fun monedaDao(): MonedaDao
-
-    // --- ESTE ES EL BLOQUE AÑADIDO ---
-    companion object {
-        @Volatile
-        var INSTANCE: FinanzasDatabase? = null
-    }
 }
 
 val MIGRATION_3_4 = object : Migration(3, 4) {

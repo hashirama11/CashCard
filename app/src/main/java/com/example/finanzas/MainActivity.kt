@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,47 +42,71 @@ class MainActivity : AppCompatActivity() { // Hereda de AppCompatActivity
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val biometricAuthenticator = BiometricAuthenticator(this)
-
         installSplashScreen()
 
         setContent {
-            val isDarkTheme by mainViewModel.isDarkTheme.collectAsStateWithLifecycle()
-            val onboardingCompleted by mainViewModel.onboardingCompleted.collectAsStateWithLifecycle()
+            val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
             val isAuthenticated by mainViewModel.isAuthenticated.collectAsStateWithLifecycle()
+            var showAuthErrorDialog by remember { mutableStateOf(false) }
 
-            FinanzasTheme(darkTheme = isDarkTheme) {
-                // Determinamos si debemos mostrar el contenido principal
-                val showContent = onboardingCompleted == false || isAuthenticated
+            val biometricAuthenticator = remember { BiometricAuthenticator(this) }
+
+            fun promptAuth() {
+                biometricAuthenticator.promptBiometricAuth(
+                    title = "Autenticación Requerida",
+                    subtitle = "Desbloquea para acceder a tus finanzas",
+                    onSuccess = {
+                        mainViewModel.onAuthenticationSuccess()
+                    },
+                    onError = { _, _ ->
+                        showAuthErrorDialog = true
+                    }
+                )
+            }
+
+            FinanzasTheme(darkTheme = uiState.isDarkTheme) {
+                val showContent = uiState.onboardingCompleted == false || isAuthenticated
 
                 if (showContent) {
-                    // Si el usuario está en el onboarding o ya se autenticó, mostramos la app.
-                    onboardingCompleted?.let {
+                    uiState.onboardingCompleted?.let {
                         val startDestination = if (it) AppScreens.Dashboard.route else AppScreens.Onboarding.route
                         MainScreen(startDestination)
                     }
                 } else {
-                    // Si el onboarding está completo pero no se ha autenticado, lanzamos el prompt.
-                    LaunchedEffect(onboardingCompleted) {
-                        if (onboardingCompleted == true) {
-                            biometricAuthenticator.promptBiometricAuth(
-                                title = "Autenticación Requerida",
-                                subtitle = "Desbloquea para acceder a tus finanzas",
-                                onSuccess = {
-                                    // Si la autenticación es exitosa, lo notificamos al ViewModel
-                                    mainViewModel.onAuthenticationSuccess()
-                                },
-                                onError = { _, _ ->
-                                    // Si el usuario cancela o hay un error, cerramos la app para proteger los datos.
-                                    finish()
-                                }
-                            )
+                    // Onboarding completo, pero no autenticado
+                    LaunchedEffect(uiState.onboardingCompleted) {
+                        if (uiState.onboardingCompleted == true) {
+                            promptAuth()
                         }
                     }
-                    // Muestra una pantalla de carga mientras el diálogo biométrico está activo.
+
+                    // Muestra un indicador de carga mientras se espera la autenticación
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
+                }
+
+                if (showAuthErrorDialog) {
+                    AlertDialog(
+                        onDismissRequest = { /* Evitar que se cierre al tocar fuera */ },
+                        title = { Text("Autenticación Fallida") },
+                        text = { Text("No se pudo verificar tu identidad. Por favor, inténtalo de nuevo para continuar.") },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    showAuthErrorDialog = false
+                                    promptAuth()
+                                }
+                            ) {
+                                Text("Reintentar")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { finish() }) {
+                                Text("Salir")
+                            }
+                        }
+                    )
                 }
             }
         }
