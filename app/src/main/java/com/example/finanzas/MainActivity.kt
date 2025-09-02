@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() { // Hereda de AppCompatActivity
 
         setContent {
             // Interruptor para la autenticación biométrica
-            val BIOMETRIC_AUTH_ENABLED = false
+            val BIOMETRIC_AUTH_ENABLED = true
 
             val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
             val isAuthenticated by mainViewModel.isAuthenticated.collectAsStateWithLifecycle()
