@@ -106,7 +106,12 @@ class AddTransactionViewModel @Inject constructor(
     }
 
     private fun filterCategories(type: TipoTransaccion) {
-        val filtered = _state.value.allCategories.filter { it.tipo == type.name }
+        val categoryType = when (type) {
+            TipoTransaccion.AHORRO -> TipoTransaccion.INGRESO.name
+            TipoTransaccion.COMPRA -> TipoTransaccion.GASTO.name
+            else -> type.name
+        }
+        val filtered = _state.value.allCategories.filter { it.tipo == categoryType }
         val currentCategory = _state.value.selectedCategory
         val isCurrentCategoryStillValid = filtered.any { it.id == currentCategory?.id }
 

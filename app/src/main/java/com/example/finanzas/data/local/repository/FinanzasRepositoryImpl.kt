@@ -9,6 +9,7 @@ import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.local.entity.Transaccion
 import com.example.finanzas.data.local.entity.Usuario
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -40,4 +41,43 @@ class FinanzasRepositoryImpl @Inject constructor(
     override fun getAllMonedas(): Flow<List<Moneda>> = monedaDao.getAllMonedas()
     override suspend fun insertMoneda(moneda: Moneda) = monedaDao.insertMoneda(moneda)
     override suspend fun updateMoneda(moneda: Moneda) = monedaDao.updateMoneda(moneda)
+
+    override suspend fun realizarCorteDeMes() {
+        val usuario = usuarioDao.getUsuario().first() ?: return
+        val allTransactions = transaccionDao.getAllTransacciones().first()
+        val lastCutOff = Calendar.getInstance().apply { timeInMillis = usuario.fechaUltimoCierre }
+        val now = Calendar.getInstance()
+
+        if (now.get(Calendar.MONTH) == lastCutOff.get(Calendar.MONTH) && now.get(Calendar.YEAR) == lastCutOff.get(Calendar.YEAR)) {
+            // Cut-off for this month has already been done
+            return
+        }
+
+        val endOfPreviousMonth = Calendar.getInstance().apply {
+            timeInMillis = lastCutOff.timeInMillis
+            add(Calendar.MONTH, 1)
+            set(Calendar.DAY_OF_MONTH, 1)
+            add(Calendar.DATE, -1)
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
+        }
+
+        val transactionsToProcess = allTransactions.filter {
+            val txCalendar = Calendar.getInstance().apply { time = it.fecha }
+            txCalendar.after(lastCutOff) && txCalendar.before(endOfPreviousMonth)
+        }
+
+        val balancePorMoneda = transactionsToProcess.groupBy { it.moneda }
+            .mapValues { (_, transactions) ->
+                val ingresos = transactions.filter { it.tipo == "INGRESO" || it.tipo == "AHORRO" }.sumOf { it.monto }
+                val gastos = transactions.filter { it.tipo == "GASTO" || it.tipo == "COMPRA" }.sumOf { it.monto }
+                ingresos - gastos
+            }
+
+        val balancePrincipal = balancePorMoneda[usuario.monedaPrincipal] ?: 0.0
+        usuario.ahorroAcumulado += balancePrincipal
+        usuario.fechaUltimoCierre = now.timeInMillis
+        usuarioDao.upsertUsuario(usuario)
+    }
 }

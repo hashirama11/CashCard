@@ -29,4 +29,7 @@ interface FinanzasRepository {
     fun getAllMonedas(): Flow<List<Moneda>>
     suspend fun insertMoneda(moneda: Moneda)
     suspend fun updateMoneda(moneda: Moneda)
+
+    // Funciones de Cierre de Mes
+    suspend fun realizarCorteDeMes()
 }

@@ -48,11 +48,11 @@ class MonthlyGoalViewModel @Inject constructor(
             }
 
             val ingresosDelMes = currentMonthTransactions
-                .filter { it.tipo == TipoTransaccion.INGRESO.name }
+                .filter { it.tipo == TipoTransaccion.INGRESO.name || it.tipo == TipoTransaccion.AHORRO.name }
                 .sumOf { it.monto }
 
             val gastosDelMes = currentMonthTransactions
-                .filter { it.tipo == TipoTransaccion.GASTO.name }
+                .filter { it.tipo == TipoTransaccion.GASTO.name || it.tipo == TipoTransaccion.COMPRA.name }
                 .sumOf { it.monto }
 
             val balanceDelMes = ingresosDelMes - gastosDelMes

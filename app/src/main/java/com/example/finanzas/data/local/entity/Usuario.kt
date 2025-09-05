@@ -16,7 +16,7 @@ data class Usuario(
     val tema: String,
     val onboardingCompletado: Boolean = false,
     // --- NUEVOS CAMPOS ---
-    val ahorroAcumulado: Double = 0.0, // Para guardar el saldo arrastrado
+    var ahorroAcumulado: Double = 0.0, // Para guardar el saldo arrastrado
     val objetivoAhorroMensual: Double = 0.0, // Meta de ahorro para el mes
-    val fechaUltimoCierre: Long = Date().time // Para saber cuándo se hizo el último cierre
+    var fechaUltimoCierre: Long = Date().time // Para saber cuándo se hizo el último cierre
 )

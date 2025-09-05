@@ -52,10 +52,10 @@ class DashboardViewModel @Inject constructor(
             }
 
             val incomeTransactions = transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.INGRESO.name }
-            val expenseTransactions = transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.GASTO.name }
+            val expenseTransactions = transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.GASTO.name || it.transaccion.tipo == TipoTransaccion.COMPRA.name }
             val savingsTransactions = transactionsWithDetails.filter { it.transaccion.tipo == TipoTransaccion.AHORRO.name }
 
-            val totalIngresos = incomeTransactions.sumOf { it.transaccion.monto }
+            val totalIngresos = incomeTransactions.sumOf { it.transaccion.monto } + savingsTransactions.sumOf { it.transaccion.monto }
             val totalGastos = expenseTransactions.sumOf { it.transaccion.monto }
             val totalAhorros = savingsTransactions.sumOf { it.transaccion.monto }
             val balanceNeto = totalIngresos - totalGastos
@@ -67,7 +67,6 @@ class DashboardViewModel @Inject constructor(
             val allUsedCurrencies = allMonedas.filter { it.nombre in usedCurrencyNames }
 
             val displayTransactions = transactionsWithDetails
-                .filter { it.transaccion.tipo != TipoTransaccion.AHORRO.name }
                 .sortedByDescending { it.transaccion.fecha }
 
             DashboardState(
