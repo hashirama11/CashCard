@@ -75,7 +75,9 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     // Hilt
     implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
+    ksp(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.google.material)
     implementation("androidx.biometric:biometric-ktx:1.2.0-alpha05")

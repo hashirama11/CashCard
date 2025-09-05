@@ -13,7 +13,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import java.util.Calendar
 
 @HiltAndroidApp
-class MyApplication : Application(), Configuration.Provider {
+class MyApplication : android.app.Application(), Configuration.Provider {
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
