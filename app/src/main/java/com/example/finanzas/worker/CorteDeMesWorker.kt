@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.finanzas.data.local.repository.FinanzasRepository
+import com.example.finanzas.data.repository.FinanzasRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.Calendar
