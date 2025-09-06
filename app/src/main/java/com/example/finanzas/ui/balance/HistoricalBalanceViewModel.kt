@@ -48,7 +48,9 @@ class HistoricalBalanceViewModel @Inject constructor(
             val filteredTransactions = allTransactions.filter { it.moneda == selectedCurrency.nombre }
 
             val ingresos = filteredTransactions.filter { it.tipo == TipoTransaccion.INGRESO.name }
-            val gastos = filteredTransactions.filter { it.tipo == TipoTransaccion.GASTO.name }
+            val gastos = filteredTransactions.filter {
+                it.tipo == TipoTransaccion.GASTO.name || it.tipo == TipoTransaccion.COMPRA.name
+            }
 
             val totalIngresos = ingresos.sumOf { it.monto }
             val totalGastos = gastos.sumOf { it.monto }
@@ -73,7 +75,7 @@ class HistoricalBalanceViewModel @Inject constructor(
                     val current = monthlyData.getValue(monthKey)
                     when (tx.tipo) {
                         TipoTransaccion.INGRESO.name -> monthlyData[monthKey] = current.first + tx.monto to current.second
-                        TipoTransaccion.GASTO.name -> monthlyData[monthKey] = current.first to current.second + tx.monto
+                        TipoTransaccion.GASTO.name, TipoTransaccion.COMPRA.name -> monthlyData[monthKey] = current.first to current.second + tx.monto
                     }
                 }
             }
