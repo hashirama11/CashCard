@@ -76,7 +76,9 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
-    implementation(libs.androidx.hilt.work)
+    implementation(libs.androidx.hilt.work) {
+        exclude(group = "androidx.work", module = "work-runtime")
+    }
     ksp(libs.androidx.hilt.compiler)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.hilt.navigation.compose)
