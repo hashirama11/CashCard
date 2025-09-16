@@ -9,5 +9,5 @@ data class Moneda(
     val id: Int = 0,
     val nombre: String,
     val simbolo: String,
-    val tasa_conversion: Double = 1.0 // Tasa de conversión respecto a una moneda base (ej. USD)
+    val tasa_conversion: Double = 1.0 // Tasa de conversión. Pendiente para futura implementación
 )

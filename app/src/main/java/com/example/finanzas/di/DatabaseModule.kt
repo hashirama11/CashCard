@@ -64,9 +64,29 @@ object DatabaseModule {
                         database.withTransaction {
                             monedaDao.insertMoneda(Moneda(nombre = "Dólar", simbolo = "$", tasa_conversion = 1.0))
                             monedaDao.insertMoneda(Moneda(nombre = "Bolívar", simbolo = "Bs.", tasa_conversion = 36.5))
+                            monedaDao.insertMoneda(Moneda(nombre = "Yuan", simbolo = "¥", tasa_conversion = 100.0))
                             monedaDao.insertMoneda(Moneda(nombre = "Euro", simbolo = "€", tasa_conversion = 0.92))
                             monedaDao.insertMoneda(Moneda(nombre = "Yen", simbolo = "¥", tasa_conversion = 145.5))
                             monedaDao.insertMoneda(Moneda(nombre = "Libra Esterlina", simbolo = "£", tasa_conversion = 0.79))
+                            monedaDao.insertMoneda(Moneda(nombre = "Rublo", simbolo = "₽", tasa_conversion = 1.34))
+                            monedaDao.insertMoneda(Moneda(nombre = "Peso Argentino", simbolo = "$", tasa_conversion = 100.0))
+                            monedaDao.insertMoneda(Moneda(nombre = "Dólar Australiano", simbolo = "$", tasa_conversion = 1.57))
+                            monedaDao.insertMoneda(Moneda(nombre = "Franco Suizo", simbolo = "CHF", tasa_conversion = 0.93))
+                            monedaDao.insertMoneda(Moneda(nombre = "Real Brasileño", simbolo = "R$", tasa_conversion = 4.99))
+                            monedaDao.insertMoneda(Moneda(nombre = "Dólar Canadiense", simbolo = "$", tasa_conversion = 1.34))
+                            monedaDao.insertMoneda(Moneda(nombre = "Dólar de Hong Kong", simbolo = "$", tasa_conversion = 7.79))
+                            monedaDao.insertMoneda(Moneda(nombre = "Dólar de Macao", simbolo = "$", tasa_conversion = 15.65))
+                            monedaDao.insertMoneda(Moneda(nombre = "Peso Chileno", simbolo = "$", tasa_conversion = 740.0))
+                            monedaDao.insertMoneda(Moneda(nombre = "Peso Colombiano", simbolo = "$", tasa_conversion = 3950.0))
+                            monedaDao.insertMoneda(Moneda(nombre = "Franco Suizo", simbolo = "CHF", tasa_conversion = 0.93))
+                            monedaDao.insertMoneda(Moneda(nombre = "Dólar de Nueva Zelanda", simbolo = "$", tasa_conversion = 1.66))
+                            monedaDao.insertMoneda(Moneda(nombre = "Dólar de Sri Lanka", simbolo = "$", tasa_conversion = 37.0))
+                            monedaDao.insertMoneda(Moneda(nombre = "Dólar de Tailandia", simbolo = "$", tasa_conversion = 36.5))
+                            monedaDao.insertMoneda(Moneda(nombre = "Dólar de Taiwan", simbolo = "$", tasa_conversion = 32.5))
+                            monedaDao.insertMoneda(Moneda(nombre = "Dólar de Trinidad y Tobago", simbolo = "$", tasa_conversion = 6.78))
+                            monedaDao.insertMoneda(Moneda(nombre = "Peso Uruguayo", simbolo = "$", tasa_conversion = 41.0))
+                            monedaDao.insertMoneda(Moneda(nombre = "Franco Chili", simbolo = "CLF", tasa_conversion = 0.027))
+
 
                             usuarioDao.upsertUsuario(
                                 Usuario(
@@ -108,8 +128,6 @@ object DatabaseModule {
             })
             .build()
     }
-
-    // ... (El resto del archivo no cambia)
 
     @Provides
     @Singleton
