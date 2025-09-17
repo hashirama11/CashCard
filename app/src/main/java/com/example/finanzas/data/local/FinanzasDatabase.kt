@@ -61,6 +61,7 @@ val MIGRATION_7_8 = object : Migration(7, 8) {
 
 val MIGRATION_8_9 = object : Migration(8, 9) {
     override fun migrate(db: SupportSQLiteDatabase) {
+        /*
         db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Yuan', '¥', 100.0)")
         db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Rublo', '₽', 1.0)")
         db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Won', '₩', 1.0)")
@@ -75,7 +76,7 @@ val MIGRATION_8_9 = object : Migration(8, 9) {
         db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Peso Chileno', '$', 740.0)")
         db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Peso Colombiano', '$', 3950.0)")
         db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Peso Uruguayo', '$', 41.0)")
-
+        */
     }
 
 }
