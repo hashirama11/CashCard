@@ -61,23 +61,20 @@ val MIGRATION_7_8 = object : Migration(7, 8) {
 
 val MIGRATION_8_9 = object : Migration(8, 9) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        db.execSQL("INSERT INTO Moneda (nombre, simbolo, tasa_conversion) VALUES ('Yuan', '¥', 100.0)")
-        db.execSQL("INSERT INTO Moneda (nombre, simbolo, tasa_conversion) VALUES ('Rublo', '₽', 1.0)")
-        db.execSQL("INSERT INTO Moneda (nombre, simbolo, tasa_conversion) VALUES ('Won', '₩', 1.0)")
-        db.execSQL("INSERT INTO Moneda (nombre, simbolo, tasa_conversion) VALUES ('Dólar Australiano', '$', 1.57)")
-        db.execSQL("INSERT INTO Moneda (nombre, simbolo, tasa_conversion) VALUES ('Dólar Hong Kong', '$', 7.79)")
-        db.execSQL("INSERT INTO Moneda (nombre, simbolo, tasa_conversion) VALUES ('Dólar de Macao', '$', 15.65)")
-        db.execSQL("INSERT INTO Moneda (nombre, simbolo, tasa_conversion) VALUES ('Peso Argentino', '$', 100.0)")
-        db.execSQL("INSERT INTO Moneda (nombre, simbolo, tasa_conversion) VALUES ('Franco Suizo', 'CHF', 0.93)")
-        db.execSQL("INSERT INTO Moneda (nombre, simbolo, tasa_conversion) VALUES ('Real Brasileño', 'R$', 4.99)")
-        db.execSQL("INSERT INTO Moneda (nombre, simbolo, tasa_conversion) VALUES ('Dólar Canadiense', '$', 1.34)")
-        db.execSQL("INSERT INTO Moneda (nombre, simbolo, tasa_conversion) VALUES ('Dólar de Macao', '$', 15.65)")
-        db.execSQL("INSERT INTO Moneda (nombre, simbolo, tasa_conversion) VALUES ('Peso Chileno', '$', 740.0)")
-        db.execSQL("INSERT INTO Moneda (nombre, simbolo, tasa_conversion) VALUES ('Peso Colombiano', '$', 3950.0)")
-        db.execSQL("INSERT INTO Moneda (nombre, simbolo, tasa_conversion) VALUES ('Peso Uruguayo', '$', 41.0)")
-
-
-
+        db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Yuan', '¥', 100.0)")
+        db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Rublo', '₽', 1.0)")
+        db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Won', '₩', 1.0)")
+        db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Dólar Australiano', '$', 1.57)")
+        db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Dólar Hong Kong', '$', 7.79)")
+        db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Dólar de Macao', '$', 15.65)")
+        db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Peso Argentino', '$', 100.0)")
+        db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Franco Suizo', 'CHF', 0.93)")
+        db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Real Brasileño', 'R$', 4.99)")
+        db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Dólar Canadiense', '$', 1.34)")
+        db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Dólar de Macao', '$', 15.65)")
+        db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Peso Chileno', '$', 740.0)")
+        db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Peso Colombiano', '$', 3950.0)")
+        db.execSQL("INSERT INTO monedas (nombre, simbolo, tasa_conversion) VALUES ('Peso Uruguayo', '$', 41.0)")
 
     }
 
