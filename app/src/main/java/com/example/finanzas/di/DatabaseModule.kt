@@ -14,6 +14,7 @@ import com.example.finanzas.data.local.MIGRATION_4_5
 import com.example.finanzas.data.local.MIGRATION_5_6
 import com.example.finanzas.data.local.MIGRATION_6_7
 import com.example.finanzas.data.local.MIGRATION_7_8
+import com.example.finanzas.data.local.MIGRATION_8_9
 import com.example.finanzas.data.local.dao.MonedaDao
 import com.example.finanzas.data.local.dao.TransaccionDao
 import com.example.finanzas.data.local.dao.UsuarioDao
@@ -51,7 +52,9 @@ object DatabaseModule {
             FinanzasDatabase::class.java,
             "finanzas_db"
         )
-            .addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+            .addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
+                MIGRATION_8_9
+            )
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
