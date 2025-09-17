@@ -61,10 +61,26 @@ val MIGRATION_7_8 = object : Migration(7, 8) {
 
 val MIGRATION_8_9 = object : Migration(8, 9) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        // Migración para la tabla de usuarios.
-        // Se añaden las columnas que fueron agregadas a la entidad Usuario
-        // pero para las que no se había creado una migración.
-        db.execSQL("ALTER TABLE usuario ADD COLUMN ahorroAcumulado REAL NOT NULL DEFAULT 0.0")
-        db.execSQL("ALTER TABLE usuario ADD COLUMN fechaUltimoCierre INTEGER NOT NULL DEFAULT 0")
+        // This migration is defensive to handle inconsistent database states.
+        // It checks for the existence of columns before trying to add them.
+        val cursor = db.query("PRAGMA table_info(usuario)")
+        val columns = mutableSetOf<String>()
+        val nameIndex = cursor.getColumnIndex("name")
+        if (nameIndex >= 0) {
+            while (cursor.moveToNext()) {
+                columns.add(cursor.getString(nameIndex))
+            }
+        }
+        cursor.close()
+
+        if (!columns.contains("monedaSecundaria")) {
+            db.execSQL("ALTER TABLE usuario ADD COLUMN monedaSecundaria TEXT")
+        }
+        if (!columns.contains("ahorroAcumulado")) {
+            db.execSQL("ALTER TABLE usuario ADD COLUMN ahorroAcumulado REAL NOT NULL DEFAULT 0.0")
+        }
+        if (!columns.contains("fechaUltimoCierre")) {
+            db.execSQL("ALTER TABLE usuario ADD COLUMN fechaUltimoCierre INTEGER NOT NULL DEFAULT 0")
+        }
     }
 }
