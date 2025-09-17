@@ -28,10 +28,8 @@ class DataInitializer @Inject constructor(
 ) {
 
     companion object {
-        // Usa una clave para cada "paquete" de inicialización si necesitas más granularidad,
-        // o una sola clave que englobe toda la inicialización por versión de DB.
-        // La clave actual PREF_KEY_DATA_INITIALIZED = "pref_data_initialized_v9" es una buena opción.
-        const val PREF_KEY_DATA_INITIALIZED = "pref_data_initialized_v9"
+        // Se actualiza la clave para forzar la re-inicialización de datos con la v10 de la DB.
+        const val PREF_KEY_DATA_INITIALIZED = "pref_data_initialized_v10"
     }
 
     fun initializeDefaultData(context: Context) {
@@ -40,13 +38,6 @@ class DataInitializer @Inject constructor(
             val isDataInitialized = sharedPrefs.getBoolean(PREF_KEY_DATA_INITIALIZED, false)
 
             if (!isDataInitialized) {
-                // Ejecutamos las inserciones de forma transaccional para garantizar la atomicidad
-                // y eficiencia, especialmente si hay muchas inserciones o dependencias entre ellas.
-                // Es importante que este `withTransaction` se use con el `FinanzasDatabase`
-                // y no directamente con los DAOs si los DAOs no tienen su propio control transaccional.
-                // Sin embargo, si los DAOs ya usan `@Transaction` para sus ops, puedes llamarlos directamente.
-                // Para simplificar, asumiremos que los DAOs manejan bien sus transacciones o que Room las envuelve.
-
                 insertInitialMonedas()
                 insertInitialUsuario()
                 insertInitialCategorias()
@@ -57,31 +48,31 @@ class DataInitializer @Inject constructor(
     }
 
     private suspend fun insertInitialMonedas() {
-        // Usamos .first() en el Flow para obtener el primer valor y luego comprobar si está vacío.
-        // Esto espera a que el Flow emita al menos un valor.
-        if (monedaDao.getAllMonedas().first().isEmpty()) {
-            val initialMonedas = listOf(
-                Moneda(nombre = "Dólar", simbolo = "$", tasa_conversion = 1.0),
-                Moneda(nombre = "Bolívar", simbolo = "Bs.", tasa_conversion = 36.5),
-                Moneda(nombre = "Euro", simbolo = "€", tasa_conversion = 0.92),
-                Moneda(nombre = "Yen", simbolo = "¥", tasa_conversion = 145.5),
-                Moneda(nombre = "Libra Esterlina", simbolo = "£", tasa_conversion = 0.79),
-                Moneda(nombre = "Yuan", simbolo = "¥", tasa_conversion = 100.0),
-                Moneda(nombre = "Rublo", simbolo = "₽", tasa_conversion = 1.0),
-                Moneda(nombre = "Won", simbolo = "₩", tasa_conversion = 1.0),
-                Moneda(nombre = "Dólar Australiano", simbolo = "$", tasa_conversion = 1.57),
-                Moneda(nombre = "Dólar Hong Kong", simbolo = "$", tasa_conversion = 7.79),
-                Moneda(nombre = "Dólar de Macao", simbolo = "$", tasa_conversion = 15.65),
-                Moneda(nombre = "Peso Argentino", simbolo = "$", tasa_conversion = 100.0),
-                Moneda(nombre = "Franco Suizo", simbolo = "CHF", tasa_conversion = 0.93),
-                Moneda(nombre = "Real Brasileño", simbolo = "R$", tasa_conversion = 4.99),
-                Moneda(nombre = "Dólar Canadiense", simbolo = "$", tasa_conversion = 1.34),
-                Moneda(nombre = "Peso Chileno", simbolo = "$", tasa_conversion = 740.0),
-                Moneda(nombre = "Peso Colombiano", simbolo = "$", tasa_conversion = 3950.0),
-                Moneda(nombre = "Peso Uruguayo", simbolo = "$", tasa_conversion = 41.0)
-            )
-            initialMonedas.forEach { monedaDao.insertMoneda(it) }
-        }
+        val existingMonedas = monedaDao.getAllMonedas().first().map { it.nombre }.toSet()
+        val allDefaultMonedas = listOf(
+            Moneda(nombre = "Dólar", simbolo = "$", tasa_conversion = 1.0),
+            Moneda(nombre = "Bolívar", simbolo = "Bs.", tasa_conversion = 36.5),
+            Moneda(nombre = "Euro", simbolo = "€", tasa_conversion = 0.92),
+            Moneda(nombre = "Yen", simbolo = "¥", tasa_conversion = 145.5),
+            Moneda(nombre = "Libra Esterlina", simbolo = "£", tasa_conversion = 0.79),
+            Moneda(nombre = "Yuan", simbolo = "¥", tasa_conversion = 100.0),
+            Moneda(nombre = "Rublo", simbolo = "₽", tasa_conversion = 1.0),
+            Moneda(nombre = "Won", simbolo = "₩", tasa_conversion = 1.0),
+            Moneda(nombre = "Dólar Australiano", simbolo = "$", tasa_conversion = 1.57),
+            Moneda(nombre = "Dólar Hong Kong", simbolo = "$", tasa_conversion = 7.79),
+            Moneda(nombre = "Dólar de Macao", simbolo = "$", tasa_conversion = 15.65),
+            Moneda(nombre = "Peso Argentino", simbolo = "$", tasa_conversion = 100.0),
+            Moneda(nombre = "Franco Suizo", simbolo = "CHF", tasa_conversion = 0.93),
+            Moneda(nombre = "Real Brasileño", simbolo = "R$", tasa_conversion = 4.99),
+            Moneda(nombre = "Dólar Canadiense", simbolo = "$", tasa_conversion = 1.34),
+            Moneda(nombre = "Peso Chileno", simbolo = "$", tasa_conversion = 740.0),
+            Moneda(nombre = "Peso Colombiano", simbolo = "$", tasa_conversion = 3950.0),
+            Moneda(nombre = "Peso Uruguayo", simbolo = "$", tasa_conversion = 41.0)
+        )
+
+        // Filtrar para obtener solo las monedas que no existen y luego insertarlas.
+        val monedasToInsert = allDefaultMonedas.filter { !existingMonedas.contains(it.nombre) }
+        monedasToInsert.forEach { monedaDao.insertMoneda(it) }
     }
 
     private suspend fun insertInitialUsuario() {

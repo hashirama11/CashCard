@@ -17,7 +17,7 @@ import com.example.finanzas.util.Converters
 
 @Database(
     entities = [Transaccion::class, Categoria::class, Usuario::class, Moneda::class],
-    version = 9,
+    version = 10,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -109,5 +109,12 @@ val MIGRATION_8_9 = object : Migration(8, 9) {
         if (!columns.contains("fechaUltimoCierre")) {
             db.execSQL("ALTER TABLE usuario ADD COLUMN fechaUltimoCierre INTEGER NOT NULL DEFAULT 0")
         }
+    }
+}
+
+val MIGRATION_9_10 = object : Migration(9, 10) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // No schema changes required for this version.
+        // This version bump is used to trigger the DataInitializer to add new currencies.
     }
 }
