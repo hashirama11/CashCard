@@ -30,6 +30,5 @@ data class Transaccion(
     val categoriaId: Int?,
     val tipoCompra: String?,
     val imageUri: String?,
-    // --- NUEVO CAMPO PARA FECHA DE NOTIFICACIÓN ---
     val fechaConcrecion: Date? = null
 )
