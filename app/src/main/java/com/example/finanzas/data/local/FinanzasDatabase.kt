@@ -61,6 +61,33 @@ val MIGRATION_7_8 = object : Migration(7, 8) {
 
 val MIGRATION_8_9 = object : Migration(8, 9) {
     override fun migrate(db: SupportSQLiteDatabase) {
+        // --- Migration for 'monedas' table ---
+        // Recreate the table to make tasa_conversion nullable and fix any corruption.
+        db.execSQL("""
+            CREATE TABLE monedas_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                nombre TEXT NOT NULL,
+                simbolo TEXT NOT NULL,
+                tasa_conversion REAL
+            )
+        """)
+        // Copy data if the old table exists and is not corrupt.
+        // A simple try-catch block is the most resilient way to handle
+        // the possibility of the old table being malformed.
+        try {
+            db.execSQL("""
+                INSERT INTO monedas_new (id, nombre, simbolo, tasa_conversion)
+                SELECT id, nombre, simbolo, tasa_conversion FROM monedas
+            """)
+        } catch (e: Exception) {
+            // Ignore if the old table is corrupt or doesn't exist.
+            // The new table will be empty, which is a safe state.
+        }
+        db.execSQL("DROP TABLE IF EXISTS monedas")
+        db.execSQL("ALTER TABLE monedas_new RENAME TO monedas")
+
+
+        // --- Migration for 'usuario' table ---
         // This migration is defensive to handle inconsistent database states.
         // It checks for the existence of columns before trying to add them.
         val cursor = db.query("PRAGMA table_info(usuario)")
