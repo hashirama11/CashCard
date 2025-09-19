@@ -1,11 +1,12 @@
 package com.example.finanzas.di
 
+import com.example.finanzas.data.local.dao.BudgetDao
 import com.example.finanzas.data.local.dao.CategoriaDao
 import com.example.finanzas.data.local.dao.MonedaDao
 import com.example.finanzas.data.local.dao.TransaccionDao
 import com.example.finanzas.data.local.dao.UsuarioDao
-import com.example.finanzas.data.repository.FinanzasRepository
-import com.example.finanzas.data.repository.FinanzasRepositoryImpl
+import com.example.finanzas.data.local.repository.FinanzasRepository
+import com.example.finanzas.data.local.repository.FinanzasRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,13 +23,15 @@ object RepositoryModule {
         transaccionDao: TransaccionDao,
         categoriaDao: CategoriaDao,
         usuarioDao: UsuarioDao,
-        monedaDao: MonedaDao
+        monedaDao: MonedaDao,
+        budgetDao: BudgetDao
     ): FinanzasRepository {
         return FinanzasRepositoryImpl(
             transaccionDao = transaccionDao,
             categoriaDao = categoriaDao,
             usuarioDao = usuarioDao,
-            monedaDao = monedaDao
+            monedaDao = monedaDao,
+            budgetDao = budgetDao
         )
     }
 }
