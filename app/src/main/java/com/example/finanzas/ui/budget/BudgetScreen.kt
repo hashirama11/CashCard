@@ -18,6 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finanzas.model.BudgetCategoryDetail
 import com.example.finanzas.ui.util.getIconResource
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BudgetScreen(viewModel: BudgetViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsState()
