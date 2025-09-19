@@ -29,7 +29,7 @@ interface BudgetDao {
     @Transaction
     suspend fun saveBudget(budget: Budget, categories: List<BudgetCategory>) {
         val budgetId = insertBudget(budget)
-        val categoriesWithId = categories.map { it.copy(budgetId = budgetId.toInt()) }
+        val categoriesWithId = categories.map { it.copy(budgetId = budgetId) }
         insertBudgetCategories(categoriesWithId)
     }
 }

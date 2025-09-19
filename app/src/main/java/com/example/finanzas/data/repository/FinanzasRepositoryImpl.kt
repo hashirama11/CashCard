@@ -1,4 +1,4 @@
-package com.example.finanzas.data.local.repository
+package com.example.finanzas.data.repository
 
 import com.example.finanzas.data.local.dao.BudgetDao
 import com.example.finanzas.data.local.dao.CategoriaDao

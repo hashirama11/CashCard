@@ -1,4 +1,4 @@
-package com.example.finanzas.data.local.repository
+package com.example.finanzas.data.repository
 
 import com.example.finanzas.data.local.entity.Budget
 import com.example.finanzas.data.local.entity.BudgetCategory

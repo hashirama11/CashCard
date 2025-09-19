@@ -2,7 +2,7 @@ package com.example.finanzas.domain.use_case
 
 import com.example.finanzas.data.local.entity.Budget
 import com.example.finanzas.data.local.entity.BudgetCategory
-import com.example.finanzas.data.local.repository.FinanzasRepository
+import com.example.finanzas.data.repository.FinanzasRepository
 import javax.inject.Inject
 
 class CreateMonthlyBudgetUseCase @Inject constructor(

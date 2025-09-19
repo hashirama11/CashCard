@@ -1,6 +1,6 @@
 package com.example.finanzas.domain.use_case
 
-import com.example.finanzas.data.local.repository.FinanzasRepository
+import com.example.finanzas.data.repository.FinanzasRepository
 import com.example.finanzas.model.BudgetCategoryDetail
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

@@ -29,7 +29,7 @@ import androidx.room.PrimaryKey
 data class BudgetCategory(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val budgetId: Int,
+    val budgetId: Long,
     val categoryId: Int,
     val budgetedAmount: Double
 )

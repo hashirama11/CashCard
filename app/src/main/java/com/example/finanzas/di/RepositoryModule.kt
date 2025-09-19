@@ -5,8 +5,8 @@ import com.example.finanzas.data.local.dao.CategoriaDao
 import com.example.finanzas.data.local.dao.MonedaDao
 import com.example.finanzas.data.local.dao.TransaccionDao
 import com.example.finanzas.data.local.dao.UsuarioDao
-import com.example.finanzas.data.local.repository.FinanzasRepository
-import com.example.finanzas.data.local.repository.FinanzasRepositoryImpl
+import com.example.finanzas.data.repository.FinanzasRepository
+import com.example.finanzas.data.repository.FinanzasRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

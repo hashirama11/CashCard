@@ -10,11 +10,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finanzas.model.BudgetCategoryDetail
+import com.example.finanzas.ui.util.getIconResource
 
 @Composable
 fun BudgetScreen(viewModel: BudgetViewModel = hiltViewModel()) {
@@ -105,7 +107,11 @@ fun BudgetCategoryItem(detail: BudgetCategoryDetail) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Icon(painter = painterResource(id = IconMapper.map(detail.icon)), contentDescription = detail.categoryName)
+                Icon(
+                    painter = painterResource(id = getIconResource(detail.icon)),
+                    contentDescription = detail.categoryName,
+                    modifier = Modifier.size(40.dp)
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(detail.categoryName, style = MaterialTheme.typography.titleMedium)
             }
