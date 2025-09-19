@@ -5,6 +5,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.finanzas.data.local.dao.CategoriaDao
+import com.example.finanzas.data.local.dao.MonedaDao
 import com.example.finanzas.data.local.dao.BudgetDao
 import com.example.finanzas.data.local.dao.CategoriaDao
 import com.example.finanzas.data.local.dao.MonedaDao
@@ -152,5 +154,7 @@ val MIGRATION_10_11 = object : Migration(10, 11) {
                 FOREIGN KEY(`categoryId`) REFERENCES `categorias`(`id`) ON DELETE CASCADE
             )
         """)
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_budget_categories_budgetId` ON `budget_categories`(`budgetId`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_budget_categories_categoryId` ON `budget_categories`(`categoryId`)")
     }
 }
