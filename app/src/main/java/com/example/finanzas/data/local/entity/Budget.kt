@@ -12,6 +12,5 @@ data class Budget(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val month: Int,
-    val year: Int,
-    val projectedIncome: Double
+    val year: Int
 )

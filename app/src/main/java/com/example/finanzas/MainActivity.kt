@@ -126,7 +126,6 @@ fun MainScreen(startDestination: String) {
 
     showBottomBar = when (navBackStackEntry?.destination?.route) {
         AppScreens.Dashboard.route,
-        AppScreens.MonthlyGoal.route,
         AppScreens.HistoricalBalance.route,
         AppScreens.Profile.route,
         AppScreens.Budget.route -> true
@@ -154,7 +153,6 @@ fun AppBottomBar(navController: NavController) {
     val items = listOf(
         BottomNavItem("Inicio", Icons.Default.Home, AppScreens.Dashboard.route),
         BottomNavItem("Presupuesto", Icons.Default.Wallet, AppScreens.Budget.route),
-        BottomNavItem("Meta Mensual", Icons.Default.CheckCircle, AppScreens.MonthlyGoal.route),
         BottomNavItem("Histórico", Icons.Default.AccountBox, AppScreens.HistoricalBalance.route),
         BottomNavItem("Perfil", Icons.Default.Person, AppScreens.Profile.route)
     )

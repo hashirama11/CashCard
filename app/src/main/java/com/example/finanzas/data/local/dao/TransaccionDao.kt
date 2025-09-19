@@ -35,4 +35,13 @@ interface TransaccionDao {
         AND fecha BETWEEN :startDate AND :endDate
     """)
     fun getSumOfExpensesForCategory(categoryId: Int, startDate: Long, endDate: Long): Flow<Double>
+
+    @Query("""
+        SELECT COALESCE(SUM(monto), 0.0)
+        FROM transacciones
+        WHERE categoriaId = :categoryId
+        AND tipo = 'INGRESO'
+        AND fecha BETWEEN :startDate AND :endDate
+    """)
+    fun getSumOfIncomeForCategory(categoryId: Int, startDate: Long, endDate: Long): Flow<Double>
 }

@@ -39,4 +39,8 @@ interface FinanzasRepository {
     // Budget functions
     fun getBudgetDetails(month: Int, year: Int): Flow<List<BudgetCategoryDetail>>
     suspend fun saveBudget(budget: Budget, categories: List<BudgetCategory>)
+    suspend fun getBudgetByMonthAndYear(month: Int, year: Int): Budget?
+    suspend fun insertBudget(budget: Budget): Long
+    suspend fun upsertBudgetCategory(budgetCategory: BudgetCategory)
+    suspend fun getBudgetCategory(budgetId: Long, categoryId: Int): BudgetCategory?
 }

@@ -15,6 +15,7 @@ import com.example.finanzas.data.local.MIGRATION_7_8
 import com.example.finanzas.data.local.MIGRATION_8_9
 import com.example.finanzas.data.local.MIGRATION_9_10
 import com.example.finanzas.data.local.MIGRATION_10_11
+import com.example.finanzas.data.local.MIGRATION_11_12
 import com.example.finanzas.data.local.dao.BudgetDao
 import com.example.finanzas.data.local.dao.CategoriaDao
 import com.example.finanzas.data.local.dao.MonedaDao
@@ -80,7 +81,8 @@ object DatabaseModule {
                 MIGRATION_7_8,
                 MIGRATION_8_9,
                 MIGRATION_9_10,
-                MIGRATION_10_11
+                MIGRATION_10_11,
+                MIGRATION_11_12
             )
             .addCallback(callback) // Usamos el callback inyectado
             .build()

@@ -29,7 +29,7 @@ import com.example.finanzas.util.Converters
         Budget::class,
         BudgetCategory::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -156,5 +156,29 @@ val MIGRATION_10_11 = object : Migration(10, 11) {
         """)
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_budget_categories_budgetId` ON `budget_categories`(`budgetId`)")
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_budget_categories_categoryId` ON `budget_categories`(`categoryId`)")
+    }
+}
+
+val MIGRATION_11_12 = object : Migration(11, 12) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Create the new table with the correct schema (without projectedIncome)
+        db.execSQL("""
+            CREATE TABLE `budgets_new` (
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                `month` INTEGER NOT NULL,
+                `year` INTEGER NOT NULL
+            )
+        """)
+        // Copy the data from the old table to the new one
+        db.execSQL("""
+            INSERT INTO `budgets_new` (`id`, `month`, `year`)
+            SELECT `id`, `month`, `year` FROM `budgets`
+        """)
+        // Remove the old table
+        db.execSQL("DROP TABLE `budgets`")
+        // Rename the new table to the original name
+        db.execSQL("ALTER TABLE `budgets_new` RENAME TO `budgets`")
+        // Recreate the unique index on the new table
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_budgets_month_year` ON `budgets` (`month`, `year`)")
     }
 }

@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Upsert
 import com.example.finanzas.data.local.entity.Budget
 import com.example.finanzas.data.local.entity.BudgetCategory
 import com.example.finanzas.data.local.entity.BudgetWithCategories
@@ -32,4 +33,10 @@ interface BudgetDao {
         val categoriesWithId = categories.map { it.copy(budgetId = budgetId) }
         insertBudgetCategories(categoriesWithId)
     }
+
+    @Upsert
+    suspend fun upsertBudgetCategory(budgetCategory: BudgetCategory)
+
+    @Query("SELECT * FROM budget_categories WHERE budgetId = :budgetId AND categoryId = :categoryId")
+    suspend fun getBudgetCategory(budgetId: Long, categoryId: Int): BudgetCategory?
 }

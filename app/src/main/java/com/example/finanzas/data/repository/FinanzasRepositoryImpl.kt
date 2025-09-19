@@ -110,16 +110,26 @@ class FinanzasRepositoryImpl @Inject constructor(
 
             val categoryDetailsFlows = budgetWithCategories.budgetCategories.map { budgetCategory ->
                 val categoryFlow = categoriaDao.getCategoriaById(budgetCategory.categoryId)
-                val spendingFlow = transaccionDao.getSumOfExpensesForCategory(budgetCategory.categoryId, startDate, endDate)
 
-                combine(categoryFlow, spendingFlow) { category, spending ->
-                    category?.let {
+                categoryFlow.flatMapLatest { category ->
+                    if (category == null) {
+                        return@flatMapLatest flowOf(null)
+                    }
+
+                    val actualAmountFlow = if (category.tipo == "INGRESO") {
+                        transaccionDao.getSumOfIncomeForCategory(budgetCategory.categoryId, startDate, endDate)
+                    } else {
+                        transaccionDao.getSumOfExpensesForCategory(budgetCategory.categoryId, startDate, endDate)
+                    }
+
+                    actualAmountFlow.map { actualAmount ->
                         BudgetCategoryDetail(
-                            categoryName = it.nombre,
-                            icon = it.icono,
+                            categoryName = category.nombre,
+                            icon = category.icono,
+                            categoryType = category.tipo,
                             budgetedAmount = budgetCategory.budgetedAmount,
-                            actualSpending = spending,
-                            categoryId = it.id
+                            actualAmount = actualAmount,
+                            categoryId = category.id
                         )
                     }
                 }
@@ -133,5 +143,21 @@ class FinanzasRepositoryImpl @Inject constructor(
 
     override suspend fun saveBudget(budget: Budget, categories: List<BudgetCategory>) {
         budgetDao.saveBudget(budget, categories)
+    }
+
+    override suspend fun getBudgetByMonthAndYear(month: Int, year: Int): Budget? {
+        return budgetDao.getBudgetByMonthAndYear(month, year)
+    }
+
+    override suspend fun insertBudget(budget: Budget): Long {
+        return budgetDao.insertBudget(budget)
+    }
+
+    override suspend fun upsertBudgetCategory(budgetCategory: BudgetCategory) {
+        budgetDao.upsertBudgetCategory(budgetCategory)
+    }
+
+    override suspend fun getBudgetCategory(budgetId: Long, categoryId: Int): BudgetCategory? {
+        return budgetDao.getBudgetCategory(budgetId, categoryId)
     }
 }

@@ -5,8 +5,6 @@ sealed class AppScreens(val route: String) {
     object Dashboard : AppScreens("dashboard")
     // RENOMBRADO: Esta es ahora la pantalla de balance histórico general
     object HistoricalBalance : AppScreens("historical_balance")
-    // NUEVO: Una pantalla para el objetivo del mes
-    object MonthlyGoal : AppScreens("monthly_goal")
     object Budget : AppScreens("budget")
     object AddTransaction : AppScreens("add_transaction?transactionId={transactionId}") {
         fun createRoute() = "add_transaction"
