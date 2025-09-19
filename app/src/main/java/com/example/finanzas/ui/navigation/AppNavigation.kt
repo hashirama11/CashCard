@@ -9,6 +9,7 @@ import androidx.navigation.navArgument
 import com.example.finanzas.ui.add_transaction.AddTransactionScreen
 import com.example.finanzas.ui.all_transactions.AllTransactionsScreen
 import com.example.finanzas.ui.balance.HistoricalBalanceScreen // <-- CAMBIO DE NOMBRE
+import com.example.finanzas.ui.budget.BudgetScreen
 import com.example.finanzas.ui.category_management.CategoryManagementScreen
 import com.example.finanzas.ui.dashboard.DashboardScreen
 import com.example.finanzas.ui.monthly_goal.MonthlyGoalScreen // <-- NUEVA PANTALLA
@@ -59,6 +60,10 @@ fun AppNavigation(
         }
         composable(AppScreens.MonthlyGoal.route) {
             MonthlyGoalScreen() // La nueva pantalla de objetivo mensual
+        }
+
+        composable(AppScreens.Budget.route) {
+            BudgetScreen()
         }
 
         // ... (El resto de composables no cambian)

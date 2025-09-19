@@ -14,4 +14,7 @@ interface CategoriaDao {
 
     @Query("SELECT * FROM categorias ORDER BY nombre ASC")
     fun getAllCategorias(): Flow<List<Categoria>>
+
+    @Query("SELECT * FROM categorias WHERE id = :id")
+    fun getCategoriaById(id: Int): Flow<Categoria?>
 }

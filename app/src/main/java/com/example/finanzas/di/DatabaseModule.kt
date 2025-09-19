@@ -14,6 +14,8 @@ import com.example.finanzas.data.local.MIGRATION_6_7
 import com.example.finanzas.data.local.MIGRATION_7_8
 import com.example.finanzas.data.local.MIGRATION_8_9
 import com.example.finanzas.data.local.MIGRATION_9_10
+import com.example.finanzas.data.local.MIGRATION_10_11
+import com.example.finanzas.data.local.dao.BudgetDao
 import com.example.finanzas.data.local.dao.CategoriaDao
 import com.example.finanzas.data.local.dao.MonedaDao
 import com.example.finanzas.data.local.dao.TransaccionDao
@@ -77,11 +79,16 @@ object DatabaseModule {
                 MIGRATION_6_7,
                 MIGRATION_7_8,
                 MIGRATION_8_9,
-                MIGRATION_9_10
+                MIGRATION_9_10,
+                MIGRATION_10_11
             )
             .addCallback(callback) // Usamos el callback inyectado
             .build()
     }
+
+    @Provides
+    @Singleton
+    fun provideBudgetDao(database: FinanzasDatabase): BudgetDao = database.budgetDao()
 
     @Provides
     @Singleton

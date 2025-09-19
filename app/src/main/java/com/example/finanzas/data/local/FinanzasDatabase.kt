@@ -7,8 +7,13 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.finanzas.data.local.dao.CategoriaDao
 import com.example.finanzas.data.local.dao.MonedaDao
+import com.example.finanzas.data.local.dao.BudgetDao
+import com.example.finanzas.data.local.dao.CategoriaDao
+import com.example.finanzas.data.local.dao.MonedaDao
 import com.example.finanzas.data.local.dao.TransaccionDao
 import com.example.finanzas.data.local.dao.UsuarioDao
+import com.example.finanzas.data.local.entity.Budget
+import com.example.finanzas.data.local.entity.BudgetCategory
 import com.example.finanzas.data.local.entity.Categoria
 import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.local.entity.Transaccion
@@ -16,8 +21,15 @@ import com.example.finanzas.data.local.entity.Usuario
 import com.example.finanzas.util.Converters
 
 @Database(
-    entities = [Transaccion::class, Categoria::class, Usuario::class, Moneda::class],
-    version = 10,
+    entities = [
+        Transaccion::class,
+        Categoria::class,
+        Usuario::class,
+        Moneda::class,
+        Budget::class,
+        BudgetCategory::class
+    ],
+    version = 11,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -26,6 +38,7 @@ abstract class FinanzasDatabase : RoomDatabase() {
     abstract fun categoriaDao(): CategoriaDao
     abstract fun usuarioDao(): UsuarioDao
     abstract fun monedaDao(): MonedaDao
+    abstract fun budgetDao(): BudgetDao
 }
 
 val MIGRATION_3_4 = object : Migration(3, 4) {
@@ -116,5 +129,30 @@ val MIGRATION_9_10 = object : Migration(9, 10) {
     override fun migrate(db: SupportSQLiteDatabase) {
         // No schema changes required for this version.
         // This version bump is used to trigger the DataInitializer to add new currencies.
+    }
+}
+
+val MIGRATION_10_11 = object : Migration(10, 11) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("""
+            CREATE TABLE IF NOT EXISTS `budgets` (
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                `month` INTEGER NOT NULL,
+                `year` INTEGER NOT NULL,
+                `projectedIncome` REAL NOT NULL
+            )
+        """)
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_budgets_month_year` ON `budgets` (`month`, `year`)")
+
+        db.execSQL("""
+            CREATE TABLE IF NOT EXISTS `budget_categories` (
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                `budgetId` INTEGER NOT NULL,
+                `categoryId` INTEGER NOT NULL,
+                `budgetedAmount` REAL NOT NULL,
+                FOREIGN KEY(`budgetId`) REFERENCES `budgets`(`id`) ON DELETE CASCADE,
+                FOREIGN KEY(`categoryId`) REFERENCES `categorias`(`id`) ON DELETE CASCADE
+            )
+        """)
     }
 }

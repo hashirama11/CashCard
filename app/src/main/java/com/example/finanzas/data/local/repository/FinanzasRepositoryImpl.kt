@@ -1,15 +1,22 @@
-package com.example.finanzas.data.repository
+package com.example.finanzas.data.local.repository
 
+import com.example.finanzas.data.local.dao.BudgetDao
 import com.example.finanzas.data.local.dao.CategoriaDao
 import com.example.finanzas.data.local.dao.MonedaDao
 import com.example.finanzas.data.local.dao.TransaccionDao
 import com.example.finanzas.data.local.dao.UsuarioDao
+import com.example.finanzas.data.local.entity.Budget
+import com.example.finanzas.data.local.entity.BudgetCategory
 import com.example.finanzas.data.local.entity.Categoria
 import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.local.entity.Transaccion
 import com.example.finanzas.data.local.entity.Usuario
+import com.example.finanzas.model.BudgetCategoryDetail
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -17,7 +24,8 @@ class FinanzasRepositoryImpl @Inject constructor(
     private val transaccionDao: TransaccionDao,
     private val categoriaDao: CategoriaDao,
     private val usuarioDao: UsuarioDao,
-    private val monedaDao: MonedaDao
+    private val monedaDao: MonedaDao,
+    private val budgetDao: BudgetDao
 ) : FinanzasRepository {
 
     override fun getAllTransacciones(): Flow<List<Transaccion>> = transaccionDao.getAllTransacciones()
@@ -79,5 +87,51 @@ class FinanzasRepositoryImpl @Inject constructor(
         usuario.ahorroAcumulado += balancePrincipal
         usuario.fechaUltimoCierre = now.timeInMillis
         usuarioDao.upsertUsuario(usuario)
+    }
+
+    override fun getBudgetDetails(month: Int, year: Int): Flow<List<BudgetCategoryDetail>> {
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.YEAR, year)
+            set(Calendar.MONTH, month)
+            set(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+        }
+        val startDate = calendar.timeInMillis
+        calendar.add(Calendar.MONTH, 1)
+        calendar.add(Calendar.DAY_OF_MONTH, -1)
+        val endDate = calendar.timeInMillis
+
+        return budgetDao.getBudgetForMonth(month, year).flatMapLatest { budgetWithCategories ->
+            if (budgetWithCategories == null) {
+                return@flatMapLatest flowOf(emptyList())
+            }
+
+            val categoryDetailsFlows = budgetWithCategories.budgetCategories.map { budgetCategory ->
+                val categoryFlow = categoriaDao.getCategoriaById(budgetCategory.categoryId)
+                val spendingFlow = transaccionDao.getSumOfExpensesForCategory(budgetCategory.categoryId, startDate, endDate)
+
+                combine(categoryFlow, spendingFlow) { category, spending ->
+                    category?.let {
+                        BudgetCategoryDetail(
+                            categoryName = it.nombre,
+                            icon = it.icono,
+                            budgetedAmount = budgetCategory.budgetedAmount,
+                            actualSpending = spending,
+                            categoryId = it.id
+                        )
+                    }
+                }
+            }
+
+            combine(categoryDetailsFlows) { details ->
+                details.filterNotNull().toList()
+            }
+        }
+    }
+
+    override suspend fun saveBudget(budget: Budget, categories: List<BudgetCategory>) {
+        budgetDao.saveBudget(budget, categories)
     }
 }

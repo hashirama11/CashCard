@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -127,7 +128,8 @@ fun MainScreen(startDestination: String) {
         AppScreens.Dashboard.route,
         AppScreens.MonthlyGoal.route,
         AppScreens.HistoricalBalance.route,
-        AppScreens.Profile.route -> true
+        AppScreens.Profile.route,
+        AppScreens.Budget.route -> true
         else -> false
     }
 
@@ -151,6 +153,7 @@ fun MainScreen(startDestination: String) {
 fun AppBottomBar(navController: NavController) {
     val items = listOf(
         BottomNavItem("Inicio", Icons.Default.Home, AppScreens.Dashboard.route),
+        BottomNavItem("Presupuesto", Icons.Default.Wallet, AppScreens.Budget.route),
         BottomNavItem("Meta Mensual", Icons.Default.CheckCircle, AppScreens.MonthlyGoal.route),
         BottomNavItem("Histórico", Icons.Default.AccountBox, AppScreens.HistoricalBalance.route),
         BottomNavItem("Perfil", Icons.Default.Person, AppScreens.Profile.route)

@@ -1,9 +1,12 @@
-package com.example.finanzas.data.repository
+package com.example.finanzas.data.local.repository
 
+import com.example.finanzas.data.local.entity.Budget
+import com.example.finanzas.data.local.entity.BudgetCategory
 import com.example.finanzas.data.local.entity.Categoria
 import com.example.finanzas.data.local.entity.Moneda
 import com.example.finanzas.data.local.entity.Transaccion
 import com.example.finanzas.data.local.entity.Usuario
+import com.example.finanzas.model.BudgetCategoryDetail
 import kotlinx.coroutines.flow.Flow
 
 interface FinanzasRepository {
@@ -32,4 +35,8 @@ interface FinanzasRepository {
 
     // Funciones de Cierre de Mes
     suspend fun realizarCorteDeMes()
+
+    // Budget functions
+    fun getBudgetDetails(month: Int, year: Int): Flow<List<BudgetCategoryDetail>>
+    suspend fun saveBudget(budget: Budget, categories: List<BudgetCategory>)
 }
