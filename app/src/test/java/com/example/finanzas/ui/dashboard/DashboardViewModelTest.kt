@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
 package com.example.finanzas.ui.dashboard
 
 import app.cash.turbine.test
@@ -22,7 +23,6 @@ import org.junit.Before
 import org.junit.Test
 import java.util.Date
 
-@ExperimentalCoroutinesApi
 class DashboardViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
