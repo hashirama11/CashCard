@@ -12,4 +12,7 @@ interface UsuarioDao {
 
     @Query("SELECT * FROM usuario WHERE id = 1")
     fun getUsuario(): Flow<Usuario?>
+
+    @Query("SELECT * FROM usuario WHERE id = 1")
+    suspend fun getUsuarioSinc(): Usuario?
 }

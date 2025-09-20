@@ -2,6 +2,7 @@ package com.example.finanzas.data.local.dao
 
 import androidx.room.*
 import com.example.finanzas.data.local.entity.Transaccion
+import com.example.finanzas.model.CurrencyAndAmount
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -44,4 +45,24 @@ interface TransaccionDao {
         AND fecha BETWEEN :startDate AND :endDate
     """)
     fun getSumOfIncomeForCategory(categoryId: Int, startDate: Long, endDate: Long): Flow<Double>
+
+    @Query("""
+        SELECT moneda, SUM(monto) as total
+        FROM transacciones
+        WHERE categoriaId = :categoryId
+        AND tipo = 'GASTO'
+        AND fecha BETWEEN :startDate AND :endDate
+        GROUP BY moneda
+    """)
+    fun getSumOfExpensesForCategoryByCurrency(categoryId: Int, startDate: Long, endDate: Long): Flow<List<CurrencyAndAmount>>
+
+    @Query("""
+        SELECT moneda, SUM(monto) as total
+        FROM transacciones
+        WHERE categoriaId = :categoryId
+        AND tipo = 'INGRESO'
+        AND fecha BETWEEN :startDate AND :endDate
+        GROUP BY moneda
+    """)
+    fun getSumOfIncomeForCategoryByCurrency(categoryId: Int, startDate: Long, endDate: Long): Flow<List<CurrencyAndAmount>>
 }

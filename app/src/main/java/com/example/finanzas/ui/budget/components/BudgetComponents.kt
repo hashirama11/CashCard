@@ -56,12 +56,16 @@ fun MonthSelector(
 @Composable
 fun SummaryCard(
     summary: BudgetSummary,
+    balance: Map<String, Double>,
     numberFormat: NumberFormat,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text("Resumen del Mes", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -73,23 +77,50 @@ fun SummaryCard(
             ) {
                 SummaryItem(
                     label = "Ingresos",
-                    actual = summary.actualIncome,
+                    actual = summary.totalActualIncome,
                     projected = summary.projectedIncome,
                     numberFormat = numberFormat,
                     modifier = Modifier.weight(1f)
                 )
-                BalanceItem(
-                    balance = summary.balance,
-                    numberFormat = numberFormat,
-                    modifier = Modifier.weight(0.8f)
-                )
                 SummaryItem(
                     label = "Gastos",
-                    actual = summary.actualExpenses,
+                    actual = summary.totalActualExpenses,
                     projected = summary.budgetedExpenses,
                     numberFormat = numberFormat,
                     modifier = Modifier.weight(1f)
                 )
+            }
+            Spacer(Modifier.height(16.dp))
+            BalanceItem(balance = balance, numberFormat = numberFormat)
+            Spacer(Modifier.height(16.dp))
+            Text("Ingresos por Moneda", style = MaterialTheme.typography.titleMedium)
+            summary.actualIncome.forEach { (currency, amount) ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(currency, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        numberFormat.format(amount),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Text("Egresos por Moneda", style = MaterialTheme.typography.titleMedium)
+            summary.actualExpenses.forEach { (currency, amount) ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(currency, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        numberFormat.format(amount),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
@@ -121,19 +152,27 @@ private fun SummaryItem(
 
 @Composable
 private fun BalanceItem(
-    balance: Double,
+    balance: Map<String, Double>,
     numberFormat: NumberFormat,
     modifier: Modifier = Modifier
 ) {
-    val balanceColor = if (balance >= 0) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = numberFormat.format(balance),
-            fontSize = 24.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = balanceColor
-        )
-        Text("Balance Actual", style = MaterialTheme.typography.labelMedium)
+    Column(modifier = modifier) {
+        Text("Balance por Moneda", style = MaterialTheme.typography.titleMedium)
+        balance.forEach { (currency, amount) ->
+            val balanceColor = if (amount >= 0) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(currency, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = numberFormat.format(amount),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = balanceColor
+                )
+            }
+        }
     }
 }
 
@@ -141,7 +180,8 @@ private fun BalanceItem(
 fun BudgetCategoryItem(
     detail: BudgetCategoryDetail,
     numberFormat: NumberFormat,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     val progress = if (detail.budgetedAmount > 0) (detail.actualAmount / detail.budgetedAmount).toFloat() else 0f
     val isOverBudget = progress > 1.0f
@@ -153,7 +193,13 @@ fun BudgetCategoryItem(
         else -> MaterialTheme.colorScheme.primary
     }
 
-    Card(modifier = modifier.fillMaxWidth()) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        )
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -183,6 +229,22 @@ fun BudgetCategoryItem(
                 trackColor = progressColor.copy(alpha = 0.3f)
             )
             Spacer(Modifier.height(8.dp))
+            if (detail.actualAmounts.size > 1) {
+                detail.actualAmounts.forEach { (currency, amount) ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Gasto en $currency", style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            numberFormat.format(amount),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+            }
             StatusText(
                 detail = detail,
                 isOverBudget = isOverBudget,

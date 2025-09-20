@@ -5,6 +5,9 @@ data class BudgetCategoryDetail(
     val icon: String,
     val categoryType: String,
     val budgetedAmount: Double,
-    val actualAmount: Double,
+    val actualAmounts: Map<String, Double>,
     val categoryId: Int
-)
+) {
+    val actualAmount: Double
+        get() = actualAmounts.values.sum()
+}

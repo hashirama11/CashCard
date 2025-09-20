@@ -30,30 +30,41 @@ import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.Locale
 
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.IconButton
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BudgetDashboardScreen(
     viewModel: BudgetDashboardViewModel = hiltViewModel(),
-    onNavigateToCreateBudget: () -> Unit
+    onNavigateToCreateBudget: () -> Unit,
+    onNavigateToCategoryManagement: () -> Unit,
+    onCategoryClick: (Int) -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    val numberFormat = remember {
-        (NumberFormat.getCurrencyInstance(Locale.getDefault()) as DecimalFormat).apply {
+    val numberFormat = remember(state.locale) {
+        (NumberFormat.getCurrencyInstance(state.locale) as DecimalFormat).apply {
             maximumFractionDigits = 2
-            // In a real app, this would come from user settings
-            val symbols = this.decimalFormatSymbols
-            symbols.currencySymbol = "$" // Using $ as a placeholder
-            this.decimalFormatSymbols = symbols
         }
     }
 
     Scaffold(
         topBar = {
-            MonthSelector(
-                selectedDate = state.selectedDate,
-                onPreviousMonth = { viewModel.onPreviousMonth() },
-                onNextMonth = { viewModel.onNextMonth() }
+            TopAppBar(
+                title = {
+                    MonthSelector(
+                        selectedDate = state.selectedDate,
+                        onPreviousMonth = { viewModel.onPreviousMonth() },
+                        onNextMonth = { viewModel.onNextMonth() }
+                    )
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToCategoryManagement) {
+                        Icon(Icons.Default.Add, contentDescription = "Manage Categories")
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -72,7 +83,8 @@ fun BudgetDashboardScreen(
                     state = state,
                     numberFormat = numberFormat,
                     viewModel = viewModel,
-                    modifier = Modifier.padding(paddingValues)
+                    modifier = Modifier.padding(paddingValues),
+                    onCategoryClick = onCategoryClick
                 )
             } else {
                 EmptyState(
@@ -85,38 +97,41 @@ fun BudgetDashboardScreen(
     }
 }
 
+import androidx.compose.foundation.layout.Column
+
 @Composable
 fun BudgetDetailContent(
     state: BudgetDashboardState,
     numberFormat: NumberFormat,
     viewModel: BudgetDashboardViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCategoryClick: (Int) -> Unit
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            MonthSelector(
-                selectedDate = state.selectedDate,
-                onPreviousMonth = { viewModel.onPreviousMonth() },
-                onNextMonth = { viewModel.onNextMonth() }
-            )
-        }
-        item {
-            SummaryCard(
-                summary = state.budgetSummary,
-                numberFormat = numberFormat
-            )
-        }
-        item {
-            Text("Detalle de Gastos", style = androidx.compose.material3.MaterialTheme.typography.titleLarge)
-        }
-        items(state.expenseCategories) { detail ->
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                SummaryCard(
+                    summary = state.budgetSummary,
+                    balance = state.balance,
+                    numberFormat = numberFormat
+                )
+            }
+            item {
+                Text(
+                    text = "Detalle de Gastos",
+                    style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+            items(state.expenseCategories) { detail ->
             BudgetCategoryItem(
                 detail = detail,
-                numberFormat = numberFormat
+                numberFormat = numberFormat,
+                onClick = { onCategoryClick(detail.categoryId) }
             )
         }
     }

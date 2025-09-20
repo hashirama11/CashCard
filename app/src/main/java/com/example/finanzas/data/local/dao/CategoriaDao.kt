@@ -23,4 +23,7 @@ interface CategoriaDao {
 
     @Query("SELECT * FROM categorias WHERE tipo = 'INGRESO' LIMIT 1")
     suspend fun getIncomeCategory(): Categoria?
+
+    @Query("SELECT * FROM categorias WHERE id = :id")
+    suspend fun getCategoriaByIdSinc(id: Int): Categoria?
 }

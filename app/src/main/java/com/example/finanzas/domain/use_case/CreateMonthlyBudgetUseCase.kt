@@ -11,11 +11,15 @@ class CreateMonthlyBudgetUseCase @Inject constructor(
     suspend operator fun invoke(
         year: Int,
         month: Int,
-        categories: Map<Int, Double>
+        categories: Map<Int, Double>,
+        projectedIncome: Double,
+        projectedIncomeSecondary: Double
     ) {
         val budget = Budget(
             year = year,
-            month = month
+            month = month,
+            projectedIncome = projectedIncome,
+            projectedIncomeSecondary = projectedIncomeSecondary
         )
         val budgetCategories = categories.map { (categoryId, amount) ->
             BudgetCategory(

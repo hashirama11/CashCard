@@ -2,6 +2,7 @@ package com.example.finanzas.ui.budget
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finanzas.data.repository.FinanzasRepository
 import com.example.finanzas.domain.use_case.ExportBudgetUseCase
 import com.example.finanzas.domain.use_case.GetMonthlyBudgetDetailsUseCase
 import com.example.finanzas.domain.use_case.UpdateCategoryBudgetUseCase
@@ -14,12 +15,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
+import com.example.finanzas.model.CurrencyAndAmount
 
 @HiltViewModel
 class BudgetDashboardViewModel @Inject constructor(
     private val getMonthlyBudgetDetailsUseCase: GetMonthlyBudgetDetailsUseCase,
     private val updateCategoryBudgetUseCase: UpdateCategoryBudgetUseCase,
     private val exportBudgetUseCase: ExportBudgetUseCase,
+    private val finanzasRepository: FinanzasRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BudgetDashboardState())
@@ -35,31 +38,61 @@ class BudgetDashboardViewModel @Inject constructor(
         val month = date.get(Calendar.MONTH)
         val year = date.get(Calendar.YEAR)
 
-        getMonthlyBudgetDetailsUseCase(month, year).onEach { details ->
-            val hasBudget = details.incomeCategories.isNotEmpty() || details.expenseCategories.isNotEmpty()
-
-            val projectedIncome = details.incomeCategories.sumOf { it.budgetedAmount }
-            val actualIncome = details.incomeCategories.sumOf { it.actualAmount }
-            val budgetedExpenses = details.expenseCategories.sumOf { it.budgetedAmount }
-            val actualExpenses = details.expenseCategories.sumOf { it.actualAmount }
-            val balance = actualIncome - actualExpenses
-
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    hasBudget = hasBudget,
-                    incomeCategories = details.incomeCategories,
-                    expenseCategories = details.expenseCategories,
-                    budgetSummary = BudgetSummary(
-                        projectedIncome = projectedIncome,
-                        actualIncome = actualIncome,
-                        budgetedExpenses = budgetedExpenses,
-                        actualExpenses = actualExpenses,
-                        balance = balance
-                    )
-                )
+        viewModelScope.launch {
+            val usuario = finanzasRepository.getUsuarioSinc()
+            val locale = if (usuario != null && usuario.monedaPrincipal.isNotEmpty()) {
+                Locale.of(usuario.monedaPrincipal)
+            } else {
+                Locale.getDefault()
             }
-        }.launchIn(viewModelScope)
+            _uiState.update { it.copy(locale = locale) }
+        }
+
+        viewModelScope.launch {
+            val budget = finanzasRepository.getBudgetByMonthAndYear(month, year)
+            val projectedIncome = budget?.projectedIncome ?: 0.0
+            val projectedIncomeSecondary = budget?.projectedIncomeSecondary ?: 0.0
+            val totalProjectedIncome = projectedIncome + projectedIncomeSecondary
+
+            getMonthlyBudgetDetailsUseCase(month, year).onEach { details ->
+                val hasBudget = details.incomeCategories.isNotEmpty() || details.expenseCategories.isNotEmpty()
+                val budgetedExpenses = details.expenseCategories.sumOf { it.budgetedAmount }
+
+                val actualIncomeByCurrency = mutableMapOf<String, Double>()
+                details.incomeCategories.forEach { category ->
+                    category.actualAmounts.forEach { (currency, amount) ->
+                        actualIncomeByCurrency[currency] = (actualIncomeByCurrency[currency] ?: 0.0) + amount
+                    }
+                }
+
+                val actualExpensesByCurrency = mutableMapOf<String, Double>()
+            details.expenseCategories.forEach { category ->
+                category.actualAmounts.forEach { (currency, amount) ->
+                    actualExpensesByCurrency[currency] = (actualExpensesByCurrency[currency] ?: 0.0) + amount
+                }
+            }
+
+                val balanceByCurrency = (actualIncomeByCurrency.keys + actualExpensesByCurrency.keys).associateWith { currency ->
+                    (actualIncomeByCurrency[currency] ?: 0.0) - (actualExpensesByCurrency[currency] ?: 0.0)
+                }
+
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        hasBudget = hasBudget,
+                        incomeCategories = details.incomeCategories,
+                        expenseCategories = details.expenseCategories,
+                        budgetSummary = BudgetSummary(
+                            projectedIncome = totalProjectedIncome,
+                            actualIncome = actualIncomeByCurrency,
+                            budgetedExpenses = budgetedExpenses,
+                            actualExpenses = actualExpensesByCurrency
+                        ),
+                        balance = balanceByCurrency
+                    )
+                }
+            }.launchIn(this)
+        }
     }
 
     fun onDateChanged(date: Calendar) {

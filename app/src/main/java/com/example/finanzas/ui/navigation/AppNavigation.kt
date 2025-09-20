@@ -19,6 +19,7 @@ import com.example.finanzas.ui.notification_settings.NotificationSettingsScreen
 import com.example.finanzas.ui.onboarding.OnboardingScreen
 import com.example.finanzas.ui.profile.ProfileScreen
 import com.example.finanzas.ui.purchase_history.PurchaseHistoryScreen
+import com.example.finanzas.ui.budget.TransactionListForCategoryScreen
 import com.example.finanzas.ui.transaction_detail.TransactionDetailScreen
 
 @Composable
@@ -63,6 +64,12 @@ fun AppNavigation(
             BudgetDashboardScreen(
                 onNavigateToCreateBudget = {
                     navController.navigate(AppScreens.EditBudget.route)
+                },
+                onNavigateToCategoryManagement = {
+                    navController.navigate(AppScreens.CategoryManagement.route)
+                },
+                onCategoryClick = { categoryId ->
+                    navController.navigate(AppScreens.TransactionListForCategory.createRoute(categoryId))
                 }
             )
         }
@@ -71,6 +78,9 @@ fun AppNavigation(
             EditBudgetScreen(
                 onBack = {
                     navController.popBackStack()
+                },
+                onNavigateToCategoryManagement = {
+                    navController.navigate(AppScreens.CategoryManagement.route)
                 }
             )
         }
@@ -152,6 +162,17 @@ fun AppNavigation(
         composable(AppScreens.AddCustomCurrency.route) {
             AddCustomCurrencyScreen(
                 onBack = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = AppScreens.TransactionListForCategory.route,
+            arguments = listOf(navArgument("categoryId") { type = NavType.IntType })
+        ) {
+            TransactionListForCategoryScreen(
+                onBack = { navController.popBackStack() },
+                onTransactionClick = { transactionId ->
+                    navController.navigate(AppScreens.TransactionDetail.createRoute(transactionId))
+                }
             )
         }
     }

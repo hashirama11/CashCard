@@ -13,8 +13,13 @@ data class BudgetUiState(
 
 data class BudgetSummary(
     val projectedIncome: Double = 0.0,
-    val actualIncome: Double = 0.0,
+    val actualIncome: Map<String, Double> = emptyMap(),
     val budgetedExpenses: Double = 0.0,
-    val actualExpenses: Double = 0.0,
-    val balance: Double = 0.0
-)
+    val actualExpenses: Map<String, Double> = emptyMap(),
+) {
+    val totalActualIncome: Double
+        get() = actualIncome.values.sum()
+
+    val totalActualExpenses: Double
+        get() = actualExpenses.values.sum()
+}

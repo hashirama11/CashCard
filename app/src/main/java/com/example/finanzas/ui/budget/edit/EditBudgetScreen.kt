@@ -20,14 +20,18 @@ import com.example.finanzas.data.local.entity.Categoria
 import com.example.finanzas.ui.util.getIconResource
 import java.text.NumberFormat
 import java.util.Locale
+import java.util.Currency
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditBudgetScreen(
     viewModel: EditBudgetViewModel = hiltViewModel(),
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigateToCategoryManagement: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
+    var showAddCategoryDialog by remember { mutableStateOf(false) }
+    var showRemoveCategoryDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.isSaved) {
         if (state.isSaved) {
@@ -56,24 +60,44 @@ fun EditBudgetScreen(
         ) { step ->
             when (step) {
                 1 -> Step1_DefineIncome(
-                    income = state.projectedIncome,
+                    state = state,
                     onIncomeChanged = viewModel::onIncomeChanged,
+                    onIncomeSecondaryChanged = viewModel::onIncomeSecondaryChanged,
                     onNext = viewModel::onNextStep
                 )
                 2 -> Step2_AssignLimits(
                     state = state,
                     onAmountChanged = viewModel::onBudgetAmountChanged,
-                    onSave = viewModel::saveBudget
+                    onSave = viewModel::saveBudget,
+                    onAddCategory = { showAddCategoryDialog = true },
+                    onRemoveCategory = { showRemoveCategoryDialog = true }
                 )
             }
+        }
+        if (showAddCategoryDialog) {
+            AddCategoryToBudgetDialog(
+                allCategories = state.allExpenseCategories,
+                categoriesInBudget = state.expenseCategories,
+                onAddCategory = viewModel::addCategoryToBudget,
+                onDismiss = { showAddCategoryDialog = false }
+            )
+        }
+
+        if (showRemoveCategoryDialog) {
+            RemoveCategoryFromBudgetDialog(
+                categoriesInBudget = state.expenseCategories,
+                onRemoveCategory = viewModel::removeCategoryFromBudget,
+                onDismiss = { showRemoveCategoryDialog = false }
+            )
         }
     }
 }
 
 @Composable
 fun Step1_DefineIncome(
-    income: String,
+    state: EditBudgetState,
     onIncomeChanged: (String) -> Unit,
+    onIncomeSecondaryChanged: (String) -> Unit,
     onNext: () -> Unit
 ) {
     Column(
@@ -90,29 +114,48 @@ fun Step1_DefineIncome(
         )
         Spacer(Modifier.height(32.dp))
         OutlinedTextField(
-            value = income,
+            value = state.projectedIncome,
             onValueChange = onIncomeChanged,
-            label = { Text("Ingreso Proyectado") },
-            prefix = { Text("$") },
+            label = { Text("Ingreso en ${state.usuario?.monedaPrincipal ?: ""}") },
+            prefix = { Text(state.usuario?.monedaPrincipal ?: "") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
-            modifier = Modifier.fillMaxWidth(0.7f)
+            modifier = Modifier.fillMaxWidth(0.8f)
         )
+        Spacer(Modifier.height(16.dp))
+        if (!state.usuario?.monedaSecundaria.isNullOrEmpty()) {
+            OutlinedTextField(
+                value = state.projectedIncomeSecondary,
+                onValueChange = onIncomeSecondaryChanged,
+                label = { Text("Ingreso en ${state.usuario?.monedaSecundaria ?: ""}") },
+                prefix = { Text(state.usuario?.monedaSecundaria ?: "") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(0.8f)
+            )
+        }
         Spacer(Modifier.height(32.dp))
-        Button(onClick = onNext, enabled = income.toDoubleOrNull() ?: 0.0 > 0) {
+        val totalIncome = (state.projectedIncome.toDoubleOrNull() ?: 0.0) + (state.projectedIncomeSecondary.toDoubleOrNull() ?: 0.0)
+        Button(onClick = onNext, enabled = totalIncome > 0) {
             Text("Siguiente")
         }
     }
+}
+
+fun findSymbol(currencyCode: String): String {
+    return Currency.getInstance(currencyCode).symbol
 }
 
 @Composable
 fun Step2_AssignLimits(
     state: EditBudgetState,
     onAmountChanged: (Int, String) -> Unit,
-    onSave: () -> Unit
+    onSave: () -> Unit,
+    onAddCategory: () -> Unit,
+    onRemoveCategory: () -> Unit
 ) {
     val numberFormat = remember { NumberFormat.getCurrencyInstance(Locale.getDefault()) }
-    val projectedIncome = state.projectedIncome.toDoubleOrNull() ?: 0.0
+    val projectedIncome = (state.projectedIncome.toDoubleOrNull() ?: 0.0) + (state.projectedIncomeSecondary.toDoubleOrNull() ?: 0.0)
     val totalBudgeted = state.budgetedAmounts.values.sumOf { it.toDoubleOrNull() ?: 0.0 }
     val remaining = projectedIncome - totalBudgeted
 
@@ -123,7 +166,7 @@ fun Step2_AssignLimits(
     ) {
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Define tus límites de gasto", style = MaterialTheme.typography.headlineSmall)
+                Text("Define tus límites de gasto en ${state.usuario?.monedaPrincipal ?: ""}", style = MaterialTheme.typography.headlineSmall)
                 Spacer(Modifier.height(16.dp))
                 SummaryRow("Ingreso Proyectado:", numberFormat.format(projectedIncome))
                 SummaryRow("Total Presupuestado:", numberFormat.format(totalBudgeted))
@@ -139,17 +182,32 @@ fun Step2_AssignLimits(
                 CategoryBudgetItem(
                     category = category,
                     amount = state.budgetedAmounts[category.id] ?: "",
-                    onAmountChanged = { onAmountChanged(category.id, it) }
+                    onAmountChanged = { onAmountChanged(category.id, it) },
+                    currency = state.usuario?.monedaPrincipal ?: ""
                 )
             }
         }
         Spacer(Modifier.height(16.dp))
-        Button(
-            onClick = onSave,
-            enabled = totalBudgeted > 0,
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Text("Guardar Presupuesto")
+            Button(
+                onClick = onAddCategory,
+            ) {
+                Text("Añadir Categoría")
+            }
+            Button(
+                onClick = onRemoveCategory,
+            ) {
+                Text("Eliminar Categoría")
+            }
+            Button(
+                onClick = onSave,
+                enabled = totalBudgeted > 0,
+            ) {
+                Text("Guardar Presupuesto")
+            }
         }
     }
 }
@@ -169,7 +227,8 @@ fun SummaryRow(label: String, value: String) {
 fun CategoryBudgetItem(
     category: Categoria,
     amount: String,
-    onAmountChanged: (String) -> Unit
+    onAmountChanged: (String) -> Unit,
+    currency: String
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -183,7 +242,7 @@ fun CategoryBudgetItem(
                 value = amount,
                 onValueChange = onAmountChanged,
                 label = { Text("Límite") },
-                prefix = { Text("$") },
+                prefix = { Text(currency) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.width(120.dp)
             )

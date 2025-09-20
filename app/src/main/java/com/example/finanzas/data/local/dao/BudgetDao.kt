@@ -17,9 +17,6 @@ interface BudgetDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBudget(budget: Budget): Long
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertBudgetCategories(categories: List<BudgetCategory>)
-
     @Transaction
     @Query("SELECT * FROM budgets WHERE month = :month AND year = :year")
     fun getBudgetForMonth(month: Int, year: Int): Flow<BudgetWithCategories?>
@@ -29,14 +26,42 @@ interface BudgetDao {
 
     @Transaction
     suspend fun saveBudget(budget: Budget, categories: List<BudgetCategory>) {
-        val budgetId = insertBudget(budget)
-        val categoriesWithId = categories.map { it.copy(budgetId = budgetId) }
-        insertBudgetCategories(categoriesWithId)
+        val existingBudget = getBudgetByMonthAndYear(budget.month, budget.year)
+        val budgetId: Long
+
+        if (existingBudget != null) {
+            // Update existing budget
+            val updatedBudget = existingBudget.copy(
+                projectedIncome = budget.projectedIncome,
+                projectedIncomeSecondary = budget.projectedIncomeSecondary
+            )
+            updateBudget(updatedBudget)
+            budgetId = existingBudget.id.toLong()
+
+            // Delete old categories and insert new ones
+            deleteBudgetCategoriesByBudgetId(budgetId)
+            val categoriesWithId = categories.map { it.copy(budgetId = budgetId) }
+            upsertBudgetCategories(categoriesWithId)
+        } else {
+            // Insert new budget
+            budgetId = insertBudget(budget)
+            val categoriesWithId = categories.map { it.copy(budgetId = budgetId) }
+            upsertBudgetCategories(categoriesWithId)
+        }
     }
+
+    @Update
+    suspend fun updateBudget(budget: Budget)
+
+    @Upsert
+    suspend fun upsertBudgetCategories(budgetCategory: List<BudgetCategory>)
 
     @Upsert
     suspend fun upsertBudgetCategory(budgetCategory: BudgetCategory)
 
     @Query("SELECT * FROM budget_categories WHERE budgetId = :budgetId AND categoryId = :categoryId")
     suspend fun getBudgetCategory(budgetId: Long, categoryId: Int): BudgetCategory?
+
+    @Query("DELETE FROM budget_categories WHERE budgetId = :budgetId")
+    suspend fun deleteBudgetCategoriesByBudgetId(budgetId: Long)
 }

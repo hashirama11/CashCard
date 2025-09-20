@@ -46,6 +46,7 @@ class FinanzasRepositoryImpl @Inject constructor(
 
     override fun getUsuario(): Flow<Usuario?> = usuarioDao.getUsuario()
     override suspend fun upsertUsuario(usuario: Usuario) = usuarioDao.upsertUsuario(usuario)
+    override suspend fun getUsuarioSinc(): Usuario? = usuarioDao.getUsuarioSinc()
 
     override fun getAllMonedas(): Flow<List<Moneda>> = monedaDao.getAllMonedas()
     override suspend fun insertMoneda(moneda: Moneda) = monedaDao.insertMoneda(moneda)
@@ -117,19 +118,19 @@ class FinanzasRepositoryImpl @Inject constructor(
                         return@flatMapLatest flowOf(null)
                     }
 
-                    val actualAmountFlow = if (category.tipo == "INGRESO") {
-                        transaccionDao.getSumOfIncomeForCategory(budgetCategory.categoryId, startDate, endDate)
+                    val actualAmountsFlow = if (category.tipo == "INGRESO") {
+                        transaccionDao.getSumOfIncomeForCategoryByCurrency(budgetCategory.categoryId, startDate, endDate)
                     } else {
-                        transaccionDao.getSumOfExpensesForCategory(budgetCategory.categoryId, startDate, endDate)
+                        transaccionDao.getSumOfExpensesForCategoryByCurrency(budgetCategory.categoryId, startDate, endDate)
                     }
 
-                    actualAmountFlow.map { actualAmount ->
+                    actualAmountsFlow.map { actualAmounts ->
                         BudgetCategoryDetail(
                             categoryName = category.nombre,
                             icon = category.icono,
                             categoryType = category.tipo,
                             budgetedAmount = budgetCategory.budgetedAmount,
-                            actualAmount = actualAmount,
+                            actualAmounts = actualAmounts.associate { it.moneda to it.total },
                             categoryId = category.id
                         )
                     }
@@ -168,5 +169,9 @@ class FinanzasRepositoryImpl @Inject constructor(
 
     override suspend fun getIncomeCategory(): Categoria? {
         return categoriaDao.getIncomeCategory()
+    }
+
+    override suspend fun getCategoriaById(id: Int): Categoria? {
+        return categoriaDao.getCategoriaByIdSinc(id)
     }
 }

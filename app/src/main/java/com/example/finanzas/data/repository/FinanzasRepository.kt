@@ -27,6 +27,7 @@ interface FinanzasRepository {
     // Funciones de Usuario
     fun getUsuario(): Flow<Usuario?>
     suspend fun upsertUsuario(usuario: Usuario)
+    suspend fun getUsuarioSinc(): Usuario?
 
     // Funciones de Moneda
     fun getAllMonedas(): Flow<List<Moneda>>
@@ -47,4 +48,5 @@ interface FinanzasRepository {
     // Functions for budget creation
     suspend fun getCategoriasGastos(): List<Categoria>
     suspend fun getIncomeCategory(): Categoria?
+    suspend fun getCategoriaById(id: Int): Categoria?
 }

@@ -13,14 +13,19 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
+import com.example.finanzas.data.local.entity.Usuario
+
 data class EditBudgetState(
     val isLoading: Boolean = true,
     val projectedIncome: String = "",
+    val projectedIncomeSecondary: String = "",
     val expenseCategories: List<Categoria> = emptyList(),
+    val allExpenseCategories: List<Categoria> = emptyList(),
     val budgetedAmounts: Map<Int, String> = emptyMap(),
     val isSaved: Boolean = false,
     val currentStep: Int = 1,
-    val selectedDate: Calendar = Calendar.getInstance()
+    val selectedDate: Calendar = Calendar.getInstance(),
+    val usuario: Usuario? = null
 )
 
 @HiltViewModel
@@ -33,18 +38,46 @@ class EditBudgetViewModel @Inject constructor(
     val uiState get() = _uiState.asStateFlow()
 
     init {
-        loadExpenseCategories()
+        loadInitialData()
     }
 
-    private fun loadExpenseCategories() {
+    private fun loadInitialData() {
         viewModelScope.launch {
             val categories = finanzasRepository.getCategoriasGastos()
-            _uiState.update { it.copy(isLoading = false, expenseCategories = categories) }
+            val usuario = finanzasRepository.getUsuarioSinc()
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    expenseCategories = categories,
+                    allExpenseCategories = categories,
+                    usuario = usuario
+                )
+            }
+        }
+    }
+
+    fun addCategoryToBudget(category: Categoria) {
+        _uiState.update {
+            val newCategories = it.expenseCategories.toMutableList()
+            newCategories.add(category)
+            it.copy(expenseCategories = newCategories)
+        }
+    }
+
+    fun removeCategoryFromBudget(category: Categoria) {
+        _uiState.update {
+            val newCategories = it.expenseCategories.toMutableList()
+            newCategories.remove(category)
+            it.copy(expenseCategories = newCategories)
         }
     }
 
     fun onIncomeChanged(income: String) {
         _uiState.update { it.copy(projectedIncome = income) }
+    }
+
+    fun onIncomeSecondaryChanged(income: String) {
+        _uiState.update { it.copy(projectedIncomeSecondary = income) }
     }
 
     fun onBudgetAmountChanged(categoryId: Int, amount: String) {
@@ -67,6 +100,7 @@ class EditBudgetViewModel @Inject constructor(
         viewModelScope.launch {
             val currentState = _uiState.value
             val projectedIncome = currentState.projectedIncome.toDoubleOrNull() ?: 0.0
+            val projectedIncomeSecondary = currentState.projectedIncomeSecondary.toDoubleOrNull() ?: 0.0
 
             // Create the map for the use case
             val categoriesMap = mutableMapOf<Int, Double>()
@@ -79,9 +113,8 @@ class EditBudgetViewModel @Inject constructor(
                 }
             }
 
-            // Add income category
             val incomeCategory = finanzasRepository.getIncomeCategory()
-            if (incomeCategory != null && projectedIncome > 0) {
+            if (incomeCategory != null) {
                 categoriesMap[incomeCategory.id] = projectedIncome
             }
 
@@ -89,7 +122,9 @@ class EditBudgetViewModel @Inject constructor(
                 createMonthlyBudgetUseCase(
                     year = currentState.selectedDate.get(Calendar.YEAR),
                     month = currentState.selectedDate.get(Calendar.MONTH),
-                    categories = categoriesMap
+                    categories = categoriesMap,
+                    projectedIncome = projectedIncome,
+                    projectedIncomeSecondary = projectedIncomeSecondary
                 )
                 _uiState.update { it.copy(isSaved = true) }
             }

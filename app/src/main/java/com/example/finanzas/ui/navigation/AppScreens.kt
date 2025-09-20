@@ -21,4 +21,7 @@ sealed class AppScreens(val route: String) {
     object NotificationSettings : AppScreens("notification_settings")
     object CurrencySettings : AppScreens("currency_settings")
     object AddCustomCurrency : AppScreens("add_custom_currency")
+    object TransactionListForCategory : AppScreens("transaction_list_for_category/{categoryId}") {
+        fun createRoute(categoryId: Int) = "transaction_list_for_category/$categoryId"
+    }
 }
