@@ -161,4 +161,12 @@ class FinanzasRepositoryImpl @Inject constructor(
     override suspend fun getBudgetCategory(budgetId: Long, categoryId: Int): BudgetCategory? {
         return budgetDao.getBudgetCategory(budgetId, categoryId)
     }
+
+    override suspend fun getCategoriasGastos(): List<Categoria> {
+        return categoriaDao.getCategoriasGastos()
+    }
+
+    override suspend fun getIncomeCategory(): Categoria? {
+        return categoriaDao.getIncomeCategory()
+    }
 }

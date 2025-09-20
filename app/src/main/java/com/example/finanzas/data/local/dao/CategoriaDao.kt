@@ -17,4 +17,10 @@ interface CategoriaDao {
 
     @Query("SELECT * FROM categorias WHERE id = :id")
     fun getCategoriaById(id: Int): Flow<Categoria?>
+
+    @Query("SELECT * FROM categorias WHERE tipo = 'GASTO' ORDER BY nombre ASC")
+    suspend fun getCategoriasGastos(): List<Categoria>
+
+    @Query("SELECT * FROM categorias WHERE tipo = 'INGRESO' LIMIT 1")
+    suspend fun getIncomeCategory(): Categoria?
 }

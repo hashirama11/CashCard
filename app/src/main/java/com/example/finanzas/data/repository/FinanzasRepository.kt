@@ -43,4 +43,8 @@ interface FinanzasRepository {
     suspend fun insertBudget(budget: Budget): Long
     suspend fun upsertBudgetCategory(budgetCategory: BudgetCategory)
     suspend fun getBudgetCategory(budgetId: Long, categoryId: Int): BudgetCategory?
+
+    // Functions for budget creation
+    suspend fun getCategoriasGastos(): List<Categoria>
+    suspend fun getIncomeCategory(): Categoria?
 }

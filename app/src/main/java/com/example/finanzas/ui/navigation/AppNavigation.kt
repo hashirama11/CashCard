@@ -59,7 +59,19 @@ fun AppNavigation(
         }
 
         composable(AppScreens.Budget.route) {
-            BudgetDashboardScreen()
+            BudgetDashboardScreen(
+                onNavigateToCreateBudget = {
+                    navController.navigate(AppScreens.EditBudget.route)
+                }
+            )
+        }
+
+        composable(AppScreens.EditBudget.route) {
+            EditBudgetScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         // ... (El resto de composables no cambian)

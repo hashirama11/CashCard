@@ -2,16 +2,12 @@ package com.example.finanzas.ui.budget
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.finanzas.data.repository.FinanzasRepository
-import com.example.finanzas.domain.use_case.BudgetDetails
 import com.example.finanzas.domain.use_case.ExportBudgetUseCase
 import com.example.finanzas.domain.use_case.GetMonthlyBudgetDetailsUseCase
 import com.example.finanzas.domain.use_case.UpdateCategoryBudgetUseCase
-import com.example.finanzas.model.TipoTransaccion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -24,78 +20,76 @@ class BudgetDashboardViewModel @Inject constructor(
     private val getMonthlyBudgetDetailsUseCase: GetMonthlyBudgetDetailsUseCase,
     private val updateCategoryBudgetUseCase: UpdateCategoryBudgetUseCase,
     private val exportBudgetUseCase: ExportBudgetUseCase,
-    private val repository: FinanzasRepository // For monthly goal part
 ) : ViewModel() {
 
-    private val _uiState: MutableStateFlow<BudgetDashboardState>
+    private val _uiState = MutableStateFlow(BudgetDashboardState())
     val uiState get() = _uiState.asStateFlow()
 
     init {
-        val calendar = Calendar.getInstance()
-        val currentMonth = calendar.get(Calendar.MONTH)
-        val currentYear = calendar.get(Calendar.YEAR)
-        _uiState = MutableStateFlow(BudgetDashboardState(selectedMonth = currentMonth, selectedYear = currentYear))
-
-        loadDataForMonth(currentMonth, currentYear)
+        loadDataForDate(Calendar.getInstance())
     }
 
-    private fun loadDataForMonth(month: Int, year: Int) {
-        _uiState.update { it.copy(isLoading = true, selectedMonth = month, selectedYear = year) }
+    private fun loadDataForDate(date: Calendar) {
+        _uiState.update { it.copy(isLoading = true, selectedDate = date) }
 
-        // Combine budget details and monthly goal data
-        val budgetDetailsFlow = getMonthlyBudgetDetailsUseCase(month, year)
-        val userFlow = repository.getUsuario()
-        val transactionsFlow = repository.getAllTransacciones() // This could be optimized to fetch only for the month
+        val month = date.get(Calendar.MONTH)
+        val year = date.get(Calendar.YEAR)
 
-        combine(budgetDetailsFlow, userFlow, transactionsFlow) { details, user, transactions ->
-            // Monthly Goal Calculation
-            val monthlyGoalSummary = user?.let {
-                val currentMonthTransactions = transactions.filter { tx ->
-                    val cal = Calendar.getInstance().apply { time = tx.fecha }
-                    cal.get(Calendar.YEAR) == year && cal.get(Calendar.MONTH) == month
-                }
-                val ingresos = currentMonthTransactions.filter { it.tipo == TipoTransaccion.INGRESO.name }.sumOf { it.monto }
-                val gastos = currentMonthTransactions.filter { it.tipo == TipoTransaccion.GASTO.name }.sumOf { it.monto }
-                val balance = ingresos - gastos
-                val rate = if (ingresos > 0) (balance / ingresos).toFloat() else 0f
+        getMonthlyBudgetDetailsUseCase(month, year).onEach { details ->
+            val hasBudget = details.incomeCategories.isNotEmpty() || details.expenseCategories.isNotEmpty()
 
-                MonthlyGoalSummary(
-                    savingsRate = rate.coerceIn(0f, 1f),
-                    balanceDelMes = balance,
-                    monthlyGoal = it.objetivoAhorroMensual,
-                    totalIngresos = ingresos,
-                    totalGastos = gastos
-                )
-            } ?: MonthlyGoalSummary()
+            val projectedIncome = details.incomeCategories.sumOf { it.budgetedAmount }
+            val actualIncome = details.incomeCategories.sumOf { it.actualAmount }
+            val budgetedExpenses = details.expenseCategories.sumOf { it.budgetedAmount }
+            val actualExpenses = details.expenseCategories.sumOf { it.actualAmount }
+            val balance = actualIncome - actualExpenses
 
-            // Update state with both budget details and monthly goal summary
             _uiState.update {
                 it.copy(
                     isLoading = false,
+                    hasBudget = hasBudget,
                     incomeCategories = details.incomeCategories,
                     expenseCategories = details.expenseCategories,
-                    monthlyGoalSummary = monthlyGoalSummary
+                    budgetSummary = BudgetSummary(
+                        projectedIncome = projectedIncome,
+                        actualIncome = actualIncome,
+                        budgetedExpenses = budgetedExpenses,
+                        actualExpenses = actualExpenses,
+                        balance = balance
+                    )
                 )
             }
-        }.onEach {
-            // This space can be used if we need to react to the combined flow
         }.launchIn(viewModelScope)
     }
 
-    fun onMonthYearChanged(month: Int, year: Int) {
-        loadDataForMonth(month, year)
+    fun onDateChanged(date: Calendar) {
+        loadDataForDate(date)
     }
+
+    fun onPreviousMonth() {
+        val newDate = _uiState.value.selectedDate.clone() as Calendar
+        newDate.add(Calendar.MONTH, -1)
+        loadDataForDate(newDate)
+    }
+
+    fun onNextMonth() {
+        val newDate = _uiState.value.selectedDate.clone() as Calendar
+        newDate.add(Calendar.MONTH, 1)
+        loadDataForDate(newDate)
+    }
+
 
     fun updateBudgetForCategory(categoryId: Int, amount: Double) {
         viewModelScope.launch {
             val currentState = _uiState.value
+            val month = currentState.selectedDate.get(Calendar.MONTH)
+            val year = currentState.selectedDate.get(Calendar.YEAR)
             updateCategoryBudgetUseCase(
-                year = currentState.selectedYear,
-                month = currentState.selectedMonth,
+                year = year,
+                month = month,
                 categoryId = categoryId,
                 amount = amount
             )
-            // Data will reload automatically due to the reactive flows
         }
     }
 

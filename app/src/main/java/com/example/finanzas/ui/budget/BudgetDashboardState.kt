@@ -1,22 +1,23 @@
 package com.example.finanzas.ui.budget
 
 import com.example.finanzas.model.BudgetCategoryDetail
+import java.util.Calendar
 
 data class BudgetDashboardState(
     val isLoading: Boolean = true,
     val error: String? = null,
-    val selectedMonth: Int,
-    val selectedYear: Int,
-    val monthlyGoalSummary: MonthlyGoalSummary = MonthlyGoalSummary(),
+    val selectedDate: Calendar = Calendar.getInstance(),
+    val hasBudget: Boolean = false,
+    val budgetSummary: BudgetSummary = BudgetSummary(),
     val incomeCategories: List<BudgetCategoryDetail> = emptyList(),
     val expenseCategories: List<BudgetCategoryDetail> = emptyList(),
     val csvContent: String? = null
 )
 
-data class MonthlyGoalSummary(
-    val savingsRate: Float = 0f,
-    val balanceDelMes: Double = 0.0,
-    val monthlyGoal: Double = 0.0,
-    val totalIngresos: Double = 0.0,
-    val totalGastos: Double = 0.0
+data class BudgetSummary(
+    val projectedIncome: Double = 0.0,
+    val actualIncome: Double = 0.0,
+    val budgetedExpenses: Double = 0.0,
+    val actualExpenses: Double = 0.0,
+    val balance: Double = 0.0
 )
