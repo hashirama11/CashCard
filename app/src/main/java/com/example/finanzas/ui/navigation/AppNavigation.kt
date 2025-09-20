@@ -10,6 +10,7 @@ import com.example.finanzas.ui.add_transaction.AddTransactionScreen
 import com.example.finanzas.ui.all_transactions.AllTransactionsScreen
 import com.example.finanzas.ui.balance.HistoricalBalanceScreen
 import com.example.finanzas.ui.budget.BudgetDashboardScreen
+import com.example.finanzas.ui.budget.edit.EditBudgetScreen
 import com.example.finanzas.ui.category_management.CategoryManagementScreen
 import com.example.finanzas.ui.dashboard.DashboardScreen
 import com.example.finanzas.ui.currency_settings.AddCustomCurrencyScreen

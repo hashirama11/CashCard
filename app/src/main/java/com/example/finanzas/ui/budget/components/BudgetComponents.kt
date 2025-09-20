@@ -14,13 +14,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.finanzas.model.BudgetCategoryDetail
 import com.example.finanzas.ui.budget.BudgetSummary
-import com.example.finanzas.ui.util.IconMapper
+import com.example.finanzas.ui.util.getIconResource
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -156,7 +157,7 @@ fun BudgetCategoryItem(
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    painter = IconMapper.getIcon(detail.icon),
+                    painter = painterResource(id = getIconResource(detail.icon)),
                     contentDescription = detail.categoryName,
                     modifier = Modifier.size(40.dp)
                 )
@@ -242,9 +243,8 @@ fun EmptyState(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.padding(32.dp)
         ) {
-            // Using a placeholder icon, a real illustration would go here
             Icon(
-                painter = IconMapper.getIcon("ic_savings"),
+                painter = painterResource(id = getIconResource("INTERESES_BANCARIOS")),
                 contentDescription = "Empty",
                 modifier = Modifier.size(128.dp),
                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)

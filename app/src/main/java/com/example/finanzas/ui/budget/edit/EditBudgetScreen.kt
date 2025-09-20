@@ -11,12 +11,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finanzas.data.local.entity.Categoria
-import com.example.finanzas.ui.util.IconMapper
+import com.example.finanzas.ui.util.getIconResource
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -175,7 +176,7 @@ fun CategoryBudgetItem(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(IconMapper.getIcon(category.icono), contentDescription = category.nombre)
+            Icon(painterResource(id = getIconResource(category.icono)), contentDescription = category.nombre)
             Spacer(Modifier.width(16.dp))
             Text(category.nombre, modifier = Modifier.weight(1f))
             OutlinedTextField(
