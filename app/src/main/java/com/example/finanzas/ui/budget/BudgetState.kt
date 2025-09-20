@@ -12,8 +12,9 @@ data class BudgetUiState(
 )
 
 data class BudgetSummary(
-    val projectedIncome: Double,
-    val actualIncome: Double,
-    val budgetedSpending: Double,
-    val actualSpending: Double
+    val projectedIncome: Double = 0.0,
+    val actualIncome: Double = 0.0,
+    val budgetedExpenses: Double = 0.0,
+    val actualExpenses: Double = 0.0,
+    val balance: Double = 0.0
 )

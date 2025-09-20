@@ -13,11 +13,3 @@ data class BudgetDashboardState(
     val expenseCategories: List<BudgetCategoryDetail> = emptyList(),
     val csvContent: String? = null
 )
-
-data class BudgetSummary(
-    val projectedIncome: Double = 0.0,
-    val actualIncome: Double = 0.0,
-    val budgetedExpenses: Double = 0.0,
-    val actualExpenses: Double = 0.0,
-    val balance: Double = 0.0
-)
